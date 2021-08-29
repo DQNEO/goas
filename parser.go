@@ -240,9 +240,16 @@ func parseOperand() *operand {
 				ifc: symExpr,
 			}
 		}
+	case ch == '\'':
+		expect('\'')
+		b := source[idx]
+		idx++
+		expect('\'')
+		return &operand{
+			ifc: b,
+		}
 	case ch == '"':
 		s := readStringLiteral()
-		panic("TBI")
 		return &operand{
 			ifc: s,
 		}
