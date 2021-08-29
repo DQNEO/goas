@@ -388,6 +388,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		r = []byte{0xc3}
 	case "syscall":
 		r = []byte{0x0f, 0x05}
+	case "leave":
+		r = []byte{0xc9}
 	case ".text":
 		//fmt.Printf(" skip\n")
 	case ".global":
