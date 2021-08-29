@@ -151,11 +151,23 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		case *indirection: // leaq foo(%regi), %regi
 			regi := op1dtype.regi
 			op2regi := op2.ifc.(*register)
+			var opcode uint8 = 0x8d
 			if regi.name == "rip" {
 				// RIP relative addressing
-				panic(fmt.Sprintf("TBI:%v", op1))
+				reg := op2regi.toBits()
+				mod := ModIndirectionWithNoDisplacement
+				modRM := composeModRM(mod, reg, 0b101)
+				r = []byte{REX_W, opcode, modRM}
+
+				symbol := op1dtype.expr.(*symbolExpr).name
+				ru := &relaTextUser{
+					addr: instrAddr + uintptr(len(r)),
+					uses: symbol,
+				}
+
+				r = append(r, 0, 0, 0, 0)
+				relaTextUsers = append(relaTextUsers, ru)
 			} else if regi.name == "rsp" {
-				var opcode uint8 = 0x8d
 				var mod uint8 = 0b01 // indirection with 8bit displacement
 				rm := regBits("sp")
 				reg := op2regi.toBits()
@@ -395,7 +407,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case ".global":
 		// Ignore. captured in main routine
 	default:
-		panic("[encoder] TBI:" + string(s.raw))
+		panic(fmt.Sprintf("[encoder] TBI: %s at line %d",  s.raw, 0))
 	}
 
 	//fmt.Printf("=>  %#x\n", r)
