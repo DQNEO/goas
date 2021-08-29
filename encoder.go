@@ -57,21 +57,21 @@ const REG_NONE = 0b101
 func regBits(reg string) uint8 {
 	var x_reg uint8
 	switch reg {
-	case "ax":
+	case "ax","al":
 		x_reg = 0b0000
-	case "cx":
+	case "cx","cl":
 		x_reg = 0b0001
-	case "dx":
+	case "dx","dl":
 		x_reg = 0b0010
-	case "bx":
+	case "bx", "bl":
 		x_reg = 0b0011
-	case "sp":
+	case "sp","ah":
 		x_reg = 0b0100
-	case "bp":
+	case "bp", "ch":
 		x_reg = 0b0101 // or /5
-	case "si":
+	case "si", "dh":
 		x_reg = 0b0110
-	case "di":
+	case "di", "bh":
 		x_reg = 0b0111
 	default:
 		panic("TBI: unexpected register " + reg)
@@ -124,6 +124,22 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		target_symbol := s.operands[0].ifc.(*symbolExpr).name
 		r = []byte{0xeb}
 		r = append(r, 0)
+		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+			nextInstrAddr: instrAddr + uintptr(len(r)),
+			symbolUsed:    target_symbol,
+		}
+	case "je": // JE rel32
+		target_symbol := s.operands[0].ifc.(*symbolExpr).name
+		r = []byte{0x0f,0x84}
+		r = append(r, 0,0,0,0)
+		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+			nextInstrAddr: instrAddr + uintptr(len(r)),
+			symbolUsed:    target_symbol,
+		}
+	case "jne":
+		target_symbol := s.operands[0].ifc.(*symbolExpr).name
+		r = []byte{0x0f,0x85}
+		r = append(r, 0,0,0,0)
 		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
 			nextInstrAddr: instrAddr + uintptr(len(r)),
 			symbolUsed:    target_symbol,
@@ -375,6 +391,34 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			panic(err)
 		}
 		r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
+	case "cmpq":
+		op1, op2 := s.operands[0], s.operands[1]
+		switch op1.ifc.(type) {
+		case *register:
+			opcode := uint8(0x01)
+			regi := op1.ifc.(*register).toBits()
+			rm := op2.ifc.(*register).toBits()
+			modRM := composeModRM(ModRegi, regi, rm)
+			r = []byte{REX_W, opcode, modRM}
+		case *immediate:
+			opcode := uint8(0x83)
+			imValue, err := strconv.ParseInt(op1.ifc.(*immediate).expr.(*numberLit).val, 0, 8)
+			if err != nil {
+				panic(err)
+			}
+			rm := op2.ifc.(*register).toBits()
+			modRM := composeModRM(ModRegi, 7, rm)
+			r = []byte{REX_W, opcode, modRM, uint8(imValue)}
+		default:
+			panic("TBI:" + s.raw)
+		}
+	case "sete":
+		opcode1 := uint8(0x0f)
+		opcode2 := uint8(0x94)
+		op1 := s.operands[0]
+		reg := op1.ifc.(*register).toBits()
+		modRM := composeModRM(ModRegi, reg, 0)
+		r = []byte{opcode1, opcode2, modRM}
 	case "pushq":
 		switch op := s.operands[0].ifc.(type) {
 		case *register:
