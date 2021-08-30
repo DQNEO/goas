@@ -401,7 +401,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		case *immediate:
 			opcode := uint8(0x83)
 			rm := trgtOp.(*register).toBits()
-			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_/5_sp
+			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_5_sp
 			const reg5 = 5
 			modRM := composeModRM(ModRegi, reg5, rm)
 			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
@@ -471,6 +471,15 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		default:
 			panic("[encoder] TBI:" + string(s.raw))
 		}
+	case "xor":
+		// XOR r/m64, imm8
+		// REX.W 83 /6 ib
+		opcode := uint8(0x83)
+		const reg6 = 6
+		rm := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, reg6, rm)
+		imValue := evalNumExpr(srcOp.(*immediate).expr)
+		r = []byte{REX_W, opcode, modRM, uint8(imValue)}
 	case "ret", "retq":
 		r = []byte{0xc3}
 	case "syscall":
