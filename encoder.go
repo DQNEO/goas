@@ -100,6 +100,13 @@ type Instruction struct {
 }
 
 func encode(s *statement, instrAddr uintptr) *Instruction {
+	defer func() {
+		if x:= recover(); x!=nil {
+			panic(fmt.Sprintf("%s\n[encoder] %s at line %d\n\necho '%s' |./encode as",
+				x,
+				s.raw, 0, s.raw))
+		}
+	}()
 	//debugf("stmt=%#v\n", s)
 	var r []byte
 	var instr = &Instruction{
