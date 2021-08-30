@@ -57,4 +57,5 @@ myfunc5:
   setl %al
   setg %al
   setge %al
+  divq %rcx
   retq

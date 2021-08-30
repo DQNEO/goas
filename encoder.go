@@ -473,6 +473,11 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		default:
 			panic("TBI")
 		}
+	case "divq":
+		opcode := uint8(0xf7)
+		rm := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, slash_6, rm)
+		r = []byte{REX_W, opcode, modRM}
 	case "cmpq":
 		switch srcOp.(type) {
 		case *register:
