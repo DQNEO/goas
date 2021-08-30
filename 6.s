@@ -393,7 +393,7 @@ runtime.$item.match: # args 48, locals -40
 .L.case.6:
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .runtime.S0, %rax # str ptr
+  leaq .runtime.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -424,7 +424,7 @@ runtime.$item.match: # args 48, locals -40
 .L.typeswitch.1.exit:
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .runtime.S1, %rax # str ptr
+  leaq .runtime.S1(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -3002,7 +3002,7 @@ runtime.panic: # args 32, locals -64
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .runtime.S3, %rax # str ptr
+  leaq .runtime.S3(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3036,7 +3036,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $2 # str len
-  leaq .runtime.S4, %rax # str ptr
+  leaq .runtime.S4(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3173,7 +3173,7 @@ runtime.panic: # args 32, locals -64
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .runtime.S5, %rax # str ptr
+  leaq .runtime.S5(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3183,7 +3183,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $12 # str len
-  leaq .runtime.S6, %rax # str ptr
+  leaq .runtime.S6(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3203,7 +3203,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $2 # str len
-  leaq .runtime.S7, %rax # str ptr
+  leaq .runtime.S7(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3599,7 +3599,7 @@ runtime.malloc: # args 32, locals -8
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $24 # str len
-  leaq .runtime.S8, %rax # str ptr
+  leaq .runtime.S8(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -7542,7 +7542,7 @@ mymap.$item.match: # args 48, locals -40
 .L.case.68:
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .mymap.S0, %rax # str ptr
+  leaq .mymap.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -7573,7 +7573,7 @@ mymap.$item.match: # args 48, locals -40
 .L.typeswitch.63.exit:
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .mymap.S1, %rax # str ptr
+  leaq .mymap.S1(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -8430,7 +8430,7 @@ strconv.Itoa: # args 40, locals -89
   leaq 24(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $1 # str len
-  leaq .strconv.S0, %rax # str ptr
+  leaq .strconv.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -9372,7 +9372,7 @@ strings.Split: # args 72, locals -74
   jne .L.endif.92 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .strings.S0, %rax # str ptr
+  leaq .strings.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -11570,7 +11570,7 @@ fmt.Sprintf: # args 72, locals -277
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .fmt.S0, %rax # str ptr
+  leaq .fmt.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -11604,7 +11604,7 @@ fmt.Sprintf: # args 72, locals -277
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .fmt.S1, %rax # str ptr
+  leaq .fmt.S1(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -11628,7 +11628,7 @@ fmt.Sprintf: # args 72, locals -277
   leaq -73(%rbp), %rax # local variable "str"
   pushq %rax # variable address
   pushq $12 # str len
-  leaq .fmt.S2, %rax # str ptr
+  leaq .fmt.S2(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -11916,7 +11916,7 @@ fmt.Sprintf: # args 72, locals -277
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .fmt.S3, %rax # str ptr
+  leaq .fmt.S3(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -11950,7 +11950,7 @@ fmt.Sprintf: # args 72, locals -277
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .fmt.S4, %rax # str ptr
+  leaq .fmt.S4(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -12020,7 +12020,7 @@ fmt.Sprintf: # args 72, locals -277
   leaq -73(%rbp), %rax # local variable "str"
   pushq %rax # variable address
   pushq $12 # str len
-  leaq .fmt.S5, %rax # str ptr
+  leaq .fmt.S5(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -12407,7 +12407,7 @@ fmt.Sprintf: # args 72, locals -277
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $24 # str len
-  leaq .fmt.S6, %rax # str ptr
+  leaq .fmt.S6(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -14350,7 +14350,7 @@ mylib.GetDirents: # args 56, locals -136
   jne .L.endif.140 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .mylib.S0, %rax # str ptr
+  leaq .mylib.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -15309,7 +15309,7 @@ path.Dir: # args 48, locals -8
   leaq 32(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $1 # str len
-  leaq .path.S0, %rax # str ptr
+  leaq .path.S0(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -15338,7 +15338,7 @@ path.Dir: # args 48, locals -8
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .path.S1, %rax # str ptr
+  leaq .path.S1(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -15356,7 +15356,7 @@ path.Dir: # args 48, locals -8
   leaq 32(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $1 # str len
-  leaq .path.S2, %rax # str ptr
+  leaq .path.S2(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -15505,7 +15505,7 @@ path.Base: # args 48, locals -8
   leaq 32(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $1 # str len
-  leaq .path.S3, %rax # str ptr
+  leaq .path.S3(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -15534,7 +15534,7 @@ path.Base: # args 48, locals -8
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .path.S4, %rax # str ptr
+  leaq .path.S4(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -15552,7 +15552,7 @@ path.Base: # args 48, locals -8
   leaq 32(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $1 # str len
-  leaq .path.S5, %rax # str ptr
+  leaq .path.S5(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17010,7 +17010,7 @@ main.testMapForrange: # args 16, locals -128
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .main.S3, %rax # str ptr
+  leaq .main.S3(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -17096,7 +17096,7 @@ main.testMapForrange: # args 16, locals -128
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S4, %rax # str ptr
+  leaq .main.S4(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -17142,7 +17142,7 @@ main.testMapForrange: # args 16, locals -128
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S5, %rax # str ptr
+  leaq .main.S5(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -17284,7 +17284,7 @@ main.testMapForrange: # args 16, locals -128
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $23 # str len
-  leaq .main.S6, %rax # str ptr
+  leaq .main.S6(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17346,7 +17346,7 @@ main.testMapForrange: # args 16, locals -128
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S7, %rax # str ptr
+  leaq .main.S7(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17412,7 +17412,7 @@ main.testMapForrange: # args 16, locals -128
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S8, %rax # str ptr
+  leaq .main.S8(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17576,7 +17576,7 @@ main.testMapForrange: # args 16, locals -128
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S9, %rax # str ptr
+  leaq .main.S9(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17642,7 +17642,7 @@ main.testMapForrange: # args 16, locals -128
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S10, %rax # str ptr
+  leaq .main.S10(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17814,7 +17814,7 @@ main.testMapForrange: # args 16, locals -128
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $22 # str len
-  leaq .main.S11, %rax # str ptr
+  leaq .main.S11(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -17919,7 +17919,7 @@ main.testGlobalMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S12, %rax # str ptr
+  leaq .main.S12(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -17947,7 +17947,7 @@ main.testGlobalMapOK: # args 16, locals -32
   addq $24, %rsp # free parameters area
 #  totalReturnSize=8
   pushq $6 # str len
-  leaq .main.S13, %rax # str ptr
+  leaq .main.S13(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -17969,7 +17969,7 @@ main.testGlobalMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S14, %rax # str ptr
+  leaq .main.S14(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18041,7 +18041,7 @@ main.testGlobalMapOK: # args 16, locals -32
   jne .L.endif.163 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S15, %rax # str ptr
+  leaq .main.S15(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18071,7 +18071,7 @@ main.testGlobalMapOK: # args 16, locals -32
   .L.endif.163:
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S16, %rax # str ptr
+  leaq .main.S16(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18148,7 +18148,7 @@ main.testGlobalMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $7 # str len
-  leaq .main.S17, %rax # str ptr
+  leaq .main.S17(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18219,7 +18219,7 @@ main.testGlobalMapOK: # args 16, locals -32
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S18, %rax # str ptr
+  leaq .main.S18(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18273,7 +18273,7 @@ main.testGlobalMapOK: # args 16, locals -32
   .L.endif.165:
   subq $40, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S19, %rax # str ptr
+  leaq .main.S19(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18381,7 +18381,7 @@ main.testMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S20, %rax # str ptr
+  leaq .main.S20(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18409,7 +18409,7 @@ main.testMapOK: # args 16, locals -32
   addq $24, %rsp # free parameters area
 #  totalReturnSize=8
   pushq $6 # str len
-  leaq .main.S21, %rax # str ptr
+  leaq .main.S21(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18431,7 +18431,7 @@ main.testMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S22, %rax # str ptr
+  leaq .main.S22(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18503,7 +18503,7 @@ main.testMapOK: # args 16, locals -32
   jne .L.endif.167 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S23, %rax # str ptr
+  leaq .main.S23(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18533,7 +18533,7 @@ main.testMapOK: # args 16, locals -32
   .L.endif.167:
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S24, %rax # str ptr
+  leaq .main.S24(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18610,7 +18610,7 @@ main.testMapOK: # args 16, locals -32
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $7 # str len
-  leaq .main.S25, %rax # str ptr
+  leaq .main.S25(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18681,7 +18681,7 @@ main.testMapOK: # args 16, locals -32
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S26, %rax # str ptr
+  leaq .main.S26(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18735,7 +18735,7 @@ main.testMapOK: # args 16, locals -32
   .L.endif.169:
   subq $40, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S27, %rax # str ptr
+  leaq .main.S27(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18832,7 +18832,7 @@ main.testMap: # args 16, locals -72
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S28, %rax # str ptr
+  leaq .main.S28(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18915,7 +18915,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S29, %rax # str ptr
+  leaq .main.S29(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -18943,7 +18943,7 @@ main.testMap: # args 16, locals -72
   addq $24, %rsp # free parameters area
 #  totalReturnSize=8
   pushq $6 # str len
-  leaq .main.S30, %rax # str ptr
+  leaq .main.S30(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -18954,7 +18954,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S31, %rax # str ptr
+  leaq .main.S31(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19039,7 +19039,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $7 # str len
-  leaq .main.S32, %rax # str ptr
+  leaq .main.S32(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19089,7 +19089,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S33, %rax # str ptr
+  leaq .main.S33(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19168,7 +19168,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S34, %rax # str ptr
+  leaq .main.S34(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19218,7 +19218,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S35, %rax # str ptr
+  leaq .main.S35(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19297,7 +19297,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S36, %rax # str ptr
+  leaq .main.S36(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19347,7 +19347,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S37, %rax # str ptr
+  leaq .main.S37(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19424,7 +19424,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S38, %rax # str ptr
+  leaq .main.S38(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19452,7 +19452,7 @@ main.testMap: # args 16, locals -72
   addq $24, %rsp # free parameters area
 #  totalReturnSize=8
   pushq $6 # str len
-  leaq .main.S39, %rax # str ptr
+  leaq .main.S39(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19476,7 +19476,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S40, %rax # str ptr
+  leaq .main.S40(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19526,7 +19526,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S41, %rax # str ptr
+  leaq .main.S41(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19592,7 +19592,7 @@ main.testMap: # args 16, locals -72
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S42, %rax # str ptr
+  leaq .main.S42(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19674,7 +19674,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S43, %rax # str ptr
+  leaq .main.S43(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19716,7 +19716,7 @@ main.testMap: # args 16, locals -72
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $4 # str len
-  leaq .main.S44, %rax # str ptr
+  leaq .main.S44(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -19766,7 +19766,7 @@ main.testMap: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S45, %rax # str ptr
+  leaq .main.S45(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19832,7 +19832,7 @@ main.testMap: # args 16, locals -72
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S46, %rax # str ptr
+  leaq .main.S46(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19904,7 +19904,7 @@ main.testMap: # args 16, locals -72
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S47, %rax # str ptr
+  leaq .main.S47(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -19954,7 +19954,7 @@ main.testMap: # args 16, locals -72
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S48, %rax # str ptr
+  leaq .main.S48(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20081,7 +20081,7 @@ main.testMap: # args 16, locals -72
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S49, %rax # str ptr
+  leaq .main.S49(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20241,7 +20241,7 @@ main.testMap: # args 16, locals -72
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S50, %rax # str ptr
+  leaq .main.S50(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20334,7 +20334,7 @@ main.testMyMap: # args 16, locals -80
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S51, %rax # str ptr
+  leaq .main.S51(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20416,7 +20416,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $1 # str len
-  leaq .main.S52, %rax # str ptr
+  leaq .main.S52(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20476,7 +20476,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $2 # str len
-  leaq .main.S53, %rax # str ptr
+  leaq .main.S53(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20526,7 +20526,7 @@ main.testMyMap: # args 16, locals -80
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S54, %rax # str ptr
+  leaq .main.S54(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20609,7 +20609,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $1 # str len
-  leaq .main.S55, %rax # str ptr
+  leaq .main.S55(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20667,7 +20667,7 @@ main.testMyMap: # args 16, locals -80
   jne .L.endif.177 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S56, %rax # str ptr
+  leaq .main.S56(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20697,7 +20697,7 @@ main.testMyMap: # args 16, locals -80
   .L.endif.177:
   subq $40, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S57, %rax # str ptr
+  leaq .main.S57(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -20813,7 +20813,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $2 # str len
-  leaq .main.S58, %rax # str ptr
+  leaq .main.S58(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20871,7 +20871,7 @@ main.testMyMap: # args 16, locals -80
   jne .L.endif.180 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S59, %rax # str ptr
+  leaq .main.S59(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -20901,7 +20901,7 @@ main.testMyMap: # args 16, locals -80
   .L.endif.180:
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S60, %rax # str ptr
+  leaq .main.S60(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21016,7 +21016,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $3 # str len
-  leaq .main.S61, %rax # str ptr
+  leaq .main.S61(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21077,7 +21077,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $3 # str len
-  leaq .main.S62, %rax # str ptr
+  leaq .main.S62(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21135,7 +21135,7 @@ main.testMyMap: # args 16, locals -80
   jne .L.endif.183 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S63, %rax # str ptr
+  leaq .main.S63(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21165,7 +21165,7 @@ main.testMyMap: # args 16, locals -80
   .L.endif.183:
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S64, %rax # str ptr
+  leaq .main.S64(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21280,7 +21280,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $2 # str len
-  leaq .main.S65, %rax # str ptr
+  leaq .main.S65(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21309,7 +21309,7 @@ main.testMyMap: # args 16, locals -80
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S66, %rax # str ptr
+  leaq .main.S66(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21392,7 +21392,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $2 # str len
-  leaq .main.S67, %rax # str ptr
+  leaq .main.S67(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21447,7 +21447,7 @@ main.testMyMap: # args 16, locals -80
   jne .L.endif.186 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $21 # str len
-  leaq .main.S68, %rax # str ptr
+  leaq .main.S68(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21493,7 +21493,7 @@ main.testMyMap: # args 16, locals -80
   jne .L.endif.187 # jmp if false
   subq $40, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S69, %rax # str ptr
+  leaq .main.S69(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21530,7 +21530,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $1 # str len
-  leaq .main.S70, %rax # str ptr
+  leaq .main.S70(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21559,7 +21559,7 @@ main.testMyMap: # args 16, locals -80
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S71, %rax # str ptr
+  leaq .main.S71(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21641,7 +21641,7 @@ main.testMyMap: # args 16, locals -80
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign
   pushq $3 # str len
-  leaq .main.S72, %rax # str ptr
+  leaq .main.S72(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -21670,7 +21670,7 @@ main.testMyMap: # args 16, locals -80
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S73, %rax # str ptr
+  leaq .main.S73(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -21928,7 +21928,7 @@ main.testTypeSwitchNil: # args 16, locals -72
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S74, %rax # str ptr
+  leaq .main.S74(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22003,7 +22003,7 @@ main.testTypeSwitchNil: # args 16, locals -72
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S75, %rax # str ptr
+  leaq .main.S75(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -22034,7 +22034,7 @@ main.testTypeSwitchNil: # args 16, locals -72
 .L.case.193:
   subq $16, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S76, %rax # str ptr
+  leaq .main.S76(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -22065,7 +22065,7 @@ main.testTypeSwitchNil: # args 16, locals -72
 .L.case.194:
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S77, %rax # str ptr
+  leaq .main.S77(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22249,7 +22249,7 @@ main.testTokenString: # args 16, locals -16
   leaq -16(%rbp), %rax # local variable "tok"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S78, %rax # str ptr
+  leaq .main.S78(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22260,7 +22260,7 @@ main.testTokenString: # args 16, locals -16
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S80, %rax # str ptr
+  leaq .main.S80(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22370,7 +22370,7 @@ main.testAssignIncDec: # args 16, locals -8
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S81, %rax # str ptr
+  leaq .main.S81(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22449,7 +22449,7 @@ main.testAssignIncDec: # args 16, locals -8
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S82, %rax # str ptr
+  leaq .main.S82(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22541,7 +22541,7 @@ main.testTypeAlias: # args 16, locals -8
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S83, %rax # str ptr
+  leaq .main.S83(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22617,7 +22617,7 @@ main.testDerivedString: # args 16, locals -32
   leaq -16(%rbp), %rax # local variable "qi"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S84, %rax # str ptr
+  leaq .main.S84(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22644,7 +22644,7 @@ main.testDerivedString: # args 16, locals -32
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S85, %rax # str ptr
+  leaq .main.S85(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22740,7 +22740,7 @@ main.testForeignType: # args 16, locals -8
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S86, %rax # str ptr
+  leaq .main.S86(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22827,7 +22827,7 @@ main.returnMixed: # args 65, locals 0
   leaq 24(%rbp), %rax # local variable ".r1"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S87, %rax # str ptr
+  leaq .main.S87(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22874,7 +22874,7 @@ main.returnStrings: # args 64, locals 0
   leaq 16(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S88, %rax # str ptr
+  leaq .main.S88(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22886,7 +22886,7 @@ main.returnStrings: # args 64, locals 0
   leaq 32(%rbp), %rax # local variable ".r1"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S89, %rax # str ptr
+  leaq .main.S89(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -22898,7 +22898,7 @@ main.returnStrings: # args 64, locals 0
   leaq 48(%rbp), %rax # local variable ".r2"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S90, %rax # str ptr
+  leaq .main.S90(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -23088,7 +23088,7 @@ main.testReturnMixed: # args 16, locals -49
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S91, %rax # str ptr
+  leaq .main.S91(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -23359,7 +23359,7 @@ main.testReturnStrings: # args 16, locals -48
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S92, %rax # str ptr
+  leaq .main.S92(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -23551,7 +23551,7 @@ main.testReturnInts: # args 16, locals -24
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S93, %rax # str ptr
+  leaq .main.S93(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -23759,7 +23759,7 @@ main.testReturnUint8s: # args 16, locals -3
   movb %al, 0(%rsi) # assign byte
   subq $40, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S94, %rax # str ptr
+  leaq .main.S94(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24032,7 +24032,7 @@ main.testPassBytes: # args 16, locals -43
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S95, %rax # str ptr
+  leaq .main.S95(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24119,7 +24119,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S96, %rax # str ptr
+  leaq .main.S96(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24188,7 +24188,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S97, %rax # str ptr
+  leaq .main.S97(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24265,7 +24265,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S98, %rax # str ptr
+  leaq .main.S98(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24368,7 +24368,7 @@ main.testSprinfMore: # args 16, locals -64
   leaq -40(%rbp), %rax # local variable "str"
   pushq %rax # variable address
   pushq $11 # str len
-  leaq .main.S99, %rax # str ptr
+  leaq .main.S99(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24382,7 +24382,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S100, %rax # str ptr
+  leaq .main.S100(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24491,7 +24491,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S101, %rax # str ptr
+  leaq .main.S101(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24600,7 +24600,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S102, %rax # str ptr
+  leaq .main.S102(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24705,7 +24705,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S103, %rax # str ptr
+  leaq .main.S103(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24807,7 +24807,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S104, %rax # str ptr
+  leaq .main.S104(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -24827,7 +24827,7 @@ main.testSprinfMore: # args 16, locals -64
   addq $0, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S105, %rax # str ptr
+  leaq .main.S105(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -25003,7 +25003,7 @@ main.testSprinfMore: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $1 # str len
-  leaq .main.S106, %rax # str ptr
+  leaq .main.S106(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -25048,7 +25048,7 @@ main.testSprinfMore: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $3 # str len
-  leaq .main.S107, %rax # str ptr
+  leaq .main.S107(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -25077,7 +25077,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S108, %rax # str ptr
+  leaq .main.S108(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25152,7 +25152,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S109, %rax # str ptr
+  leaq .main.S109(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25261,7 +25261,7 @@ main.testSprinfMore: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $40, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S110, %rax # str ptr
+  leaq .main.S110(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25387,7 +25387,7 @@ main.testSortStrings: # args 16, locals -104
   addq $0, %rax
   pushq %rax
   pushq $35 # str len
-  leaq .main.S111, %rax # str ptr
+  leaq .main.S111(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25402,7 +25402,7 @@ main.testSortStrings: # args 16, locals -104
   addq $16, %rax
   pushq %rax
   pushq $6 # str len
-  leaq .main.S112, %rax # str ptr
+  leaq .main.S112(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25417,7 +25417,7 @@ main.testSortStrings: # args 16, locals -104
   addq $32, %rax
   pushq %rax
   pushq $7 # str len
-  leaq .main.S113, %rax # str ptr
+  leaq .main.S113(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25432,7 +25432,7 @@ main.testSortStrings: # args 16, locals -104
   addq $48, %rax
   pushq %rax
   pushq $31 # str len
-  leaq .main.S114, %rax # str ptr
+  leaq .main.S114(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25447,7 +25447,7 @@ main.testSortStrings: # args 16, locals -104
   addq $64, %rax
   pushq %rax
   pushq $34 # str len
-  leaq .main.S115, %rax # str ptr
+  leaq .main.S115(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25462,7 +25462,7 @@ main.testSortStrings: # args 16, locals -104
   addq $80, %rax
   pushq %rax
   pushq $35 # str len
-  leaq .main.S116, %rax # str ptr
+  leaq .main.S116(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25477,7 +25477,7 @@ main.testSortStrings: # args 16, locals -104
   addq $96, %rax
   pushq %rax
   pushq $7 # str len
-  leaq .main.S117, %rax # str ptr
+  leaq .main.S117(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25492,7 +25492,7 @@ main.testSortStrings: # args 16, locals -104
   addq $112, %rax
   pushq %rax
   pushq $33 # str len
-  leaq .main.S118, %rax # str ptr
+  leaq .main.S118(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25507,7 +25507,7 @@ main.testSortStrings: # args 16, locals -104
   addq $128, %rax
   pushq %rax
   pushq $32 # str len
-  leaq .main.S119, %rax # str ptr
+  leaq .main.S119(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25522,7 +25522,7 @@ main.testSortStrings: # args 16, locals -104
   addq $144, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S120, %rax # str ptr
+  leaq .main.S120(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25546,7 +25546,7 @@ main.testSortStrings: # args 16, locals -104
   movq %rdx, 16(%rsi) # cap to cap
   subq $40, %rsp # alloc parameters area
   pushq $33 # str len
-  leaq .main.S131, %rax # str ptr
+  leaq .main.S131(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25658,7 +25658,7 @@ main.testSortStrings: # args 16, locals -104
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S132, %rax # str ptr
+  leaq .main.S132(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25764,7 +25764,7 @@ main.testSortStrings: # args 16, locals -104
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $33 # str len
-  leaq .main.S133, %rax # str ptr
+  leaq .main.S133(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25876,7 +25876,7 @@ main.testSortStrings: # args 16, locals -104
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S134, %rax # str ptr
+  leaq .main.S134(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -25970,7 +25970,7 @@ main.testGetdents64: # args 16, locals -72
   subq $24, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S135, %rax # str ptr
+  leaq .main.S135(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26102,7 +26102,7 @@ main.testGetdents64: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .main.S137, %rax # str ptr
+  leaq .main.S137(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26134,7 +26134,7 @@ main.testGetdents64: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $2 # str len
-  leaq .main.S138, %rax # str ptr
+  leaq .main.S138(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26190,7 +26190,7 @@ jmp .L.range.post.198 # continue
   .L.range.exit.198:
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S139, %rax # str ptr
+  leaq .main.S139(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26262,7 +26262,7 @@ main.testEnv: # args 16, locals -16
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S140, %rax # str ptr
+  leaq .main.S140(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26283,7 +26283,7 @@ main.testEnv: # args 16, locals -16
   movq %rcx, 8(%rsi) # len to len
   subq $40, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S141, %rax # str ptr
+  leaq .main.S141(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26401,7 +26401,7 @@ main.testReflect: # args 16, locals -56
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S142, %rax # str ptr
+  leaq .main.S142(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26509,7 +26509,7 @@ main.testReflect: # args 16, locals -56
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S143, %rax # str ptr
+  leaq .main.S143(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26586,7 +26586,7 @@ main.testReflect: # args 16, locals -56
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S144, %rax # str ptr
+  leaq .main.S144(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -26620,7 +26620,7 @@ main.testReflect: # args 16, locals -56
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S145, %rax # str ptr
+  leaq .main.S145(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26752,7 +26752,7 @@ main.testReflect: # args 16, locals -56
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S146, %rax # str ptr
+  leaq .main.S146(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26875,7 +26875,7 @@ main.testReflect: # args 16, locals -56
   movq %rax, 0(%rsi) # assign
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S147, %rax # str ptr
+  leaq .main.S147(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26967,7 +26967,7 @@ main.returnSlice: # args 40, locals -24
   addq $0, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S148, %rax # str ptr
+  leaq .main.S148(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26982,7 +26982,7 @@ main.returnSlice: # args 40, locals -24
   addq $16, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S149, %rax # str ptr
+  leaq .main.S149(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -26997,7 +26997,7 @@ main.returnSlice: # args 40, locals -24
   addq $32, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S150, %rax # str ptr
+  leaq .main.S150(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27228,7 +27228,7 @@ main.testStrings: # args 16, locals -72
   subq $24, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S154, %rax # str ptr
+  leaq .main.S154(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27238,7 +27238,7 @@ main.testStrings: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .main.S155, %rax # str ptr
+  leaq .main.S155(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27261,7 +27261,7 @@ main.testStrings: # args 16, locals -72
   movq %rdx, 16(%rsi) # cap to cap
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S158, %rax # str ptr
+  leaq .main.S158(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27336,7 +27336,7 @@ main.testStrings: # args 16, locals -72
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S159, %rax # str ptr
+  leaq .main.S159(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27420,7 +27420,7 @@ main.testStrings: # args 16, locals -72
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S160, %rax # str ptr
+  leaq .main.S160(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27505,7 +27505,7 @@ main.testStrings: # args 16, locals -72
   leaq -40(%rbp), %rax # local variable "target"
   pushq %rax # variable address
   pushq $11 # str len
-  leaq .main.S161, %rax # str ptr
+  leaq .main.S161(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27531,7 +27531,7 @@ main.testStrings: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $3 # str len
-  leaq .main.S163, %rax # str ptr
+  leaq .main.S163(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27551,7 +27551,7 @@ main.testStrings: # args 16, locals -72
   jne .L.endif.201 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S164, %rax # str ptr
+  leaq .main.S164(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -27596,7 +27596,7 @@ main.testStrings: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .main.S165, %rax # str ptr
+  leaq .main.S165(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27613,7 +27613,7 @@ main.testStrings: # args 16, locals -72
   jne .L.endif.202 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S166, %rax # str ptr
+  leaq .main.S166(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -27658,7 +27658,7 @@ main.testStrings: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $3 # str len
-  leaq .main.S167, %rax # str ptr
+  leaq .main.S167(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27675,7 +27675,7 @@ main.testStrings: # args 16, locals -72
   jne .L.endif.203 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S168, %rax # str ptr
+  leaq .main.S168(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -27706,7 +27706,7 @@ main.testStrings: # args 16, locals -72
   leaq -56(%rbp), %rax # local variable "s2"
   pushq %rax # variable address
   pushq $7 # str len
-  leaq .main.S169, %rax # str ptr
+  leaq .main.S169(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27718,7 +27718,7 @@ main.testStrings: # args 16, locals -72
   leaq -72(%rbp), %rax # local variable "suffix"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S171, %rax # str ptr
+  leaq .main.S171(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27765,7 +27765,7 @@ main.testStrings: # args 16, locals -72
   jne .L.else.204 # jmp if false
   subq $40, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S173, %rax # str ptr
+  leaq .main.S173(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27793,7 +27793,7 @@ main.testStrings: # args 16, locals -72
   .L.else.204:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S174, %rax # str ptr
+  leaq .main.S174(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -27824,7 +27824,7 @@ main.testStrings: # args 16, locals -72
   subq $8, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S175, %rax # str ptr
+  leaq .main.S175(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27834,7 +27834,7 @@ main.testStrings: # args 16, locals -72
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .main.S176, %rax # str ptr
+  leaq .main.S176(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27851,7 +27851,7 @@ main.testStrings: # args 16, locals -72
   jne .L.else.205 # jmp if false
   subq $40, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S177, %rax # str ptr
+  leaq .main.S177(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -27879,7 +27879,7 @@ main.testStrings: # args 16, locals -72
   .L.else.205:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S178, %rax # str ptr
+  leaq .main.S178(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -29055,7 +29055,7 @@ main.testSliceExpr: # args 16, locals -224
   leaq -208(%rbp), %rax # local variable "str"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S183, %rax # str ptr
+  leaq .main.S183(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29304,7 +29304,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S185, %rax # str ptr
+  leaq .main.S185(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29345,7 +29345,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S186, %rax # str ptr
+  leaq .main.S186(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29426,7 +29426,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S188, %rax # str ptr
+  leaq .main.S188(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29467,7 +29467,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S189, %rax # str ptr
+  leaq .main.S189(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29508,7 +29508,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S190, %rax # str ptr
+  leaq .main.S190(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29549,7 +29549,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S191, %rax # str ptr
+  leaq .main.S191(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29590,7 +29590,7 @@ main.testPath: # args 16, locals 0
   subq $16, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S192, %rax # str ptr
+  leaq .main.S192(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -29786,7 +29786,7 @@ main.testExtLib: # args 16, locals -8
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $18 # str len
-  leaq .main.S194, %rax # str ptr
+  leaq .main.S194(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -30205,7 +30205,7 @@ main.testExpandSlice: # args 16, locals -24
   addq $0, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S195, %rax # str ptr
+  leaq .main.S195(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -30220,7 +30220,7 @@ main.testExpandSlice: # args 16, locals -24
   addq $16, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S196, %rax # str ptr
+  leaq .main.S196(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -30235,7 +30235,7 @@ main.testExpandSlice: # args 16, locals -24
   addq $32, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S197, %rax # str ptr
+  leaq .main.S197(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -30805,7 +30805,7 @@ main.testInterfaceVaargs: # args 16, locals -24
   leaq -24(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S198, %rax # str ptr
+  leaq .main.S198(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -32153,7 +32153,7 @@ main.testTypeSwitch: # args 16, locals -256
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S199, %rax # str ptr
+  leaq .main.S199(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -32288,7 +32288,7 @@ main.testTypeSwitch: # args 16, locals -256
   movq %rcx, 8(%rsi) # len to len
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S200, %rax # str ptr
+  leaq .main.S200(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -32352,7 +32352,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.233:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S201, %rax # str ptr
+  leaq .main.S201(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -32384,7 +32384,7 @@ main.testTypeSwitch: # args 16, locals -256
   leaq -80(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S202, %rax # str ptr
+  leaq .main.S202(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -32577,7 +32577,7 @@ main.testTypeSwitch: # args 16, locals -256
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S203, %rax # str ptr
+  leaq .main.S203(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -32713,7 +32713,7 @@ main.testTypeSwitch: # args 16, locals -256
   movq %rcx, 8(%rsi) # len to len
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S204, %rax # str ptr
+  leaq .main.S204(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -32821,7 +32821,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.245:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S205, %rax # str ptr
+  leaq .main.S205(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33002,7 +33002,7 @@ main.testTypeSwitch: # args 16, locals -256
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S206, %rax # str ptr
+  leaq .main.S206(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33101,7 +33101,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.249:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S207, %rax # str ptr
+  leaq .main.S207(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33249,7 +33249,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.251:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S208, %rax # str ptr
+  leaq .main.S208(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33280,7 +33280,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.253:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S209, %rax # str ptr
+  leaq .main.S209(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33311,7 +33311,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.255:
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S210, %rax # str ptr
+  leaq .main.S210(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33484,7 +33484,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.257:
   subq $16, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S211, %rax # str ptr
+  leaq .main.S211(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33515,7 +33515,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.259:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S212, %rax # str ptr
+  leaq .main.S212(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33546,7 +33546,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.261:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S213, %rax # str ptr
+  leaq .main.S213(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -33577,7 +33577,7 @@ main.testTypeSwitch: # args 16, locals -256
 .L.case.263:
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S214, %rax # str ptr
+  leaq .main.S214(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34051,7 +34051,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   movq %rcx, 8(%rsi) # store data
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S215, %rax # str ptr
+  leaq .main.S215(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34152,7 +34152,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   jne .L.else.272 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S216, %rax # str ptr
+  leaq .main.S216(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34224,7 +34224,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   .L.else.272:
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S217, %rax # str ptr
+  leaq .main.S217(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34424,7 +34424,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   jne .L.else.277 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S218, %rax # str ptr
+  leaq .main.S218(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34455,7 +34455,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   .L.else.277:
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S219, %rax # str ptr
+  leaq .main.S219(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34636,7 +34636,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   popq %rax # result of T_INT
   subq $16, %rsp # alloc parameters area
   pushq $29 # str len
-  leaq .main.S220, %rax # str ptr
+  leaq .main.S220(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34786,7 +34786,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   jne .L.else.284 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S221, %rax # str ptr
+  leaq .main.S221(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -34852,7 +34852,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   leaq -72(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $11 # str len
-  leaq .main.S222, %rax # str ptr
+  leaq .main.S222(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -35004,7 +35004,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   jne .L.else.287 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S223, %rax # str ptr
+  leaq .main.S223(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35035,7 +35035,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   .L.else.287:
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S224, %rax # str ptr
+  leaq .main.S224(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35153,7 +35153,7 @@ main.testInterfaceAssertion: # args 16, locals -72
   jne .L.else.290 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S225, %rax # str ptr
+  leaq .main.S225(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35287,7 +35287,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   movq %rcx, 8(%rsi) # store data
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S226, %rax # str ptr
+  leaq .main.S226(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35337,7 +35337,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   jne .L.endif.291 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S227, %rax # str ptr
+  leaq .main.S227(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35367,7 +35367,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   .L.endif.291:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S228, %rax # str ptr
+  leaq .main.S228(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35404,7 +35404,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S229, %rax # str ptr
+  leaq .main.S229(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35460,7 +35460,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   movq %rcx, 8(%rsi) # store data
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S230, %rax # str ptr
+  leaq .main.S230(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35513,7 +35513,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   jne .L.endif.292 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S231, %rax # str ptr
+  leaq .main.S231(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35602,7 +35602,7 @@ main.testInterfaceimplicitConversion: # args 16, locals -40
   jne .L.endif.293 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S232, %rax # str ptr
+  leaq .main.S232(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35666,7 +35666,7 @@ main.testInterfaceZeroValue: # args 16, locals -16
   jne .L.endif.294 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S233, %rax # str ptr
+  leaq .main.S233(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35712,7 +35712,7 @@ main.testInterfaceZeroValue: # args 16, locals -16
   jne .L.endif.295 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S234, %rax # str ptr
+  leaq .main.S234(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35774,7 +35774,7 @@ main.testInterfaceZeroValue: # args 16, locals -16
   jne .L.endif.296 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S235, %rax # str ptr
+  leaq .main.S235(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -35836,7 +35836,7 @@ main.testInterfaceZeroValue: # args 16, locals -16
   jne .L.endif.297 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S236, %rax # str ptr
+  leaq .main.S236(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -36716,7 +36716,7 @@ main.testGlobalValues: # args 16, locals 0
   jne .L.endif.300 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S239, %rax # str ptr
+  leaq .main.S239(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -36986,7 +36986,7 @@ main.testShortVarDecl: # args 16, locals -56
   leaq -40(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $20 # str len
-  leaq .main.S240, %rax # str ptr
+  leaq .main.S240(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -38977,7 +38977,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S243, %rax # str ptr
+  leaq .main.S243(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39028,7 +39028,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S244, %rax # str ptr
+  leaq .main.S244(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39079,7 +39079,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S245, %rax # str ptr
+  leaq .main.S245(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39130,7 +39130,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S246, %rax # str ptr
+  leaq .main.S246(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39181,7 +39181,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S247, %rax # str ptr
+  leaq .main.S247(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39232,7 +39232,7 @@ main.testAtoi: # args 16, locals 0
   subq $8, %rsp # alloc return vars area
   subq $16, %rsp # alloc parameters area
   pushq $2 # str len
-  leaq .main.S248, %rax # str ptr
+  leaq .main.S248(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39409,7 +39409,7 @@ main.testIsLetter: # args 16, locals 0
   jne .L.else.306 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S249, %rax # str ptr
+  leaq .main.S249(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39440,7 +39440,7 @@ main.testIsLetter: # args 16, locals 0
   .L.else.306:
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S250, %rax # str ptr
+  leaq .main.S250(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39607,7 +39607,7 @@ main.funcVaarg2: # args 48, locals 0
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S251, %rax # str ptr
+  leaq .main.S251(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39638,7 +39638,7 @@ main.funcVaarg2: # args 48, locals 0
   .L.else.307:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S252, %rax # str ptr
+  leaq .main.S252(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39674,7 +39674,7 @@ main.testVaargs: # args 16, locals 0
   movq %rsp, %rbp
   subq $40, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S253, %rax # str ptr
+  leaq .main.S253(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39700,7 +39700,7 @@ main.testVaargs: # args 16, locals 0
 #  totalReturnSize=0
   subq $40, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S254, %rax # str ptr
+  leaq .main.S254(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -39720,7 +39720,7 @@ main.testVaargs: # args 16, locals 0
   addq $0, %rax
   pushq %rax
   pushq $1 # str len
-  leaq .main.S255, %rax # str ptr
+  leaq .main.S255(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39750,7 +39750,7 @@ main.testVaargs: # args 16, locals 0
   addq $16, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S256, %rax # str ptr
+  leaq .main.S256(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39780,7 +39780,7 @@ main.testVaargs: # args 16, locals 0
   addq $32, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S257, %rax # str ptr
+  leaq .main.S257(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -39860,7 +39860,7 @@ main.testOpenRead: # args 16, locals -64
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S258, %rax # str ptr
+  leaq .main.S258(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -40025,7 +40025,7 @@ main.testOpenRead: # args 16, locals -64
   jne .L.endif.308 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S259, %rax # str ptr
+  leaq .main.S259(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40191,7 +40191,7 @@ main.testInfer: # args 16, locals -32
   leaq -16(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $20 # str len
-  leaq .main.S260, %rax # str ptr
+  leaq .main.S260(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -40371,7 +40371,7 @@ main.testEscapedChar: # args 16, locals -24
   movq %rdx, 16(%rsi) # cap to cap
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S261, %rax # str ptr
+  leaq .main.S261(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40440,7 +40440,7 @@ main.testEscapedChar: # args 16, locals -24
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S262, %rax # str ptr
+  leaq .main.S262(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40477,7 +40477,7 @@ main.testSwitchString: # args 16, locals -32
   leaq -16(%rbp), %rax # local variable "testVar"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S263, %rax # str ptr
+  leaq .main.S263(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -40489,7 +40489,7 @@ main.testSwitchString: # args 16, locals -32
   leaq -32(%rbp), %rax # local variable "caseVar"
   pushq %rax # variable address
   pushq $2 # str len
-  leaq .main.S264, %rax # str ptr
+  leaq .main.S264(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -40511,7 +40511,7 @@ main.testSwitchString: # args 16, locals -32
   pushq %rcx # str.len
   pushq %rax # str.ptr
   pushq $5 # str len
-  leaq .main.S265, %rax # str ptr
+  leaq .main.S265(%rip), %rax # str ptr
   pushq %rax # str ptr
   callq runtime.cmpstrings
   addq $32, %rsp # free parameters area
@@ -40524,7 +40524,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.310:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S266, %rax # str ptr
+  leaq .main.S266(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40566,7 +40566,7 @@ main.testSwitchString: # args 16, locals -32
   pushq %rcx # str.len
   pushq %rax # str.ptr
   pushq $1 # str len
-  leaq .main.S267, %rax # str ptr
+  leaq .main.S267(%rip), %rax # str ptr
   pushq %rax # str ptr
   callq runtime.cmpstrings
   addq $32, %rsp # free parameters area
@@ -40596,7 +40596,7 @@ main.testSwitchString: # args 16, locals -32
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $1 # str len
-  leaq .main.S268, %rax # str ptr
+  leaq .main.S268(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -40633,7 +40633,7 @@ main.testSwitchString: # args 16, locals -32
   pushq %rcx # str.len
   pushq %rax # str.ptr
   pushq $1 # str len
-  leaq .main.S271, %rax # str ptr
+  leaq .main.S271(%rip), %rax # str ptr
   pushq %rax # str ptr
   callq runtime.cmpstrings
   addq $32, %rsp # free parameters area
@@ -40646,7 +40646,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.312:
   subq $16, %rsp # alloc parameters area
   pushq $18 # str len
-  leaq .main.S269, %rax # str ptr
+  leaq .main.S269(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40677,7 +40677,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.313:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S272, %rax # str ptr
+  leaq .main.S272(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40708,7 +40708,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.314:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S273, %rax # str ptr
+  leaq .main.S273(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40763,7 +40763,7 @@ main.testSwitchString: # args 16, locals -32
   pushq %rcx # str.len
   pushq %rax # str.ptr
   pushq $2 # str len
-  leaq .main.S276, %rax # str ptr
+  leaq .main.S276(%rip), %rax # str ptr
   pushq %rax # str ptr
   callq runtime.cmpstrings
   addq $32, %rsp # free parameters area
@@ -40777,7 +40777,7 @@ main.testSwitchString: # args 16, locals -32
   pushq %rcx # str.len
   pushq %rax # str.ptr
   pushq $4 # str len
-  leaq .main.S279, %rax # str ptr
+  leaq .main.S279(%rip), %rax # str ptr
   pushq %rax # str ptr
   callq runtime.cmpstrings
   addq $32, %rsp # free parameters area
@@ -40790,7 +40790,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.316:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S275, %rax # str ptr
+  leaq .main.S275(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40821,7 +40821,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.317:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S277, %rax # str ptr
+  leaq .main.S277(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40852,7 +40852,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.318:
   subq $16, %rsp # alloc parameters area
   pushq $24 # str len
-  leaq .main.S278, %rax # str ptr
+  leaq .main.S278(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40883,7 +40883,7 @@ main.testSwitchString: # args 16, locals -32
 .L.case.319:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S280, %rax # str ptr
+  leaq .main.S280(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -40978,7 +40978,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.321:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S281, %rax # str ptr
+  leaq .main.S281(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41009,7 +41009,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.322:
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S282, %rax # str ptr
+  leaq .main.S282(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41040,7 +41040,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.323:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S283, %rax # str ptr
+  leaq .main.S283(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41115,7 +41115,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.325:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S284, %rax # str ptr
+  leaq .main.S284(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41146,7 +41146,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.326:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S285, %rax # str ptr
+  leaq .main.S285(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41177,7 +41177,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.327:
   subq $16, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S286, %rax # str ptr
+  leaq .main.S286(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41208,7 +41208,7 @@ main.testSwitchByte: # args 16, locals -2
 .L.case.328:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S287, %rax # str ptr
+  leaq .main.S287(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41303,7 +41303,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.330:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S288, %rax # str ptr
+  leaq .main.S288(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41334,7 +41334,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.331:
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S289, %rax # str ptr
+  leaq .main.S289(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41365,7 +41365,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.332:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S290, %rax # str ptr
+  leaq .main.S290(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41440,7 +41440,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.334:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S291, %rax # str ptr
+  leaq .main.S291(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41471,7 +41471,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.335:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S292, %rax # str ptr
+  leaq .main.S292(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41502,7 +41502,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.336:
   subq $16, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S293, %rax # str ptr
+  leaq .main.S293(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41533,7 +41533,7 @@ main.testSwitchInt: # args 16, locals -16
 .L.case.337:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S294, %rax # str ptr
+  leaq .main.S294(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41607,7 +41607,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.338 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S295, %rax # str ptr
+  leaq .main.S295(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41638,7 +41638,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.338:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S296, %rax # str ptr
+  leaq .main.S296(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41688,7 +41688,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.340 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S297, %rax # str ptr
+  leaq .main.S297(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41719,7 +41719,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.340:
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S298, %rax # str ptr
+  leaq .main.S298(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41769,7 +41769,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.342 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S299, %rax # str ptr
+  leaq .main.S299(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41800,7 +41800,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.342:
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S300, %rax # str ptr
+  leaq .main.S300(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41850,7 +41850,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.344 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S301, %rax # str ptr
+  leaq .main.S301(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41881,7 +41881,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.344:
   subq $16, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S302, %rax # str ptr
+  leaq .main.S302(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41931,7 +41931,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.346 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S303, %rax # str ptr
+  leaq .main.S303(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -41962,7 +41962,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.346:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S304, %rax # str ptr
+  leaq .main.S304(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42012,7 +42012,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.348 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S305, %rax # str ptr
+  leaq .main.S305(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42043,7 +42043,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.348:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S306, %rax # str ptr
+  leaq .main.S306(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42093,7 +42093,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.350 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S307, %rax # str ptr
+  leaq .main.S307(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42124,7 +42124,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.350:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S308, %rax # str ptr
+  leaq .main.S308(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42174,7 +42174,7 @@ main.testLogicalAndOr: # args 16, locals -16
   jne .L.else.352 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S309, %rax # str ptr
+  leaq .main.S309(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42205,7 +42205,7 @@ main.testLogicalAndOr: # args 16, locals -16
   .L.else.352:
   subq $16, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S310, %rax # str ptr
+  leaq .main.S310(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42536,7 +42536,7 @@ jmp .L.for.exit.354 # break
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S311, %rax # str ptr
+  leaq .main.S311(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42682,7 +42682,7 @@ jmp .L.for.exit.358 # break
   .L.for.exit.358:
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S312, %rax # str ptr
+  leaq .main.S312(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -42854,7 +42854,7 @@ jmp .L.for.post.360 # continue
   .L.for.exit.360:
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S313, %rax # str ptr
+  leaq .main.S313(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43212,7 +43212,7 @@ jmp .L.range.exit.362 # break
   .L.range.exit.362:
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S314, %rax # str ptr
+  leaq .main.S314(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43440,7 +43440,7 @@ jmp .L.range.post.364 # continue
   .L.range.exit.364:
   subq $16, %rsp # alloc parameters area
   pushq $4 # str len
-  leaq .main.S315, %rax # str ptr
+  leaq .main.S315(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43625,7 +43625,7 @@ main.testGlobalBool: # args 16, locals 0
   jne .L.else.366 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S316, %rax # str ptr
+  leaq .main.S316(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43656,7 +43656,7 @@ main.testGlobalBool: # args 16, locals 0
   .L.else.366:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S317, %rax # str ptr
+  leaq .main.S317(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43694,7 +43694,7 @@ main.testGlobalBool: # args 16, locals 0
   jne .L.else.367 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S318, %rax # str ptr
+  leaq .main.S318(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43725,7 +43725,7 @@ main.testGlobalBool: # args 16, locals 0
   .L.else.367:
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S319, %rax # str ptr
+  leaq .main.S319(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43763,7 +43763,7 @@ main.testGlobalBool: # args 16, locals 0
   jne .L.else.368 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S320, %rax # str ptr
+  leaq .main.S320(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43794,7 +43794,7 @@ main.testGlobalBool: # args 16, locals 0
   .L.else.368:
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S321, %rax # str ptr
+  leaq .main.S321(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43850,7 +43850,7 @@ main.testLocalBool: # args 16, locals -8
   jne .L.else.369 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S322, %rax # str ptr
+  leaq .main.S322(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43881,7 +43881,7 @@ main.testLocalBool: # args 16, locals -8
   .L.else.369:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S323, %rax # str ptr
+  leaq .main.S323(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43922,7 +43922,7 @@ main.testLocalBool: # args 16, locals -8
   jne .L.else.370 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S324, %rax # str ptr
+  leaq .main.S324(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43953,7 +43953,7 @@ main.testLocalBool: # args 16, locals -8
   .L.else.370:
   subq $16, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S325, %rax # str ptr
+  leaq .main.S325(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -43990,7 +43990,7 @@ main.testLocalBool: # args 16, locals -8
   jne .L.else.371 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S326, %rax # str ptr
+  leaq .main.S326(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44021,7 +44021,7 @@ main.testLocalBool: # args 16, locals -8
   .L.else.371:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S327, %rax # str ptr
+  leaq .main.S327(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44058,7 +44058,7 @@ main.testLocalBool: # args 16, locals -8
   jne .L.else.372 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S328, %rax # str ptr
+  leaq .main.S328(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44089,7 +44089,7 @@ main.testLocalBool: # args 16, locals -8
   .L.else.372:
   subq $16, %rsp # alloc parameters area
   pushq $9 # str len
-  leaq .main.S329, %rax # str ptr
+  leaq .main.S329(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44149,7 +44149,7 @@ main.testNilComparison: # args 16, locals -32
   jne .L.else.373 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S330, %rax # str ptr
+  leaq .main.S330(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44180,7 +44180,7 @@ main.testNilComparison: # args 16, locals -32
   .L.else.373:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S331, %rax # str ptr
+  leaq .main.S331(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44233,7 +44233,7 @@ main.testNilComparison: # args 16, locals -32
   jne .L.else.374 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S332, %rax # str ptr
+  leaq .main.S332(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44264,7 +44264,7 @@ main.testNilComparison: # args 16, locals -32
   .L.else.374:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S333, %rax # str ptr
+  leaq .main.S333(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44329,7 +44329,7 @@ main.testNilComparison: # args 16, locals -32
   jne .L.else.375 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S334, %rax # str ptr
+  leaq .main.S334(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44360,7 +44360,7 @@ main.testNilComparison: # args 16, locals -32
   .L.else.375:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S335, %rax # str ptr
+  leaq .main.S335(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44425,7 +44425,7 @@ main.testNilComparison: # args 16, locals -32
   jne .L.else.376 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $16 # str len
-  leaq .main.S336, %rax # str ptr
+  leaq .main.S336(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44456,7 +44456,7 @@ main.testNilComparison: # args 16, locals -32
   .L.else.376:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S337, %rax # str ptr
+  leaq .main.S337(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -44504,7 +44504,7 @@ main.testSliceLiteral: # args 16, locals -24
   addq $0, %rax
   pushq %rax
   pushq $8 # str len
-  leaq .main.S338, %rax # str ptr
+  leaq .main.S338(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -44519,7 +44519,7 @@ main.testSliceLiteral: # args 16, locals -24
   addq $16, %rax
   pushq %rax
   pushq $13 # str len
-  leaq .main.S339, %rax # str ptr
+  leaq .main.S339(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -44822,7 +44822,7 @@ main.testArrayCopy: # args 16, locals -48
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S340, %rax # str ptr
+  leaq .main.S340(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -45045,7 +45045,7 @@ main.testLocalArrayWithMoreTypes: # args 16, locals -156
   addq $0, %rax
   pushq %rax
   pushq $1 # str len
-  leaq .main.S341, %rax # str ptr
+  leaq .main.S341(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -45060,7 +45060,7 @@ main.testLocalArrayWithMoreTypes: # args 16, locals -156
   addq $16, %rax
   pushq %rax
   pushq $2 # str len
-  leaq .main.S342, %rax # str ptr
+  leaq .main.S342(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -45075,7 +45075,7 @@ main.testLocalArrayWithMoreTypes: # args 16, locals -156
   addq $32, %rax
   pushq %rax
   pushq $3 # str len
-  leaq .main.S343, %rax # str ptr
+  leaq .main.S343(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -45221,7 +45221,7 @@ main.testLocalArrayWithMoreTypes: # args 16, locals -156
   .L.range.exit.378:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S344, %rax # str ptr
+  leaq .main.S344(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -45584,7 +45584,7 @@ main.testLocalArray: # args 16, locals -24
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S345, %rax # str ptr
+  leaq .main.S345(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -45669,7 +45669,7 @@ main.testAppendSlice: # args 16, locals -96
   movq %rcx, 8(%rsi) # len to len
   movq %rdx, 16(%rsi) # cap to cap
   pushq $2 # str len
-  leaq .main.S346, %rax # str ptr
+  leaq .main.S346(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -45713,7 +45713,7 @@ main.testAppendSlice: # args 16, locals -96
   movq %rcx, 8(%rsi) # len to len
   movq %rdx, 16(%rsi) # cap to cap
   pushq $2 # str len
-  leaq .main.S347, %rax # str ptr
+  leaq .main.S347(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -46130,7 +46130,7 @@ main.testAppendSlice: # args 16, locals -96
   .L.range.exit.380:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S348, %rax # str ptr
+  leaq .main.S348(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -46177,7 +46177,7 @@ main.testAppendSlice: # args 16, locals -96
   .L.range.exit.379:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S349, %rax # str ptr
+  leaq .main.S349(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -46506,7 +46506,7 @@ main.testAppendPtr: # args 16, locals -56
   .L.range.exit.382:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S350, %rax # str ptr
+  leaq .main.S350(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -46577,7 +46577,7 @@ main.testAppendString: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   movq %rdx, 16(%rsi) # cap to cap
   pushq $1 # str len
-  leaq .main.S351, %rax # str ptr
+  leaq .main.S351(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -46621,7 +46621,7 @@ main.testAppendString: # args 16, locals -72
   movq %rcx, 8(%rsi) # len to len
   movq %rdx, 16(%rsi) # cap to cap
   pushq $4 # str len
-  leaq .main.S352, %rax # str ptr
+  leaq .main.S352(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -46645,7 +46645,7 @@ main.testAppendString: # args 16, locals -72
   leaq -40(%rbp), %rax # local variable "elm"
   pushq %rax # variable address
   pushq $10 # str len
-  leaq .main.S353, %rax # str ptr
+  leaq .main.S353(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -47237,7 +47237,7 @@ main.testAppendInt: # args 16, locals -48
   .L.range.exit.385:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S354, %rax # str ptr
+  leaq .main.S354(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -47518,7 +47518,7 @@ main.testSringIndex: # args 16, locals -17
   leaq -16(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S355, %rax # str ptr
+  leaq .main.S355(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -47605,7 +47605,7 @@ main.testSubstring: # args 16, locals -32
   leaq -16(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $9 # str len
-  leaq .main.S356, %rax # str ptr
+  leaq .main.S356(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -48218,7 +48218,7 @@ main.testForrangeKey: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $1 # str len
-  leaq .main.S357, %rax # str ptr
+  leaq .main.S357(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -48248,7 +48248,7 @@ main.testForrangeKey: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $1 # str len
-  leaq .main.S358, %rax # str ptr
+  leaq .main.S358(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -48278,7 +48278,7 @@ main.testForrangeKey: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $1 # str len
-  leaq .main.S359, %rax # str ptr
+  leaq .main.S359(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -48519,7 +48519,7 @@ main.testForrange: # args 16, locals -112
   movq %rcx, 8(%rsi) # len to len
   subq $16, %rsp # alloc parameters area
   pushq $21 # str len
-  leaq .main.S360, %rax # str ptr
+  leaq .main.S360(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -48667,7 +48667,7 @@ main.testForrange: # args 16, locals -112
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S361, %rax # str ptr
+  leaq .main.S361(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -48806,7 +48806,7 @@ main.testForrange: # args 16, locals -112
   movq %rcx, 8(%rsi) # len to len
   subq $16, %rsp # alloc parameters area
   pushq $21 # str len
-  leaq .main.S364, %rax # str ptr
+  leaq .main.S364(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -48954,7 +48954,7 @@ main.testForrange: # args 16, locals -112
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S365, %rax # str ptr
+  leaq .main.S365(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -49001,7 +49001,7 @@ main.testForrange: # args 16, locals -112
   .L.range.exit.389:
   subq $16, %rsp # alloc parameters area
   pushq $21 # str len
-  leaq .main.S366, %rax # str ptr
+  leaq .main.S366(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -49237,7 +49237,7 @@ main.testForrange: # args 16, locals -112
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $5 # str len
-  leaq .main.S368, %rax # str ptr
+  leaq .main.S368(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -49267,7 +49267,7 @@ main.testForrange: # args 16, locals -112
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $3 # str len
-  leaq .main.S369, %rax # str ptr
+  leaq .main.S369(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -49297,7 +49297,7 @@ main.testForrange: # args 16, locals -112
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $5 # str len
-  leaq .main.S370, %rax # str ptr
+  leaq .main.S370(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -49944,7 +49944,7 @@ main.testZeroValues: # args 16, locals -56
   subq $56, %rsp # local area
   subq $16, %rsp # alloc parameters area
   pushq $19 # str len
-  leaq .main.S372, %rax # str ptr
+  leaq .main.S372(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -50223,7 +50223,7 @@ main.testZeroValues: # args 16, locals -56
   jne .L.else.392 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $11 # str len
-  leaq .main.S374, %rax # str ptr
+  leaq .main.S374(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -50254,7 +50254,7 @@ main.testZeroValues: # args 16, locals -56
   .L.else.392:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S375, %rax # str ptr
+  leaq .main.S375(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -50440,7 +50440,7 @@ main.testGlobalStrings: # args 16, locals 0
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $4 # str len
-  leaq .main.S376, %rax # str ptr
+  leaq .main.S376(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50459,7 +50459,7 @@ main.testGlobalStrings: # args 16, locals 0
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $4 # str len
-  leaq .main.S377, %rax # str ptr
+  leaq .main.S377(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50478,7 +50478,7 @@ main.testGlobalStrings: # args 16, locals 0
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $4 # str len
-  leaq .main.S378, %rax # str ptr
+  leaq .main.S378(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50497,7 +50497,7 @@ main.testGlobalStrings: # args 16, locals 0
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $4 # str len
-  leaq .main.S379, %rax # str ptr
+  leaq .main.S379(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50710,7 +50710,7 @@ main.testSliceOfStrings: # args 16, locals -64
   leaq -16(%rbp), %rax # local variable "s1"
   pushq %rax # variable address
   pushq $5 # str len
-  leaq .main.S380, %rax # str ptr
+  leaq .main.S380(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50722,7 +50722,7 @@ main.testSliceOfStrings: # args 16, locals -64
   leaq -32(%rbp), %rax # local variable "s2"
   pushq %rax # variable address
   pushq $9 # str len
-  leaq .main.S381, %rax # str ptr
+  leaq .main.S381(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -50973,7 +50973,7 @@ main.testSliceOfStrings: # args 16, locals -64
   addq %rcx, %rax
   pushq %rax # addr of element
   pushq $15 # str len
-  leaq .main.S382, %rax # str ptr
+  leaq .main.S382(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -52287,7 +52287,7 @@ main.testStringComparison: # args 16, locals -80
   jne .L.else.396 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S384, %rax # str ptr
+  leaq .main.S384(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52318,7 +52318,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.396:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S385, %rax # str ptr
+  leaq .main.S385(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52395,7 +52395,7 @@ main.testStringComparison: # args 16, locals -80
   jne .L.else.397 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S387, %rax # str ptr
+  leaq .main.S387(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52426,7 +52426,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.397:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S388, %rax # str ptr
+  leaq .main.S388(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52457,7 +52457,7 @@ main.testStringComparison: # args 16, locals -80
   leaq -48(%rbp), %rax # local variable "s3"
   pushq %rax # variable address
   pushq $3 # str len
-  leaq .main.S389, %rax # str ptr
+  leaq .main.S389(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -52485,7 +52485,7 @@ main.testStringComparison: # args 16, locals -80
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $3 # str len
-  leaq .main.S390, %rax # str ptr
+  leaq .main.S390(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -52507,7 +52507,7 @@ main.testStringComparison: # args 16, locals -80
   leaq -64(%rbp), %rax # local variable "s4"
   pushq %rax # variable address
   pushq $8 # str len
-  leaq .main.S391, %rax # str ptr
+  leaq .main.S391(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -52586,7 +52586,7 @@ main.testStringComparison: # args 16, locals -80
   jne .L.else.398 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S392, %rax # str ptr
+  leaq .main.S392(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52617,7 +52617,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.398:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S393, %rax # str ptr
+  leaq .main.S393(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52648,7 +52648,7 @@ main.testStringComparison: # args 16, locals -80
   subq $8, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $6 # str len
-  leaq .main.S394, %rax # str ptr
+  leaq .main.S394(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -52679,7 +52679,7 @@ main.testStringComparison: # args 16, locals -80
   jne .L.else.399 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S395, %rax # str ptr
+  leaq .main.S395(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52710,7 +52710,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.399:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S396, %rax # str ptr
+  leaq .main.S396(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52845,7 +52845,7 @@ main.testStringComparison: # args 16, locals -80
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S397, %rax # str ptr
+  leaq .main.S397(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52878,7 +52878,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.400:
   subq $16, %rsp # alloc parameters area
   pushq $19 # str len
-  leaq .main.S398, %rax # str ptr
+  leaq .main.S398(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52947,7 +52947,7 @@ main.testStringComparison: # args 16, locals -80
   jne .L.else.401 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $19 # str len
-  leaq .main.S399, %rax # str ptr
+  leaq .main.S399(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -52978,7 +52978,7 @@ main.testStringComparison: # args 16, locals -80
   .L.else.401:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S400, %rax # str ptr
+  leaq .main.S400(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -53020,7 +53020,7 @@ main.testConcateStrings: # args 16, locals -16
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $3 # str len
-  leaq .main.S401, %rax # str ptr
+  leaq .main.S401(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -53030,7 +53030,7 @@ main.testConcateStrings: # args 16, locals -16
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $3 # str len
-  leaq .main.S402, %rax # str ptr
+  leaq .main.S402(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -53050,7 +53050,7 @@ main.testConcateStrings: # args 16, locals -16
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $4 # str len
-  leaq .main.S403, %rax # str ptr
+  leaq .main.S403(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -53475,7 +53475,7 @@ main.testLenCap: # args 16, locals -40
   leaq -40(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $6 # str len
-  leaq .main.S404, %rax # str ptr
+  leaq .main.S404(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -54301,7 +54301,7 @@ main.testIndexExprOfArray: # args 16, locals 0
   movq %rax, 0(%rsi) # assign
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S405, %rax # str ptr
+  leaq .main.S405(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54610,7 +54610,7 @@ main.testIndexExprOfSlice: # args 16, locals -32
   .L.for.exit.402:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S406, %rax # str ptr
+  leaq .main.S406(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54735,7 +54735,7 @@ main.testIndexExprOfSlice: # args 16, locals -32
   .L.for.exit.403:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S407, %rax # str ptr
+  leaq .main.S407(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54803,7 +54803,7 @@ main.testFor: # args 16, locals -8
   jne .L.for.exit.404 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S408, %rax # str ptr
+  leaq .main.S408(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54852,7 +54852,7 @@ main.testFor: # args 16, locals -8
   .L.for.exit.404:
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S409, %rax # str ptr
+  leaq .main.S409(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54911,7 +54911,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.endif.405 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S410, %rax # str ptr
+  leaq .main.S410(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54959,7 +54959,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.else.406 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S411, %rax # str ptr
+  leaq .main.S411(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -54990,7 +54990,7 @@ main.testCmpUint8: # args 16, locals -1
   .L.else.406:
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S412, %rax # str ptr
+  leaq .main.S412(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55035,7 +55035,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.endif.407 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S413, %rax # str ptr
+  leaq .main.S413(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55080,7 +55080,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.else.408 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S414, %rax # str ptr
+  leaq .main.S414(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55111,7 +55111,7 @@ main.testCmpUint8: # args 16, locals -1
   .L.else.408:
   subq $16, %rsp # alloc parameters area
   pushq $14 # str len
-  leaq .main.S415, %rax # str ptr
+  leaq .main.S415(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55156,7 +55156,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.endif.409 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S416, %rax # str ptr
+  leaq .main.S416(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55201,7 +55201,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.endif.410 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S417, %rax # str ptr
+  leaq .main.S417(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55254,7 +55254,7 @@ main.testCmpUint8: # args 16, locals -1
   jne .L.endif.411 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $17 # str len
-  leaq .main.S418, %rax # str ptr
+  leaq .main.S418(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55314,7 +55314,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.endif.412 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S419, %rax # str ptr
+  leaq .main.S419(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55362,7 +55362,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.else.413 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S420, %rax # str ptr
+  leaq .main.S420(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55393,7 +55393,7 @@ main.testCmpInt: # args 16, locals -8
   .L.else.413:
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S421, %rax # str ptr
+  leaq .main.S421(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55438,7 +55438,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.endif.414 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S422, %rax # str ptr
+  leaq .main.S422(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55483,7 +55483,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.else.415 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S423, %rax # str ptr
+  leaq .main.S423(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55514,7 +55514,7 @@ main.testCmpInt: # args 16, locals -8
   .L.else.415:
   subq $16, %rsp # alloc parameters area
   pushq $12 # str len
-  leaq .main.S424, %rax # str ptr
+  leaq .main.S424(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55559,7 +55559,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.endif.416 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S425, %rax # str ptr
+  leaq .main.S425(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55604,7 +55604,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.endif.417 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $13 # str len
-  leaq .main.S426, %rax # str ptr
+  leaq .main.S426(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55657,7 +55657,7 @@ main.testCmpInt: # args 16, locals -8
   jne .L.endif.418 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S427, %rax # str ptr
+  leaq .main.S427(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55697,7 +55697,7 @@ main.testElseIf: # args 16, locals 0
   jne .L.else.419 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S428, %rax # str ptr
+  leaq .main.S428(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55732,7 +55732,7 @@ main.testElseIf: # args 16, locals 0
   jne .L.else.420 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $10 # str len
-  leaq .main.S429, %rax # str ptr
+  leaq .main.S429(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55763,7 +55763,7 @@ main.testElseIf: # args 16, locals 0
   .L.else.420:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S430, %rax # str ptr
+  leaq .main.S430(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55798,7 +55798,7 @@ main.testElseIf: # args 16, locals 0
   jne .L.else.421 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S431, %rax # str ptr
+  leaq .main.S431(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55833,7 +55833,7 @@ main.testElseIf: # args 16, locals 0
   jne .L.else.422 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S432, %rax # str ptr
+  leaq .main.S432(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55864,7 +55864,7 @@ main.testElseIf: # args 16, locals 0
   .L.else.422:
   subq $16, %rsp # alloc parameters area
   pushq $15 # str len
-  leaq .main.S433, %rax # str ptr
+  leaq .main.S433(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55926,7 +55926,7 @@ main.testIf: # args 16, locals -16
   jne .L.endif.423 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S434, %rax # str ptr
+  leaq .main.S434(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55964,7 +55964,7 @@ main.testIf: # args 16, locals -16
   jne .L.endif.424 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S435, %rax # str ptr
+  leaq .main.S435(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -55994,7 +55994,7 @@ main.testIf: # args 16, locals -16
   .L.endif.424:
   subq $16, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S436, %rax # str ptr
+  leaq .main.S436(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -56033,7 +56033,7 @@ main.testElse: # args 16, locals 0
   jne .L.else.425 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .main.S437, %rax # str ptr
+  leaq .main.S437(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -56064,7 +56064,7 @@ main.testElse: # args 16, locals 0
   .L.else.425:
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S438, %rax # str ptr
+  leaq .main.S438(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -56098,7 +56098,7 @@ main.testElse: # args 16, locals 0
   jne .L.else.426 # jmp if false
   subq $16, %rsp # alloc parameters area
   pushq $5 # str len
-  leaq .main.S439, %rax # str ptr
+  leaq .main.S439(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -56129,7 +56129,7 @@ main.testElse: # args 16, locals 0
   .L.else.426:
   subq $16, %rsp # alloc parameters area
   pushq $8 # str len
-  leaq .main.S440, %rax # str ptr
+  leaq .main.S440(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
@@ -56198,7 +56198,7 @@ main.assignGlobal: # args 16, locals 0
   leaq main.globalstring(%rip), %rax # global variable "globalstring"
   pushq %rax # variable address
   pushq $21 # str len
-  leaq .main.S441, %rax # str ptr
+  leaq .main.S441(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -56383,7 +56383,7 @@ main.returnstring: # args 32, locals 0
   leaq 16(%rbp), %rax # local variable ".r0"
   pushq %rax # variable address
   pushq $15 # str len
-  leaq .main.S442, %rax # str ptr
+  leaq .main.S442(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -56682,7 +56682,7 @@ main.testString: # args 16, locals -48
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $21 # str len
-  leaq .main.S443, %rax # str ptr
+  leaq .main.S443(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -56697,7 +56697,7 @@ main.testString: # args 16, locals -48
   leaq -16(%rbp), %rax # local variable "s"
   pushq %rax # variable address
   pushq $12 # str len
-  leaq .main.S444, %rax # str ptr
+  leaq .main.S444(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -56766,7 +56766,7 @@ main.testString: # args 16, locals -48
   leaq -48(%rbp), %rax # local variable "localstring2"
   pushq %rax # variable address
   pushq $11 # str len
-  leaq .main.S445, %rax # str ptr
+  leaq .main.S445(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -57898,7 +57898,7 @@ main.writeln: # args 32, locals 0
 #  totalReturnSize=0
   subq $16, %rsp # alloc parameters area
   pushq $1 # str len
-  leaq .main.S446, %rax # str ptr
+  leaq .main.S446(%rip), %rax # str ptr
   pushq %rax # str ptr
   subq $8, %rsp # alloc return vars area
   pushq $16
