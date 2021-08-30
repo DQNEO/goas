@@ -554,8 +554,10 @@ func main() {
 
 	}
 
+	debugf("Encoding .text ... [%v]\n", textStmts)
 	code := encodeAllText(textStmts)
-	//dumpText(code)
+	debugf("%s\n", dumpText(code))
+	debugf("Encoding .data ...\n")
 	data := encodeAllData(dataStmts)
 	//debugf("mapDataLabelAddr=%v\n", mapDataLabelAddr)
 	s_data.contents = data

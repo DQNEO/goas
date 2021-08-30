@@ -391,17 +391,27 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			panic("TBI")
 		}
 	case "subq":
-		opcode := uint8(0x83)
-		rm := trgtOp.(*register).toBits()
-		// modRM = 0xec = 1110_1100 = 11_101_100 = 11_/5_sp
-		const reg5 = 5
-		modRM := composeModRM(ModRegi, reg5, rm)
-		imm := srcOp.(*immediate)
-		imValue, err := strconv.ParseInt(imm.expr.(*numberLit).val, 0, 8)
-		if err != nil {
-			panic(err)
+		switch src := srcOp.(type) {
+		case *register:
+			opcode := uint8(0x29)
+			regi := srcOp.(*register).toBits()
+			rm := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, regi, rm)
+			r = []byte{REX_W, opcode, modRM}
+		case *immediate:
+			opcode := uint8(0x83)
+			rm := trgtOp.(*register).toBits()
+			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_/5_sp
+			const reg5 = 5
+			modRM := composeModRM(ModRegi, reg5, rm)
+			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
+			if err != nil {
+				panic(err)
+			}
+			r = []byte{REX_W, opcode, modRM, uint8(imValue)}
+		default:
+			panic("TBI")
 		}
-		r = []byte{REX_W, opcode, modRM, uint8(imValue)}
 	case "imulq":
 		// IMUL r64, r/m64, imm8
 		// Quadword register := r/m64 ∗ sign-extended immediate byte.
