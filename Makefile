@@ -19,12 +19,12 @@ objs: $(GNU_OBJS) $(MY_OBJS)
 %.gnu.o: %.s
 	as -o $@ $<
 
-%.my.o: %.s gas
-	./gas < $< > $@
+%.my.o: %.s as
+	./as < $< > $@
 
-gas: $(GOSOURCES)
-	go build -o gas $(GOSOURCES)
+as: $(GOSOURCES)
+	go build -o as $(GOSOURCES)
 
 clean:
-	rm -f gas *.o
+	rm -f as *.o
 
