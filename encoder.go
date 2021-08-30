@@ -452,6 +452,12 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		default:
 			panic("TBI:" + s.raw)
 		}
+	case "setl":
+		opcode1 := uint8(0x0f)
+		opcode2 := uint8(0x9c)
+		reg := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, reg, 0)
+		r = []byte{opcode1, opcode2, modRM}
 	case "sete":
 		opcode1 := uint8(0x0f)
 		opcode2 := uint8(0x94)
