@@ -51,4 +51,5 @@ start2:
 myfunc4:
   retq
 myfunc5:
+  movb %al, 0(%rsi)
   retq
