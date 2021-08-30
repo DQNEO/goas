@@ -12,4 +12,5 @@ assembler=$1
 
 rm -f ./a.out
 $assembler /tmp/input.s
-objdump -d  | tail -n 4
+objdump -d
+

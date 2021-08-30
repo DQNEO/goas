@@ -437,15 +437,23 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate:
-			opcode := uint8(0x83)
 			rm := trgtOp.(*register).toBits()
 			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_5_sp
 			modRM := composeModRM(ModRegi, slash_5, rm)
-			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
+			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 32)
 			if err != nil {
 				panic(err)
 			}
-			r = []byte{REX_W, opcode, modRM, uint8(imValue)}
+			switch {
+			case imValue < 1<<8 :
+				r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+			case imValue < 1<<32 :
+				ui32 := uint32(imValue)
+				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
+				r = []byte{REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3]}
+			default:
+				panic("TBI")
+			}
 		default:
 			panic("TBI")
 		}
@@ -532,13 +540,13 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				panic(err)
 			}
 			switch {
-			case imValue <= 1<<8 - 1:
+			case imValue < 1<<8 :
 				r = []byte{0x6a, uint8(imValue)}
-			case imValue <= 1<<16 -1:
+			case imValue < 1<<16 :
 				ui16 := uint16(imValue)
 				hex := (*[2]uint8)(unsafe.Pointer(&ui16))
 				r = []byte{0x68, hex[0], hex[1]}
-			case imValue <= 1<<32 -1:
+			case imValue < 1<<32 :
 				ui32 := uint32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
 				r = []byte{0x68, hex[0], hex[1], hex[2], hex[3]}
