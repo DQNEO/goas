@@ -197,7 +197,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
 			}
 		default:
-			panic(fmt.Sprintf("TBI:%v", op1))
+			panic(fmt.Sprintf("TBI: %T (%s)", op1.ifc, s.raw))
 		}
 	//case "movl":
 	//	op1, op2 := s.operands[0], s.operands[1]
@@ -461,7 +461,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case ".global":
 		// Ignore. captured in main routine
 	default:
-		panic(fmt.Sprintf("[encoder] TBI: %s at line %d",  s.raw, 0))
+		panic(fmt.Sprintf("[encoder] TBI: %s at line %d\n\necho '%s' |./encode as",
+			s.raw, 0, s.raw))
 	}
 
 	//fmt.Printf("=>  %#x\n", r)
