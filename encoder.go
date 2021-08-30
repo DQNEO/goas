@@ -31,13 +31,11 @@ const REX_W byte = 0x48
 //  addressing mode. Sometimes, certain combinations of the mod field and the r/m field are used to express
 //  opcode information for some instructions.
 //
-//  Certain encodings of the ModR/M byte require a second addressing byte (the SIB byte). The base-plus-index and
-//  scale-plus-index forms of 32-bit addressing require the SIB byte.
-//  The SIB byte includes the following fields:
-//  • The scale field specifies the scale factor.
-//  • The index field specifies the register number of the index register.
-//  • The base field specifies the register number of the base register.
 //  See Section 2.1.5 for the encodings of the ModR/M and SIB bytes.
+
+func composeModRM(mod modField, regOpcode byte, rm byte) byte {
+	return uint8(mod)<<6 + regOpcode<<3 + rm
+}
 
 type modField uint8
 const ModIndirectionWithNoDisplacement modField = 0b00
@@ -45,14 +43,20 @@ const ModIndirectionWithDisplacement8 modField = 0b01
 const ModIndirectionWithDisplacement32 modField = 0b10
 const ModRegi modField = 0b11
 
-const RM_SPECIAL_101 uint8 = 0b101 // none? rip?
-
-func composeModRM(mod modField, regOpcode byte, rm byte) byte {
-	return uint8(mod)<<6 + regOpcode<<3 + rm
-}
-
 const RM_RIP_RELATIVE = 0b101
 
+// 3.1.1.1 Opcode Column in the Instruction Summary Table (Instructions without VEX Prefix)
+// /digit — A digit between 0 and 7 indicates that the ModR/M byte of the instruction uses only the r/m (register
+// or memory) operand. The reg field contains the digit that provides an extension to the instruction's opcode.
+
+const slash_0 = 0 // /0
+const slash_1 = 1 // /1
+const slash_2 = 2 // /2
+const slash_3 = 3 // /3
+const slash_4 = 4 // /4
+const slash_5 = 5 // /5
+const slash_6 = 6 // /6
+const slash_7 = 7 // /7
 
 // The registers are encoded using the 4-bit values in the X.Reg column of the following table.
 // X.Reg is in binary.
@@ -82,7 +86,12 @@ func regBits(reg string) uint8 {
 }
 
 // SIB
-// https://wiki.osdev.org/X86-64_Instruction_Encoding#SIB
+//  Certain encodings of the ModR/M byte require a second addressing byte (the SIB byte). The base-plus-index and
+//  scale-plus-index forms of 32-bit addressing require the SIB byte.
+//  The SIB byte includes the following fields:
+//  • The scale field specifies the scale factor.
+//  • The index field specifies the register number of the index register.
+//  • The base field specifies the register number of the base register.
 
 const SibIndexNone uint8 = 0b100
 const SibBaseRSP uint8 = 0b100
@@ -250,7 +259,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			var num int32 = int32(intNum)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
 			var opcode uint8 = 0xc7
-			var modRM uint8 = 0b11000000 + trgtOp.(*register).toBits()
+			var modRM uint8 = composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 			r = []byte{REX_W, opcode, modRM}
 			r = append(r, bytesNum[:]...)
 		case *register:
@@ -271,8 +280,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 						// "movq %rbx, runtime.__argv__+8(%rip)"
 						mod := ModIndirectionWithNoDisplacement
 						reg := src.toBits()  // src
-						rm := RM_SPECIAL_101 // RIP
-						modRM := composeModRM(mod, reg, rm)
+						modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
 						r = []byte{REX_W, opcode, modRM}
 
 						symbol := expr.left.(*symbolExpr).name
@@ -316,7 +324,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				var opcode uint8 = 0x8b
 				reg := trgtRegi.toBits()
 				mod := ModIndirectionWithNoDisplacement
-				modRM := composeModRM(mod, reg, 0b101)
+				modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
 				r = []byte{REX_W, opcode, modRM}
 
 				symbol := src.expr.(*symbolExpr).name
@@ -374,9 +382,9 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		var modRM uint8 = 0b11000000 + regFieldN
 		r = []byte{opcode, modRM}
 	case "addq":
-		opcode := uint8(0x01)
 		switch srcOp.(type) {
 		case *register:
+			opcode := uint8(0x01)
 			regi := srcOp.(*register).toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
@@ -384,7 +392,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		case *immediate: // "addq $32, %regi"
 			opcode := uint8(0x83)
 			rm := trgtOp.(*register).toBits()
-			modRM := composeModRM(0b11, 0, rm)
+			modRM := composeModRM(ModRegi, 0, rm)
 			imm := srcOp.(*immediate)
 			imValue := evalNumExpr(imm.expr)
 			r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
@@ -403,8 +411,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			opcode := uint8(0x83)
 			rm := trgtOp.(*register).toBits()
 			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_5_sp
-			const reg5 = 5
-			modRM := composeModRM(ModRegi, reg5, rm)
+			modRM := composeModRM(ModRegi, slash_5, rm)
 			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
 			if err != nil {
 				panic(err)
@@ -418,7 +425,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		// Quadword register := r/m64 ∗ sign-extended immediate byte.
 		opcode := uint8(0x6b)
 		reg := trgtOp.(*register).toBits()
-		modRM := composeModRM(0b11, reg, 0)
+		modRM := composeModRM(ModRegi, reg, 0)
 		imm := srcOp.(*immediate)
 		imValue, err := strconv.ParseInt(imm.expr.(*numberLit).val, 0, 8)
 		if err != nil {
@@ -476,9 +483,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		// XOR r/m64, imm8
 		// REX.W 83 /6 ib
 		opcode := uint8(0x83)
-		const reg6 = 6
 		rm := trgtOp.(*register).toBits()
-		modRM := composeModRM(ModRegi, reg6, rm)
+		modRM := composeModRM(ModRegi, slash_6, rm)
 		imValue := evalNumExpr(srcOp.(*immediate).expr)
 		r = []byte{REX_W, opcode, modRM, uint8(imValue)}
 	case "ret", "retq":
