@@ -123,7 +123,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		return instr
 	}
 
-	var srcOp, trgtOp *operand
+	var srcOp, trgtOp operand
 	switch len(s.operands) {
 	case 0:
 		// No operands. "ret", "leave" etc.
@@ -142,7 +142,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		r = []byte{0x90}
 	case "jmp":
 		// EB cb
-		target_symbol := trgtOp.ifc.(*symbolExpr).name
+		target_symbol := trgtOp.(*symbolExpr).name
 		r = []byte{0xeb}
 		r = append(r, 0)
 		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
@@ -150,7 +150,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			symbolUsed:    target_symbol,
 		}
 	case "je": // JE rel32
-		target_symbol := trgtOp.ifc.(*symbolExpr).name
+		target_symbol := trgtOp.(*symbolExpr).name
 		r = []byte{0x0f,0x84}
 		r = append(r, 0,0,0,0)
 		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
@@ -158,7 +158,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			symbolUsed:    target_symbol,
 		}
 	case "jne":
-		target_symbol := trgtOp.ifc.(*symbolExpr).name
+		target_symbol := trgtOp.(*symbolExpr).name
 		r = []byte{0x0f,0x85}
 		r = append(r, 0,0,0,0)
 		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
@@ -166,7 +166,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			symbolUsed:    target_symbol,
 		}
 	case "callq", "call":
-		target_symbol := trgtOp.ifc.(*symbolExpr).name
+		target_symbol := trgtOp.(*symbolExpr).name
 
 		r = []byte{0xe8}
 		ru := &relaTextUser{
@@ -184,10 +184,10 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		}
 	case "leaq":
 		op1, op2 := srcOp, trgtOp
-		switch op1dtype := op1.ifc.(type) {
+		switch op1dtype := op1.(type) {
 		case *indirection: // leaq foo(%regi), %regi
 			regi := op1dtype.regi
-			op2regi := op2.ifc.(*register)
+			op2regi := op2.(*register)
 			var opcode uint8 = 0x8d
 			if regi.name == "rip" {
 				// RIP relative addressing
@@ -218,13 +218,13 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
 			}
 		default:
-			panic(fmt.Sprintf("TBI: %T (%s)", op1.ifc, s.raw))
+			panic(fmt.Sprintf("TBI: %T (%s)", op1, s.raw))
 		}
 	//case "movl":
 	//	op1, op2 := s.operands[0], s.operands[1]
 	//	assert(op1.typ == "$number", "op1 type should be $number")
-	//	//op1Regi, IsOp1Regi := op1.ifc.(*register)
-	//	op2Regi := op2.ifc.(*register)
+	//	//op1Regi, IsOp1Regi := op1.(*register)
+	//	op2Regi := op2.(*register)
 	//
 	//	//debugf("op1,op2=%s,%s  ", op1, op2)
 	//	intNum, err := strconv.ParseInt(op1.string, 0, 32)
@@ -242,7 +242,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		op2 := trgtOp
 		//		assert(op1.typ == "$number", "op1 type should be $number")
 		//assert(op2.typ == "register", "op2 type should be register")
-		switch op1 := srcOp.ifc.(type) {
+		switch op1 := srcOp.(type) {
 		case *immediate: // movq $123, %regi
 			intNum, err := strconv.ParseInt(op1.expr.(*numberLit).val, 0, 32)
 			if err != nil {
@@ -251,16 +251,16 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			var num int32 = int32(intNum)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
 			var opcode uint8 = 0xc7
-			var modRM uint8 = 0b11000000 + op2.ifc.(*register).toBits()
+			var modRM uint8 = 0b11000000 + op2.(*register).toBits()
 			r = []byte{REX_W, opcode, modRM}
 			r = append(r, bytesNum[:]...)
 		case *register:
 			var opcode uint8 = 0x89
-			switch op2dtype := op2.ifc.(type) {
+			switch op2dtype := op2.(type) {
 			case *register:
 				mod := ModRegi
 				reg := op1.toBits() // src
-				op2Regi := op2.ifc.(*register)
+				op2Regi := op2.(*register)
 				rm := op2Regi.toBits() // dst
 				modRM := composeModRM(mod, reg, rm)
 				r = []byte{REX_W, opcode, modRM}
@@ -311,7 +311,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			}
 		case *indirection: // "movq foo(%regi), X", "movq (%regi), X"
 			op1regi := op1.regi
-			op2regi := op2.ifc.(*register)
+			op2regi := op2.(*register)
 			if op1regi.name == "rip" {
 				// RIP relative addressing
 				var opcode uint8 = 0x8b
@@ -366,31 +366,31 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		// REX.W 0F B6 /r
 		op1, op2 := srcOp, trgtOp
 		mod := ModRegi
-		reg := op1.ifc.(*register).toBits() // src
-		op2Regi := op2.ifc.(*register)
+		reg := op1.(*register).toBits() // src
+		op2Regi := op2.(*register)
 		rm := op2Regi.toBits() // dst
 		modRM := composeModRM(mod, reg, rm)
 		r = []byte{REX_W, 0x0f, 0xb6, modRM}
 	case "addl":
 		_, op2 := srcOp, trgtOp
 		var opcode uint8 = 0x01
-		regFieldN := op2.ifc.(*register).toBits()
+		regFieldN := op2.(*register).toBits()
 		var modRM uint8 = 0b11000000 + regFieldN
 		r = []byte{opcode, modRM}
 	case "addq":
 		op1, op2 := srcOp, trgtOp
 		opcode := uint8(0x01)
-		switch op1.ifc.(type) {
+		switch op1.(type) {
 		case *register:
-			regi := op1.ifc.(*register).toBits()
-			rm := op2.ifc.(*register).toBits()
+			regi := op1.(*register).toBits()
+			rm := op2.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate: // "addq $32, %regi"
 			opcode := uint8(0x83)
-			rm := op2.ifc.(*register).toBits()
+			rm := op2.(*register).toBits()
 			modRM := composeModRM(0b11, 0, rm)
-			imm := op1.ifc.(*immediate)
+			imm := op1.(*immediate)
 			imValue := evalNumExpr(imm.expr)
 			r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
 		default:
@@ -399,11 +399,11 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case "subq":
 		op1, op2 := srcOp, trgtOp
 		opcode := uint8(0x83)
-		rm := op2.ifc.(*register).toBits()
+		rm := op2.(*register).toBits()
 		// modRM = 0xec = 1110_1100 = 11_101_100 = 11_/5_sp
 		const reg5 = 5
 		modRM := composeModRM(ModRegi, reg5, rm)
-		imm := op1.ifc.(*immediate)
+		imm := op1.(*immediate)
 		imValue, err := strconv.ParseInt(imm.expr.(*numberLit).val, 0, 8)
 		if err != nil {
 			panic(err)
@@ -414,9 +414,9 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		// Quadword register := r/m64 ∗ sign-extended immediate byte.
 		op1, op2 := srcOp, trgtOp
 		opcode := uint8(0x6b)
-		reg := op2.ifc.(*register).toBits()
+		reg := op2.(*register).toBits()
 		modRM := composeModRM(0b11, reg, 0)
-		imm := op1.ifc.(*immediate)
+		imm := op1.(*immediate)
 		imValue, err := strconv.ParseInt(imm.expr.(*numberLit).val, 0, 8)
 		if err != nil {
 			panic(err)
@@ -424,20 +424,20 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
 	case "cmpq":
 		op1, op2 := srcOp, trgtOp
-		switch op1.ifc.(type) {
+		switch op1.(type) {
 		case *register:
 			opcode := uint8(0x01)
-			regi := op1.ifc.(*register).toBits()
-			rm := op2.ifc.(*register).toBits()
+			regi := op1.(*register).toBits()
+			rm := op2.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate:
 			opcode := uint8(0x83)
-			imValue, err := strconv.ParseInt(op1.ifc.(*immediate).expr.(*numberLit).val, 0, 8)
+			imValue, err := strconv.ParseInt(op1.(*immediate).expr.(*numberLit).val, 0, 8)
 			if err != nil {
 				panic(err)
 			}
-			rm := op2.ifc.(*register).toBits()
+			rm := op2.(*register).toBits()
 			modRM := composeModRM(ModRegi, 7, rm)
 			r = []byte{REX_W, opcode, modRM, uint8(imValue)}
 		default:
@@ -446,12 +446,12 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case "sete":
 		opcode1 := uint8(0x0f)
 		opcode2 := uint8(0x94)
-		op1 := s.operands[0]
-		reg := op1.ifc.(*register).toBits()
+		op1 := trgtOp
+		reg := op1.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		r = []byte{opcode1, opcode2, modRM}
 	case "pushq":
-		switch op := trgtOp.ifc.(type) {
+		switch op := trgtOp.(type) {
 		case *register:
 			r = []byte{0x50 + op.toBits()}
 		case *immediate:
@@ -464,7 +464,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			panic("[encoder] TBI:" + string(s.raw))
 		}
 	case "popq":
-		switch op := trgtOp.ifc.(type) {
+		switch op := trgtOp.(type) {
 		case *register:
 			// 58 +rd. POP r64.
 			r = []byte{0x58 + op.toBits()}
@@ -499,7 +499,7 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 	case ".quad":
 		op := s.operands[0]
 		//debugf(".quad type=%T\n", op.ifc)
-		switch opDtype := op.ifc.(type) {
+		switch opDtype := op.(type) {
 		case *numberLit:
 			rawVal := opDtype.val
 			var i int64

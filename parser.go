@@ -193,7 +193,7 @@ func isDirective(symbol string) bool {
 	return len(symbol) > 0 && symbol[0] == '.'
 }
 
-func parseOperand() *operand {
+func parseOperand() operand {
 	skipWhitespaces()
 	ch := source[idx]
 	parserAssert(ch != '\n', "")
@@ -206,94 +206,73 @@ func parseOperand() *operand {
 		case '(':
 			// indirection e.g. 24(%rbp)
 			regi := readParenthRegister()
-			return &operand{
-				ifc: &indirection{
+			return &indirection{
 					expr: &symbolExpr{
 						name: symbol,
 					},
 					regi: regi,
-				},
-			}
+				}
 		case '+': // e.g. foo+8(%rip)
 			expect('+')
 			e := parseArithExpr()
 			switch source[idx] {
 			case '(':
 				regi := readParenthRegister()
-				return &operand{
-					ifc: &indirection{
+				return &indirection{
 						expr: &binaryExpr{
 							op:    "+",
 							left:  &symbolExpr{name: symbol},
 							right: e,
 						},
 						regi: regi,
-					},
 				}
 			default:
 				panic("Unexpected operand format")
 			}
 		default:
 			// just a symbol
-			symExpr := &symbolExpr{name: symbol}
-			return &operand{
-				ifc: symExpr,
-			}
+			return &symbolExpr{name: symbol}
 		}
 	case ch == '\'':
 		expect('\'')
 		b := source[idx]
 		idx++
 		expect('\'')
-		return &operand{
-			ifc: b,
-		}
+		return b
 	case ch == '"':
 		s := readStringLiteral()
-		return &operand{
-			ifc: s,
-		}
+		return s
 	case '0' <= ch && ch <= '9' || ch == '-': // "24", "-24(%rbp)"
 		e := parseArithExpr()
 		if source[idx] == '(' {
 			// indirection e.g. 24(%rbp)
 			regi := readParenthRegister()
-			return &operand{
-				ifc: &indirection{
-					expr: e,
-					regi: regi,
-				},
+			return &indirection{
+				expr: e,
+				regi: regi,
 			}
 		} else {
 			// just a number
 			numExpr := e
-			return &operand{
-				ifc: numExpr,
-			}
+			return numExpr
 		}
 	case ch == '(':
 		regi := readParenthRegister()
-		return &operand{
-			ifc: &indirection{
-				regi: regi,
-			},
+		return &indirection{
+			regi: regi,
 		}
 	case ch == '$':
 		// AT&T immediate operands are preceded by ‘$’;
 		expect('$')
 		// "$123" "$-7", "$ 2 * 3"
 		e := parseArithExpr()
-		return &operand{
-			ifc: &immediate{
-				expr: e,
-			},
+		return &immediate{
+			expr: e,
 		}
 	case ch == '%':
 		regName := readRegi()
-		return &operand{
-			ifc: &register{
-				name: regName,
-			},
+		return &register{
+			name: regName,
 		}
 	default:
 		parseFail("default:buf=" + string(source[idx:idx+4]))
@@ -301,13 +280,13 @@ func parseOperand() *operand {
 	return nil
 }
 
-func parseOperands(keySymbol string) []*operand {
+func parseOperands(keySymbol string) []operand {
 	//if keySymbol[0] == '.' {
 	//	// directive
 	//} else {
 	//	// instruction
 	//}
-	var operands []*operand
+	var operands []operand
 	for !atEOL() {
 		op := parseOperand()
 		operands = append(operands, op)
@@ -336,7 +315,7 @@ var source []byte
 var idx int
 var lineno int = 1
 
-type operandIfc interface{}
+type operand interface{}
 
 type register struct {
 	name string // e.g. "rax"
@@ -382,15 +361,11 @@ type binaryExpr struct {
 	right expr
 }
 
-type operand struct {
-	ifc operandIfc
-}
-
 type statement struct {
 	raw         string
 	labelSymbol string
 	keySymbol   string
-	operands    []*operand
+	operands    []operand
 }
 
 var emptyStatement = &statement{}

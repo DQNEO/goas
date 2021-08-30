@@ -542,7 +542,7 @@ func main() {
 			currentSection = ".text"
 			continue
 		case ".global":
-			globalSymbols[s.operands[0].ifc.(*symbolExpr).name] = true
+			globalSymbols[s.operands[0].(*symbolExpr).name] = true
 		}
 
 		if s.labelSymbol != "" {
