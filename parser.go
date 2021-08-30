@@ -311,6 +311,7 @@ func trySymbol() string {
 	}
 }
 
+var filename string
 var source []byte
 var idx int
 var lineno int = 1
@@ -362,13 +363,13 @@ type binaryExpr struct {
 }
 
 type statement struct {
+	filename *string
+	lineno      int
 	raw         string
 	labelSymbol string
 	keySymbol   string
 	operands    []operand
 }
-
-var emptyStatement = &statement{}
 
 func atEOL() bool {
 	return source[idx] == '\n' || source[idx] == '#'
@@ -414,19 +415,22 @@ func consumeEOL() {
 // A label is a symbol immediately followed by a colon (:).
 // Whitespace before a label or after a colon is permitted, but you may not have whitespace between a label’s symbol and its colon. See Labels.
 func parseStmt() *statement {
+	var stmt = &statement{
+		filename:  &filename,
+		lineno: lineno,
+	}
 	skipWhitespaces()
 	if atEOL() {
 		consumeEOL()
-		return emptyStatement
+		return stmt
 	}
-	var stmt = &statement{}
 	symbol := trySymbol()
 	//println("  got symbol " + symbol)
 	//println("(a) next char is  " + string(source[idx]) + ".")
 	if symbol == "" {
 		parserAssert(atEOL(), "not at EOL")
 		consumeEOL()
-		return emptyStatement
+		return stmt
 	}
 
 	var keySymbol string
@@ -468,7 +472,14 @@ func parseStmt() *statement {
 }
 
 // GAS Manual: https://sourceware.org/binutils/docs-2.37/as.html
-func parse() []*statement {
+func parseFile(path string) []*statement {
+	src, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	source = src
+	filename = path
+
 	var stmts []*statement
 	var i int = 1
 	for idx < len(source) {
@@ -484,63 +495,19 @@ func parse() []*statement {
 }
 
 func dumpStmt(i int, stmt *statement) {
-	if stmt == emptyStatement {
-
-	} else {
 		//var ops []string
 		//for _, o := range stmt.operands {
 		//	ops = append(ops, o.string)
 		//}
 		//debugf("%04d|%29s: |%30s | %s\n", i, stmt.labelSymbol, stmt.keySymbol, strings.Join(ops, "  , "))
-	}
-
 }
 
 func dumpStmts(stmts []*statement) {
 	debugf("%4s|%29s: |%30s | %s\n", "Line", "Label", "Instruction", "Operands")
 	for i, stmt := range stmts {
-		if stmt == emptyStatement {
-			continue
-		}
 		dumpStmt(i, stmt)
 	}
 }
 
 type none bool
 
-func debugParser() {
-	var err error
-	source, err = os.ReadFile("/dev/stdin")
-	if err != nil {
-		panic(err)
-	}
-	stmts := parse()
-
-	dumpStmts(stmts)
-	return
-
-	insts := make(map[string]none)
-	dircs := make(map[string]none)
-	labels := make(map[string]none)
-
-	for _, s := range stmts {
-		if isDirective(s.keySymbol) {
-			dircs[s.keySymbol] = true
-		} else {
-			insts[s.keySymbol] = true
-		}
-		labels[s.labelSymbol] = true
-	}
-
-	for k, _ := range labels {
-		fmt.Printf("%v\n", k)
-	}
-	fmt.Println("------------------")
-	for k, _ := range dircs {
-		fmt.Printf("%v\n", k)
-	}
-	fmt.Println("------------------")
-	for k, _ := range insts {
-		fmt.Printf("%v\n", k)
-	}
-}

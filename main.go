@@ -517,12 +517,7 @@ func main() {
 	}
 
 	//debugParser()
-	source, err = os.ReadFile(inFile)
-	if err != nil {
-		panic(err)
-	}
-
-	stmts := parse()
+	stmts := parseFile(inFile)
 	//dumpStmts(stmts)
 
 	var textStmts []*statement
@@ -531,9 +526,6 @@ func main() {
 	var globalSymbols = make(map[string]bool)
 	var currentSection = ".text"
 	for _, s := range stmts {
-		if s == emptyStatement {
-			continue
-		}
 		switch s.keySymbol {
 		case ".data":
 			currentSection = ".data"

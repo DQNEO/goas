@@ -102,9 +102,9 @@ type Instruction struct {
 func encode(s *statement, instrAddr uintptr) *Instruction {
 	defer func() {
 		if x:= recover(); x!=nil {
-			panic(fmt.Sprintf("%s\n[encoder] %s at line %d\n\necho '%s' |./encode as",
+			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
 				x,
-				s.raw, 0, s.raw))
+				s.raw, *s.filename, s.lineno, s.raw))
 		}
 	}()
 
