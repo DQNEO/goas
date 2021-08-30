@@ -62,4 +62,5 @@ myfunc5:
   subq $1, %rsp
   movzwq 0(%rax), %rax
   setle %al
+  movq 8+8(%rsp), %rcx
   retq

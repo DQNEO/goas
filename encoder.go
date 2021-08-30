@@ -357,7 +357,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				relaTextUsers = append(relaTextUsers, ru)
 			} else if srcRegi.name == "rsp" {
 				var opcode uint8 = 0x8b
-				if src.expr.(*numberLit).val == "0" {
+				val := evalNumExpr(src.expr)
+				if val == 0 {
 					var mod = ModIndirectionWithNoDisplacement // indirection
 					var rm = regBits("sp")
 					reg := trgtRegi.toBits()
@@ -370,11 +371,10 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-					offset, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
-					if err != nil {
-						panic(err)
+					if val > 256 {
+						panic("TBI")
 					}
-					r = []byte{REX_W, opcode, modRM, sib, uint8(offset)}
+					r = []byte{REX_W, opcode, modRM, sib, uint8(val)}
 				}
 			} else {
 				var opcode uint8 = 0x8b

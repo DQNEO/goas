@@ -145,6 +145,12 @@ func evalNumExpr(expr expr) int {
 		switch e.op {
 		case "*":
 			return evalNumExpr(e.left) * evalNumExpr(e.right)
+		case "+":
+			return evalNumExpr(e.left) + evalNumExpr(e.right)
+		case "-":
+			return evalNumExpr(e.left) - evalNumExpr(e.right)
+		default:
+			panic("Unsupported binary operation: " + e.op)
 		}
 	}
 	panic(fmt.Sprintf("unkonwn type %T", expr))
