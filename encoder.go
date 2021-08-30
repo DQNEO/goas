@@ -39,15 +39,16 @@ const REX_W byte = 0x48
 //  • The base field specifies the register number of the base register.
 //  See Section 2.1.5 for the encodings of the ModR/M and SIB bytes.
 
-const ModRegi uint8 = 0b11
-const ModIndirectionWithNoDisplacement uint8 = 0b00
-const ModIndirectionWithDisplacement8 uint8 = 0b01
-const ModIndirectionWithDisplacement32 uint8 = 0b10
+type modField uint8
+const ModIndirectionWithNoDisplacement modField = 0b00
+const ModIndirectionWithDisplacement8 modField = 0b01
+const ModIndirectionWithDisplacement32 modField = 0b10
+const ModRegi modField = 0b11
 
 const RM_SPECIAL_101 uint8 = 0b101 // none? rip?
 
-func composeModRM(mod byte, regOpcode byte, rm byte) byte {
-	return mod<<6 + regOpcode<<3 + rm
+func composeModRM(mod modField, regOpcode byte, rm byte) byte {
+	return uint8(mod)<<6 + regOpcode<<3 + rm
 }
 
 const REG_NONE = 0b101
@@ -205,7 +206,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				r = append(r, 0, 0, 0, 0)
 				relaTextUsers = append(relaTextUsers, ru)
 			} else if regi.name == "rsp" {
-				var mod uint8 = 0b01 // indirection with 8bit displacement
+				mod := ModIndirectionWithDisplacement8
 				rm := regBits("sp")
 				reg := trgtRegi.toBits()
 				modRM := composeModRM(mod, reg, rm)
@@ -331,14 +332,14 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			} else if srcRegi.name == "rsp" {
 				var opcode uint8 = 0x8b
 				if src.expr.(*numberLit).val == "0" {
-					var mod uint8 = 0b000 // indirection
+					var mod = ModIndirectionWithNoDisplacement // indirection
 					var rm = regBits("sp")
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 					r = []byte{REX_W, opcode, modRM, sib}
 				} else {
-					var mod uint8 = ModIndirectionWithDisplacement8
+					var mod = ModIndirectionWithDisplacement8
 					var rm = regBits("sp")
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
