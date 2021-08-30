@@ -463,11 +463,24 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		case *register:
 			r = []byte{0x50 + trgt.toBits()}
 		case *immediate:
-			imValue, err := strconv.ParseInt(trgt.expr.(*numberLit).val, 0, 8)
+			imValue, err := strconv.ParseInt(trgt.expr.(*numberLit).val, 0, 32)
 			if err != nil {
 				panic(err)
 			}
-			r = []byte{0x6a, uint8(imValue)}
+			switch {
+			case imValue <= 1<<8 - 1:
+				r = []byte{0x6a, uint8(imValue)}
+			case imValue <= 1<<16 -1:
+				ui16 := uint16(imValue)
+				hex := (*[2]uint8)(unsafe.Pointer(&ui16))
+				r = []byte{0x68, hex[0], hex[1]}
+			case imValue <= 1<<32 -1:
+				ui32 := uint32(imValue)
+				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
+				r = []byte{0x68, hex[0], hex[1], hex[2], hex[3]}
+			default:
+				panic("TBI")
+			}
 		default:
 			panic("[encoder] TBI:" + string(s.raw))
 		}
