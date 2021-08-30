@@ -53,4 +53,8 @@ myfunc4:
 myfunc5:
   movb %al, 0(%rsi)
   movzbq 0(%rax), %rax
+  sete %al
+  setl %al
+  setg %al
+  setge %al
   retq
