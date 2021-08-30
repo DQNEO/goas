@@ -45,7 +45,7 @@ func buildSectionBodies(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 
 type section struct {
 	sh_name    string
-	index      int
+	index      uint16
 	header     *ElfSectionHeader
 	numZeroPad uintptr
 	zeros      []uint8
@@ -80,7 +80,7 @@ func prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols bool) []*s
 	}
 	r = append(r, s_shstrtab)
 	for i, s := range r {
-		s.index = i
+		s.index = uint16(i)
 	}
 
 	if hasSymbols {
@@ -361,7 +361,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		isGlobal := globalSymbols[symname]
 		sym, isDefined := definedSymbols[symname]
 		var addr uintptr
-		var shndx int
+		var shndx uint16
 		if isDefined {
 			addr = sym.address
 			switch sym.section {
@@ -395,7 +395,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 			st_name:  uint32(name_offset),
 			st_info:  st_info,
 			st_other: 0,
-			st_shndx: uint16(shndx),
+			st_shndx: shndx,
 			st_value: addr,
 		}
 		symbolTable = append(symbolTable, e)
@@ -684,7 +684,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 
 	elfHeader.e_shoff = eshoff
 	elfHeader.e_shnum = uint16(len(sectionHeaders))
-	elfHeader.e_shstrndx = elfHeader.e_shnum - 1
+	elfHeader.e_shstrndx = s_strtab.index
 
 	// adjust zero padding before each section
 	var sections []*ElfSectionBodies

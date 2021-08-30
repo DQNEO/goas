@@ -42,18 +42,18 @@ type ElfFile struct {
 type Elf64_Ehdr struct {
 	e_ident     [16]uint8
 	e_type      uint16
-	e_machine   uint16  // 20
-	e_version   uint32  // 24
-	e_entry     uintptr // 32
-	e_phoff     uintptr // 40
-	e_shoff     uintptr // 48
-	e_flags     uint32  // 52
+	e_machine   uint16
+	e_version   uint32
+	e_entry     uintptr
+	e_phoff     uintptr
+	e_shoff     uintptr
+	e_flags     uint32
 	e_ehsize    uint16
 	e_phentsize uint16
 	e_phnum     uint16
 	e_shentsize uint16
 	e_shnum     uint16
-	e_shstrndx  uint16 // 64
+	e_shstrndx  uint16
 }
 
 const ELFHeaderSize = unsafe.Sizeof(Elf64_Ehdr{})
