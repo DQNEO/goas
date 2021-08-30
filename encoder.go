@@ -235,13 +235,33 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			var opcode uint8 = 0x88
 			switch trgt := trgtOp.(type) {
 			case *indirection:
-				// mov %al,0(%rsi)
+				// movb %al,0(%rsi)
 				assert(evalNumExpr(trgt.expr) == 0, "expect offset 0")
 				mod := ModIndirectionWithNoDisplacement
 				reg := src.toBits()
 				rm := trgt.regi.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				r = []byte{opcode, modRM}
+			default:
+				panic("TBI")
+			}
+		default:
+			panic("TBI")
+		}
+	case "movw":
+		switch src := srcOp.(type) {
+		case *register:
+			const PREFIX uint8 = 0x66
+			var opcode uint8 = 0x89
+			switch trgt := trgtOp.(type) {
+			case *indirection:
+				// movw %ax,0(%rsi)
+				assert(evalNumExpr(trgt.expr) == 0, "expect offset 0")
+				mod := ModIndirectionWithNoDisplacement
+				reg := src.toBits()
+				rm := trgt.regi.toBits()
+				modRM := composeModRM(mod, reg, rm)
+				r = []byte{PREFIX, opcode, modRM}
 			default:
 				panic("TBI")
 			}

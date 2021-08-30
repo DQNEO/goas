@@ -63,4 +63,5 @@ myfunc5:
   movzwq 0(%rax), %rax
   setle %al
   movq 8+8(%rsp), %rcx
+  movw %ax, 0(%rsi)
   retq
