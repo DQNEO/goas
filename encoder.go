@@ -524,6 +524,12 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		r = []byte{opcode1, opcode2, modRM}
+	case "setle":
+		opcode1 := uint8(0x0f)
+		opcode2 := uint8(0x9e)
+		reg := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, reg, 0)
+		r = []byte{opcode1, opcode2, modRM}
 	case "setg":
 		opcode1 := uint8(0x0f)
 		opcode2 := uint8(0x9f)
