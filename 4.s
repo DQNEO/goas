@@ -60,4 +60,5 @@ myfunc5:
   divq %rcx
   subq $277, %rsp
   subq $1, %rsp
+  movzwq 0(%rax), %rax
   retq

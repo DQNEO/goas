@@ -405,6 +405,18 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		default:
 			panic("TBI")
 		}
+	case "movzwq":
+		// Move word to quadword, zero-extension.
+		switch src := srcOp.(type) {
+		case *indirection:
+			mod := ModIndirectionWithNoDisplacement
+			reg := src.regi.toBits()
+			rm := trgtOp.(*register).toBits()
+			modRM := composeModRM(mod, reg, rm)
+			r = []byte{REX_W, 0x0f, 0xb7, modRM}
+		default:
+			panic("TBI")
+		}
 	case "addl":
 		var opcode uint8 = 0x01
 		regFieldN := trgtOp.(*register).toBits()
