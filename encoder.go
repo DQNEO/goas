@@ -51,7 +51,7 @@ func composeModRM(mod modField, regOpcode byte, rm byte) byte {
 	return uint8(mod)<<6 + regOpcode<<3 + rm
 }
 
-const REG_NONE = 0b101
+const RM_RIP_RELATIVE = 0b101
 
 
 // The registers are encoded using the 4-bit values in the X.Reg column of the following table.
@@ -192,9 +192,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			var opcode uint8 = 0x8d
 			if regi.name == "rip" {
 				// RIP relative addressing
-				reg := trgtRegi.toBits()
 				mod := ModIndirectionWithNoDisplacement
-				modRM := composeModRM(mod, reg, 0b101)
+				modRM := composeModRM(mod, trgtRegi.toBits(), RM_RIP_RELATIVE)
 				r = []byte{REX_W, opcode, modRM}
 
 				symbol := src.expr.(*symbolExpr).name
