@@ -421,17 +421,29 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			panic("TBI")
 		}
 	case "imulq":
-		// IMUL r64, r/m64, imm8
-		// Quadword register := r/m64 ∗ sign-extended immediate byte.
-		opcode := uint8(0x6b)
-		reg := trgtOp.(*register).toBits()
-		modRM := composeModRM(ModRegi, reg, 0)
-		imm := srcOp.(*immediate)
-		imValue, err := strconv.ParseInt(imm.expr.(*numberLit).val, 0, 8)
-		if err != nil {
-			panic(err)
+		switch src := srcOp.(type) {
+		case *register:
+			// IMUL r64, r/m64
+			opcodes := []uint8{0x0f, 0xaf}
+			rm := srcOp.(*register).toBits()
+			regi := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, regi, rm)
+			r = []byte{REX_W, opcodes[0],opcodes[1], modRM}
+		case *immediate:
+			opcode := uint8(0x6b)
+			// IMUL r64, r/m64, imm8
+			// Quadword register := r/m64 ∗ sign-extended immediate byte.
+			reg := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, reg, 0)
+			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
+			if err != nil {
+				panic(err)
+			}
+			r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
+
+		default:
+			panic("TBI")
 		}
-		r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
 	case "cmpq":
 		switch srcOp.(type) {
 		case *register:
