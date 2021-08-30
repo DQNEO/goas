@@ -340,6 +340,16 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		default:
 			panic(fmt.Sprintf("TBI:%v", op1))
 		}
+	case "movzbq": // MOVZX r64 r/m8
+		// Move byte to quadword, zero-extension.
+		// REX.W 0F B6 /r
+		op1, op2 := s.operands[0], s.operands[1]
+		mod := ModRegi
+		reg := op1.ifc.(*register).toBits() // src
+		op2Regi := op2.ifc.(*register)
+		rm := op2Regi.toBits() // dst
+		modRM := composeModRM(mod, reg, rm)
+		r = []byte{REX_W, 0x0f, 0xb6, modRM}
 	case "addl":
 		_, op2 := s.operands[0], s.operands[1]
 		var opcode uint8 = 0x01
