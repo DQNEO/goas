@@ -478,7 +478,7 @@ func encodeAllText(ss []*statement) []byte {
 			//debugf("  found symbol:%v\n", sym.name)
 			diff := sym.address - replaceInfo.nextInstrAddr
 			if diff > 255 {
-				panic("diff is too large")
+				debugf("diff is too large for:" + replaceInfo.symbolUsed)
 			}
 			//debugf("  patching symol addr into code : %s=%02x => %02x (%02x - %02x)\n",
 			//	sym.name, codeAddr, diff, sym.address , replaceInfo.nextInstrAddr)

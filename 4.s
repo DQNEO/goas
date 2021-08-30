@@ -15,7 +15,10 @@ myGlobalInt:
   .quad 0x0a
 pGlobalInt:
   .quad myGlobalInt
-
+myString:
+  .string "abcd"
+myByte:
+  .byte 1
 .text
 .global _start
 _start:

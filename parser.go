@@ -141,6 +141,8 @@ func evalNumExpr(expr expr) int {
 	case *numberLit:
 		num := strconv.Atoi(e.val)
 		return num
+	case *charLit:
+		return int(e.val)
 	case *binaryExpr:
 		switch e.op {
 		case "*":
@@ -176,6 +178,9 @@ func parseArithExpr() expr {
 	}
 }
 
+type charLit struct {
+	val uint8
+}
 type numberLit struct {
 	val string
 }
@@ -244,7 +249,9 @@ func parseOperand() operand {
 		b := source[idx]
 		idx++
 		expect('\'')
-		return b
+		return &charLit{
+			val: b,
+		}
 	case ch == '"':
 		s := readStringLiteral()
 		return s

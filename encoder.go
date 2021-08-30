@@ -129,7 +129,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		definedSymbols[s.labelSymbol].address = instrAddr
 	}
 
-	if s.labelSymbol != "" && s.keySymbol == "" {
+	if s.keySymbol == "" {
 		//fmt.Printf(" (label)\n")
 		return instr
 	}
@@ -631,9 +631,21 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 }
 
 func encodeData(s *statement, dataAddr uintptr) []byte {
+	defer func() {
+		if x:= recover(); x!=nil {
+			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
+				x,
+				s.raw, *s.filename, s.lineno, s.raw))
+		}
+	}()
+
 	if s.labelSymbol != "" {
 		definedSymbols[s.labelSymbol].address = dataAddr
 	}
+	if s.keySymbol == "" {
+		return nil
+	}
+
 	switch s.keySymbol {
 	case ".quad":
 		op := s.operands[0]
@@ -663,8 +675,25 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 		default:
 			panic("Unexpected op.typ:")
 		}
-	case "": // label
-		//panic("empty keySymbol:" + s.labelSymbol)
+	case ".string":
+		op := s.operands[0]
+		val := op.(string)
+		bytes := append([]byte(val), 0)
+		return bytes
+	case ".byte":
+		op := s.operands[0]
+		val := evalNumExpr(op)
+		if val > 255 {
+			panic("val is too big")
+		}
+		return []byte{uint8(val)}
+	case ".word":
+		op := s.operands[0]
+		val := evalNumExpr(op)
+		if val > 255 {
+			panic("TBI")
+		}
+		return []byte{uint8(val)}
 	default:
 		panic("TBI:" + s.keySymbol)
 	}
