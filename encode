@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 #
 # one-line encoder
 #
@@ -10,4 +11,5 @@ fi
 assembler=$1
 
 rm -f ./a.out
-$assembler < /tmp/input.s && objdump -d  | tail -n 4
+$assembler /tmp/input.s
+objdump -d  | tail -n 4
