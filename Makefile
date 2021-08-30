@@ -11,6 +11,7 @@ diff: objs
 	diff 3.gnu.o 3.my.o
 	diff 4.gnu.o 4.my.o
 	diff 5.gnu.o 5.my.o
+	diff 6.gnu.o 6.my.o
 	@echo ok
 
 .PHONY: objs
