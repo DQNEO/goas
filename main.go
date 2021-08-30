@@ -684,7 +684,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 
 	elfHeader.e_shoff = eshoff
 	elfHeader.e_shnum = uint16(len(sectionHeaders))
-	elfHeader.e_shstrndx = s_strtab.index
+	elfHeader.e_shstrndx = s_shstrtab.index
 
 	// adjust zero padding before each section
 	var sections []*ElfSectionBodies
