@@ -46,11 +46,12 @@ const ModIndirectionWithDisplacement32 uint8 = 0b10
 
 const RM_SPECIAL_101 uint8 = 0b101 // none? rip?
 
-func composeModRM(mod byte, reg byte, rm byte) byte {
-	return mod<<6 + reg<<3 + rm
+func composeModRM(mod byte, regOpcode byte, rm byte) byte {
+	return mod<<6 + regOpcode<<3 + rm
 }
 
 const REG_NONE = 0b101
+
 
 // The registers are encoded using the 4-bit values in the X.Reg column of the following table.
 // X.Reg is in binary.
