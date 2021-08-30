@@ -2,11 +2,14 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"unsafe"
 )
+
+var oFlag = flag.String("o", "a.out", "output file")
 
 var debug bool = false
 
@@ -497,9 +500,24 @@ func encodeAllData(ss []*statement) []byte {
 }
 
 func main() {
+	flag.Parse()
+
+	var inFile string
+
+	if flag.NArg() > 0 {
+		inFile = flag.Arg(0)
+	} else {
+		inFile = "/dev/stdin"
+	}
+
+	outputFile := *oFlag
+	w, err := os.Create(outputFile)
+	if err != nil {
+		panic(err)
+	}
+
 	//debugParser()
-	var err error
-	source, err = os.ReadFile("/dev/stdin")
+	source, err = os.ReadFile(inFile)
 	if err != nil {
 		panic(err)
 	}
@@ -571,7 +589,7 @@ func main() {
 
 	// prepare ELF File format
 	elfFile := prepareElfFile(sectionBodies, sectionHeaders)
-	elfFile.writeTo(os.Stdout)
+	elfFile.writeTo(w)
 }
 
 // build rela text and data contents and headers

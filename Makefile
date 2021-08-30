@@ -20,7 +20,7 @@ objs: $(GNU_OBJS) $(MY_OBJS)
 	as -o $@ $<
 
 %.my.o: %.s as
-	./as < $< > $@
+	./as -o $@ $<
 
 as: $(GOSOURCES)
 	go build -o as $(GOSOURCES)
