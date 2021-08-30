@@ -10,4 +10,4 @@ fi
 assembler=$1
 
 rm -f ./a.out
-$assembler < /tmp/input.s && objdump -d  | tail -n 1
+$assembler < /tmp/input.s && objdump -d  | tail -n 4
