@@ -363,22 +363,27 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 					reg := src.toBits() // src
 					rm := trgt.regi.toBits()
 					num := trgt.expr.(*numberLit).val
+					displacement, err := strconv.ParseInt(num, 0, 8)
+					if err != nil {
+						panic(err)
+					}
 					if rm == regBits("sp") {
 						// insert SIB byte
 						mod := ModIndirectionWithDisplacement8
 						modRM := composeModRM(mod, reg, rm)
 						sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-						displacement, err := strconv.ParseInt(num, 0, 8)
-						if err != nil {
-							panic(err)
-						}
 						r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
 					} else {
-						mod := ModIndirectionWithNoDisplacement
-						modRM := composeModRM(mod, reg, rm)
-						r = []byte{REX_W, opcode, modRM}
+						if displacement == 0 {
+							mod := ModIndirectionWithNoDisplacement
+							modRM := composeModRM(mod, reg, rm)
+							r = []byte{REX_W, opcode, modRM}
+						} else {
+							mod := ModIndirectionWithDisplacement8
+							modRM := composeModRM(mod, reg, rm)
+							r = []byte{REX_W, opcode, modRM, uint8(displacement)}
+						}
 					}
-
 				}
 			default:
 				panic("unexpected op2.typ:")
