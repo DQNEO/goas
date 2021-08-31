@@ -568,7 +568,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case "cmpq":
 		switch srcOp.(type) {
 		case *register:
-			opcode := uint8(0x01)
+			opcode := uint8(0x39)
 			regi := srcOp.(*register).toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
