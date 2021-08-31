@@ -466,20 +466,23 @@ func dumpText(code []byte) string {
 var debugEncoder bool = false
 
 func encodeAllText(ss []*statement) []byte {
-	var allText []byte
 	var textAddr uintptr
+	var insts []*Instruction
 	for _, s := range ss {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
 		}
-		tmpAddr := textAddr
 		instr := encode(s, textAddr)
-		buf := instr.code
-		textAddr += uintptr(len(buf))
+		insts = append(insts, instr)
+		textAddr += uintptr(len(instr.code))
 		if debugEncoder {
-			debugf("[encoder] %04x : %s\t=>\t%s\n", tmpAddr, s.raw, dumpText(buf))
+			debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
 		}
-		allText = append(allText, buf...)
+	}
+
+	var allText []byte
+	for _, instr := range insts {
+		allText = append(allText, instr.code...)
 	}
 
 	//debugf("iterating unresolvedCodeSymbols...\n")

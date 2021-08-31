@@ -110,6 +110,7 @@ type Instruction struct {
 	code      []byte
 }
 
+
 func encode(s *statement, instrAddr uintptr) *Instruction {
 	defer func() {
 		if x:= recover(); x!=nil {
@@ -162,7 +163,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		}
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		if strings.HasPrefix(trgtSymbol,".L") { // Is this correct ?
+		isNear := false
+		if isNear { // Is this correct ?
 			// JE rel8
 			r = []byte{0x74}
 			r = append(r, 0)
@@ -174,7 +176,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			// JE rel32
 			r = []byte{0x0f,0x84}
 			r = append(r, 0,0,0,0)
-			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+			unresolvedCodeSymbols[instrAddr+2] = &addrToReplace{
 				nextInstrAddr: instrAddr + uintptr(len(r)),
 				symbolUsed:    trgtSymbol,
 			}
