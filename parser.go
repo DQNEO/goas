@@ -123,8 +123,19 @@ func readStringLiteral() string {
 		case '\\':
 			expect('\\')
 			ch := peekCh()
+			var out byte
+			switch ch {
+			case 'n':
+				out = '\n'
+			case 'r':
+				out = '\n'
+			case 't':
+				out = '\t'
+			default:
+				out = ch
+			}
 			idx++
-			buf = append(buf, ch)
+			buf = append(buf, out)
 			continue
 		case '"':
 			idx++

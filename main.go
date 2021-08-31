@@ -387,7 +387,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 			st_info = 0x10 // GLOBAL ?
 			if indexOfFirstNonLocalSymbol == 0 {
 				indexOfFirstNonLocalSymbol = index
-				//debugf("indexOfFirstNonLocalSymbol=%d\n", indexOfFirstNonLocalSymbol)
 			}
 		}
 		//debugf("symbol %s shndx = %d\n", sym.name, shndx)
@@ -400,7 +399,13 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		}
 		symbolTable = append(symbolTable, e)
 		symbolIndex[symname] = index
+		debugf("indexOfFirstNonLocalSymbol=%d\n", indexOfFirstNonLocalSymbol)
 		//debugf("[buildSymbolTable] appended. index = %d, name = %s\n", index, symname)
+	}
+
+	// I don't know why we need this. Just Follow GNU.
+	if indexOfFirstNonLocalSymbol == 0 {
+		indexOfFirstNonLocalSymbol = len(symbolTable)
 	}
 
 	s_symtab.header.sh_info = uint32(indexOfFirstNonLocalSymbol)

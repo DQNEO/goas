@@ -19,7 +19,7 @@ unsafe.__initGlobals:
 .runtime.S3:
   .string "panic: "
 .runtime.S4:
-  .string "\n\n"
+  .string "NEWLINE\n\nNEWLINE"
 .runtime.S5:
   .string "panic: "
 .runtime.S6:
