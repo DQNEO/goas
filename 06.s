@@ -40,7 +40,6 @@ myfunc2:
 myfunc3:
   ret
 start2:
-  nop
   callq myfunc4
   callq myfunc5
 
