@@ -6,8 +6,8 @@ set -e
 instr=$1
 rm -f ./a.out
 echo "$instr"
-echo "---"
+echo "--- as ---"
 echo "$instr" | as && objdump -d | tail -n +8
-echo "---"
+echo "--- ./run ---"
 echo "$instr" | ./run && objdump -d | tail -n +8
 
