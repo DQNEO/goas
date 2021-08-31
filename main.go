@@ -328,6 +328,14 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 	var globalDefinedSymbols []string
 	var globalUndefinedSymbols []string
 	for _, sym := range symbolsInLexicalOrder {
+		if strings.HasPrefix(sym,".L") {
+			// https://sourceware.org/binutils/docs-2.37/as.html#Symbol-Names
+			// Local Symbol Names
+			// A local symbol is any symbol beginning with certain local label prefixes. By default, the local label prefix is ‘.L’ for ELF systems or ‘L’ for traditional a.out systems, but each target may have its own set of local label prefixes. On the HPPA local symbols begin with ‘L$’.
+			//
+			// Local symbols are defined and used within the assembler, but they are normally not saved in object files. Thus, they are not visible when debugging. You may use the ‘-L’ option (see Include Local Symbols) to retain the local symbols in the object files.
+			continue
+		}
 		isGlobal := globalSymbols[sym]
 		_, isDefined := definedSymbols[sym]
 		if !isDefined {
