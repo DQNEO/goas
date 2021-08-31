@@ -160,13 +160,24 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			nextInstrAddr: instrAddr + uintptr(len(r)),
 			symbolUsed:    trgtSymbol,
 		}
-	case "je": // JE rel32
+	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		r = []byte{0x0f,0x84}
-		r = append(r, 0,0,0,0)
-		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-			nextInstrAddr: instrAddr + uintptr(len(r)),
-			symbolUsed:    trgtSymbol,
+		if strings.HasPrefix(trgtSymbol,".L") { // Is this correct ?
+			// JE rel8
+			r = []byte{0x74}
+			r = append(r, 0)
+			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+				nextInstrAddr: instrAddr + uintptr(len(r)),
+				symbolUsed:    trgtSymbol,
+			}
+		} else {
+			// JE rel32
+			r = []byte{0x0f,0x84}
+			r = append(r, 0,0,0,0)
+			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+				nextInstrAddr: instrAddr + uintptr(len(r)),
+				symbolUsed:    trgtSymbol,
+			}
 		}
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
