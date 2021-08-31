@@ -9,8 +9,8 @@ diff: objs
 	diff 01.gnu.o 01.my.o
 	diff 02.gnu.o 02.my.o
 	diff 04.gnu.o 04.my.o
+	diff 05.gnu.o 05.my.o
 	diff 06.gnu.o 06.my.o
-	diff 09.gnu.o 09.my.o
 	diff 10.gnu.o 10.my.o
 	diff 11.gnu.o 11.my.o
 
