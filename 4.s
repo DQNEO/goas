@@ -72,4 +72,7 @@ myfunc5:
   leaq 8(%rbp), %rsi
   leaq 8(%rbp), %rax
   movq %rax, 0(%rsi)
+  leaq -260(%rbp), %rax
+  movq 8(%rax), %rdx # data
+  movq 0(%rax), %rax # dtype
   retq

@@ -19,7 +19,7 @@ unsafe.__initGlobals:
 .runtime.S3:
   .string "panic: "
 .runtime.S4:
-  .string "NEWLINE\n\nNEWLINE"
+  .string "\n\n"
 .runtime.S5:
   .string "panic: "
 .runtime.S6:
@@ -78,3 +78,15 @@ runtime.$item.valueAddr: # args 32, locals 0
   ret
   leave
   ret
+# emitFuncDecl
+runtime.$item.match: # args 48, locals -40
+  pushq %rbp
+  movq %rsp, %rbp
+  subq $40, %rsp # local area
+  leaq -16(%rbp), %rax # local variable ".switch_expr"
+  pushq %rax # variable address
+  leaq 24(%rbp), %rax # local variable "key"
+  pushq %rax # variable address
+  popq %rax # address of T_INTERFACE
+  movq 8(%rax), %rdx # data
+  movq 0(%rax), %rax # dtype

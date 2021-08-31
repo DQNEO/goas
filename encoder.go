@@ -214,22 +214,38 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 				r = append(r, 0, 0, 0, 0)
 				relaTextUsers = append(relaTextUsers, ru)
 			} else {
-				mod := ModIndirectionWithDisplacement8
-				rm := regi.toBits()
-				reg := trgtRegi.toBits()
-				modRM := composeModRM(mod, reg, rm)
 				num := src.expr.(*numberLit).val
-				displacement, err := strconv.ParseInt(num, 0, 8)
+				displacement, err := strconv.ParseInt(num, 0, 32)
 				if err != nil {
 					panic(err)
+				}
+
+				var  modRM, rm, reg byte
+				var displacementBytes []byte
+				if -128 < displacement && displacement < 128 {
+					mod := ModIndirectionWithDisplacement8
+					rm = regi.toBits()
+					reg = trgtRegi.toBits()
+					modRM = composeModRM(mod, reg, rm)
+					displacementBytes = []byte{uint8(displacement)}
+				} else {
+					mod := ModIndirectionWithDisplacement32
+					rm = regi.toBits()
+					reg = trgtRegi.toBits()
+					modRM = composeModRM(mod, reg, rm)
+					var disp32 int32 = int32(displacement)
+					displacementBytes =  (*[4]byte)(unsafe.Pointer(&disp32))[:]
+
 				}
 				if rm == regBits("sp") {
 					// use SIB
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-					r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+					r = []byte{REX_W, opcode, modRM, sib}
 				} else {
-					r = []byte{REX_W, opcode, modRM, uint8(displacement)}
+					r = []byte{REX_W, opcode, modRM}
 				}
+
+				r = append(r, displacementBytes...)
 			}
 		default:
 			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, s.raw))
@@ -367,7 +383,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			default:
 				panic("unexpected op2.typ:")
 			}
-		case *indirection: // "movq foo(%regi), X", "movq (%regi), X"
+		case *indirection: // "movq foo(%regi), X", "movq 8(%regi), X"
 			srcRegi := src.regi
 			trgtRegi := trgtOp.(*register)
 			if srcRegi.name == "rip" {
@@ -411,10 +427,24 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			} else {
 				var opcode uint8 = 0x8b
 				reg := trgtRegi.toBits()
-				mod := ModIndirectionWithNoDisplacement
-				rm := srcRegi.toBits()
-				modRM := composeModRM(mod, reg, rm)
-				r = []byte{REX_W, opcode, modRM}
+				var ival int
+				if src.expr != nil {
+					ival = evalNumExpr(src.expr)
+				}
+				if ival != 0 {
+					var mod = ModIndirectionWithDisplacement8
+					var rm = srcRegi.toBits()
+					modRM := composeModRM(mod, reg, rm)
+					if ival > 256 {
+						panic("TBI")
+					}
+					r = []byte{REX_W, opcode, modRM, uint8(ival)}
+				} else {
+					mod := ModIndirectionWithNoDisplacement
+					rm := srcRegi.toBits()
+					modRM := composeModRM(mod, reg, rm)
+					r = []byte{REX_W, opcode, modRM}
+				}
 			}
 		default:
 			panic(fmt.Sprintf("TBI:%v", src))
