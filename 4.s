@@ -71,4 +71,5 @@ myfunc5:
   leaq 8(%rsp),%rax
   leaq 8(%rbp), %rsi
   leaq 8(%rbp), %rax
+  movq %rax, 0(%rsi)
   retq
