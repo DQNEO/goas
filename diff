@@ -8,7 +8,7 @@ subcmd=$2
 #diff -u --color <(./readelf $my) <(./readelf $gnu)
 #exit
 if [[ $subcmd == "text" ]]; then
-  diff -u --color <(objdump -d  $my) <(objdump -d  $gnu)
+  diff -y --suppress-common-lines --color <(objdump -d  $my) <(objdump -d  $gnu) | head -n 15
 else
   diff -u --color <(xxd -g 1 $my) <(xxd -g 1 $gnu)
 fi

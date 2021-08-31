@@ -1,16 +1,13 @@
 #!/bin/bash
-set -e
 #
 # one-line encoder
 #
-cat > /tmp/input.s
-if [[ -z "$1" ]]; then
-  echo "Please specify an asseembler"
-  exit 1
-fi
-assembler=$1
-
+set -e
+instr=$1
 rm -f ./a.out
-$assembler /tmp/input.s
-objdump -d
+echo "$instr"
+echo "---"
+echo "$instr" | as && objdump -d | tail -n +8
+echo "---"
+echo "$instr" | ./run && objdump -d | tail -n +8
 
