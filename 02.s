@@ -6,5 +6,4 @@ var1:
 .text
 .global main
 main:
-  nop
   ret

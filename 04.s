@@ -8,5 +8,4 @@ var2:
 .text
 .global main
 main:
-  nop
   ret

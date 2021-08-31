@@ -5,14 +5,15 @@ MY_OBJS = $(SOURCES:%.s=%.my.o)
 
 .PHONY: diff
 diff: objs
-	diff 0.gnu.o 0.my.o
-	diff 1.gnu.o 1.my.o
-	diff 2.gnu.o 2.my.o
-	diff 3.gnu.o 3.my.o
-	diff 4.gnu.o 4.my.o
-	diff 5.gnu.o 5.my.o
-	diff 6.gnu.o 6.my.o
-	diff 7.gnu.o 7.my.o
+	diff 00.gnu.o 00.my.o
+	diff 01.gnu.o 01.my.o
+	diff 02.gnu.o 02.my.o
+	diff 04.gnu.o 04.my.o
+	diff 06.gnu.o 06.my.o
+	diff 09.gnu.o 09.my.o
+	diff 10.gnu.o 10.my.o
+	diff 11.gnu.o 11.my.o
+
 	@echo ok
 
 .PHONY: objs
