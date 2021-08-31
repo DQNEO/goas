@@ -3,8 +3,15 @@ basename=$1
 my=${basename}.my.o
 gnu=${basename}.gnu.o
 
-diff -u --color <(xxd -g 1 $my) <(xxd -g 1 $gnu)
+subcmd=$2
+
 #diff -u --color <(./readelf $my) <(./readelf $gnu)
+#exit
+if [[ $subcmd == "text" ]]; then
+  diff -u --color <(objdump -d  $my) <(objdump -d  $gnu)
+else
+  diff -u --color <(xxd -g 1 $my) <(xxd -g 1 $gnu)
+fi
 
 
 

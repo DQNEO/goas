@@ -213,18 +213,23 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 
 				r = append(r, 0, 0, 0, 0)
 				relaTextUsers = append(relaTextUsers, ru)
-			} else if regi.name == "rsp" {
+			} else {
 				mod := ModIndirectionWithDisplacement8
-				rm := regBits("sp")
+				rm := regi.toBits()
 				reg := trgtRegi.toBits()
 				modRM := composeModRM(mod, reg, rm)
-				sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 8)
 				if err != nil {
 					panic(err)
 				}
-				r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+				if rm == regBits("sp") {
+					// use SIB
+					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+					r = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+				} else {
+					r = []byte{REX_W, opcode, modRM, uint8(displacement)}
+				}
 			}
 		default:
 			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, s.raw))

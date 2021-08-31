@@ -67,4 +67,8 @@ myfunc5:
   setle %al
   movq 8+8(%rsp), %rcx
   movw %ax, 0(%rsi)
+  leaq 8(%rsp),%rsi
+  leaq 8(%rsp),%rax
+  leaq 8(%rbp), %rsi
+  leaq 8(%rbp), %rax
   retq
