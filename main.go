@@ -493,23 +493,27 @@ func encodeAllText(ss []*statement) []byte {
 		textAddr += uintptr(len(instr.code))
 	}
 
-	//debugf("iterating symbolUsages...\n")
+	// determine relative addr to symbol
 	for _, usage := range symbolUsages {
 		sym, ok := definedSymbols[usage.symbolUsed]
 		if !ok {
-			//debugf("  symbol not found: %s\n" , usage.symbolUsed)
-		} else {
-			//debugf("  found symbol:%v\n", sym.name)
-			nextInstrAddr := usage.instr.next.startAddr
-			diff := sym.address - nextInstrAddr
-			if diff > 255 {
-				debugf("diff is too large for:" + usage.symbolUsed)
-			}
+			continue//debugf("  symbol not found: %s\n" , usage.symbolUsed)
+		}
+		//debugf("  found symbol:%v\n", sym.name)
+		nextInstrAddr := usage.instr.next.startAddr
+		diff := sym.address - nextInstrAddr
+		isNear := diff <= 255
+		if isNear {
+			// 8bit
 			//debugf("  patching symol addr into code : %s=%02x => %02x (%02x - %02x)\n",
 			//	sym.name, codeAddr, diff, sym.address , usage.nextInstrAddr)
-			placeToEmbed :=usage.instr.startAddr + usage.offset
+			placeToEmbed := usage.instr.startAddr + usage.offset
 			allText[placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
+		} else {
+			// 32bit ?
+			debugf("diff is too large for:" + usage.symbolUsed)
 		}
+
 	}
 	return allText
 }
