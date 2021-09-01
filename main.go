@@ -460,7 +460,6 @@ func dumpText(code []byte) string {
 var debugEncoder bool = false
 
 func encodeAllText(ss []*statement) []byte {
-	var textAddr uintptr
 	var insts []*Instruction
 	var prev *Instruction
 	var first *Instruction
@@ -468,20 +467,14 @@ func encodeAllText(ss []*statement) []byte {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
 		}
-		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol].address = textAddr
-		}
 
 		instr := encode(s)
-		instr.startAddr = textAddr
 		insts = append(insts, instr)
 		if first == nil {
 			first = instr
 		} else {
 			prev.next = instr
 		}
-		textAddr += uintptr(len(instr.code))
-
 		if debugEncoder {
 			debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
 		}
@@ -489,8 +482,15 @@ func encodeAllText(ss []*statement) []byte {
 	}
 
 	var allText []byte
+	var textAddr uintptr
 	for instr := first; instr != nil; instr = instr.next {
+		instr.startAddr = textAddr
+		s := instr.s
+		if s.labelSymbol != "" {
+			definedSymbols[s.labelSymbol].address = instr.startAddr
+		}
 		allText = append(allText, instr.code...)
+		textAddr += uintptr(len(instr.code))
 	}
 
 	//debugf("iterating symbolUsages...\n")

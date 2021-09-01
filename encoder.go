@@ -106,9 +106,9 @@ func composeSIB(scale byte, index byte, base byte) byte {
 
 type Instruction struct {
 	startAddr uintptr
-	raw       *statement
+	s         *statement
 	code      []byte
-	next *Instruction
+	next      *Instruction
 }
 
 var symbolUsages []*symbolUsage
@@ -139,7 +139,7 @@ func encode(s *statement) *Instruction {
 	//debugf("stmt=%#v\n", s)
 	var r []byte
 	var instr = &Instruction{
-		raw:       s,
+		s: s,
 	}
 
 	if s.keySymbol == "" {
