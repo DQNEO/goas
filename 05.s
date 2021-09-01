@@ -6,13 +6,13 @@ ret
 
 movq %rcx,0x8(%rsi)
 movq %rax, 0(%rsi)
-movq 8(%rax), %rdx # data
-movq 0(%rax), %rax # dtype
+movq 8(%rax), %rdx
+movq 0(%rax), %rax
 movq 8+8(%rsp), %rcx
-movzbq 0(%rax), %rax
-movzwq 0(%rax), %rax
 movb %al, 0(%rsi)
 movw %ax, 0(%rsi)
+movzbq 0(%rax), %rax
+movzwq 0(%rax), %rax
 
 leaq 8(%rsp),%rsi
 leaq 8(%rsp),%rax
