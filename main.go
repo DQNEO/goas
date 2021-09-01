@@ -294,13 +294,13 @@ func resolveShNames(ss []*section) {
 	}
 }
 
-type symbolStruct struct {
+type symbolDefinition struct {
 	name    string
 	section string
 	address uintptr
 }
 
-var definedSymbols = make(map[string]*symbolStruct)
+var definedSymbols = make(map[string]*symbolDefinition)
 
 const STT_SECTION = 0x03
 
@@ -568,7 +568,7 @@ func main() {
 		}
 
 		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol] = &symbolStruct{
+			definedSymbols[s.labelSymbol] = &symbolDefinition{
 				name:    s.labelSymbol,
 				section: currentSection,
 			}
