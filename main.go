@@ -434,7 +434,8 @@ type relaDataUser struct {
 var relaDataUsers []*relaDataUser
 
 type relaTextUser struct {
-	addr   uintptr
+	instr *Instruction
+	offset uintptr
 	toJump bool
 	uses   string
 	adjust int64
@@ -466,7 +467,12 @@ func encodeAllText(ss []*statement) []byte {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
 		}
-		instr := encode(s, textAddr)
+		if s.labelSymbol != "" {
+			definedSymbols[s.labelSymbol].address = textAddr
+		}
+
+		instr := encode(s)
+		instr.startAddr = textAddr
 		insts = append(insts, instr)
 		if prev != nil {
 			prev.next = instr
@@ -498,7 +504,8 @@ func encodeAllText(ss []*statement) []byte {
 			}
 			//debugf("  patching symol addr into code : %s=%02x => %02x (%02x - %02x)\n",
 			//	sym.name, codeAddr, diff, sym.address , usage.nextInstrAddr)
-			allText[usage.placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
+			placeToEmbed :=usage.instr.startAddr + usage.offset
+			allText[placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
 		}
 	}
 	return allText
@@ -653,8 +660,9 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 				symIdx = symbolIndex[ru.uses]
 			}
 
+			r_offset := ru.instr.startAddr + ru.offset
 			rla := &ElfRela{
-				r_offset: ru.addr,                  // 8 bytes
+				r_offset: r_offset,                  // 8 bytes
 				r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
 				r_addend: addr + ru.adjust - 4,     // 8 bytes
 			}

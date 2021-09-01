@@ -116,18 +116,18 @@ var symbolUsages []*symbolUsage
 type symbolUsage struct {
 	symbolUsed    string
 	instr *Instruction
-	placeToEmbed uintptr
+	offset uintptr
 }
 
 func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr) {
 	symbolUsages = append(symbolUsages, &symbolUsage{
 		symbolUsed:    trgtSymbol,
 		instr: instr,
-		placeToEmbed: instr.startAddr+offset,
+		offset: offset,
 	})
 }
 
-func encode(s *statement, instrAddr uintptr) *Instruction {
+func encode(s *statement) *Instruction {
 	defer func() {
 		if x:= recover(); x!=nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
@@ -139,11 +139,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	//debugf("stmt=%#v\n", s)
 	var r []byte
 	var instr = &Instruction{
-		startAddr: instrAddr,
 		raw:       s,
-	}
-	if s.labelSymbol != "" {
-		definedSymbols[s.labelSymbol].address = instrAddr
 	}
 
 	if s.keySymbol == "" {
@@ -207,7 +203,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 
 		r = []byte{0xe8}
 		ru := &relaTextUser{
-			addr:   instrAddr + uintptr(len(r)),
+			instr: instr,
+			offset: uintptr(len(r)),
 			uses:   trgtSymbol,
 			toJump: true,
 		}
@@ -229,7 +226,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
-					addr: instrAddr + uintptr(len(r)),
+					instr: instr,
+					offset: uintptr(len(r)),
 					uses: symbol,
 				}
 
@@ -369,7 +367,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 						if _, defined := definedSymbols[symbol]; !defined {
 							// @TODO shouud use expr.right.(*numberExpr).val as an offset
 							ru := &relaTextUser{
-								addr:   instrAddr + uintptr(len(r)),
+								instr: instr,
+								offset: uintptr(len(r)),
 								uses:   symbol,
 								adjust: int64(evalNumExpr(expr.right)),
 							}
@@ -423,7 +422,8 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
-					addr: instrAddr + uintptr(len(r)),
+					instr: instr,
+					offset: uintptr(len(r)),
 					uses: symbol,
 				}
 
