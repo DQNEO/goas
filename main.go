@@ -433,13 +433,6 @@ type relaDataUser struct {
 
 var relaDataUsers []*relaDataUser
 
-type addrToReplace struct {
-	nextInstrAddr uintptr
-	symbolUsed    string
-}
-
-var unresolvedCodeSymbols = make(map[uintptr]*addrToReplace)
-
 type relaTextUser struct {
 	addr   uintptr
 	toJump bool
@@ -468,13 +461,19 @@ var debugEncoder bool = false
 func encodeAllText(ss []*statement) []byte {
 	var textAddr uintptr
 	var insts []*Instruction
+	var prev *Instruction
 	for _, s := range ss {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
 		}
 		instr := encode(s, textAddr)
 		insts = append(insts, instr)
+		if prev != nil {
+			prev.next = instr
+		}
 		textAddr += uintptr(len(instr.code))
+
+ 		prev = instr
 		if debugEncoder {
 			debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
 		}
@@ -485,20 +484,21 @@ func encodeAllText(ss []*statement) []byte {
 		allText = append(allText, instr.code...)
 	}
 
-	//debugf("iterating unresolvedCodeSymbols...\n")
-	for addr, replaceInfo := range unresolvedCodeSymbols {
-		sym, ok := definedSymbols[replaceInfo.symbolUsed]
+	//debugf("iterating symbolUsages...\n")
+	for _, usage := range symbolUsages {
+		sym, ok := definedSymbols[usage.symbolUsed]
 		if !ok {
-			//debugf("  symbol not found: %s\n" , replaceInfo.symbolUsed)
+			//debugf("  symbol not found: %s\n" , usage.symbolUsed)
 		} else {
 			//debugf("  found symbol:%v\n", sym.name)
-			diff := sym.address - replaceInfo.nextInstrAddr
+			nextInstrAddr := usage.instr.next.startAddr
+			diff := sym.address - nextInstrAddr
 			if diff > 255 {
-				debugf("diff is too large for:" + replaceInfo.symbolUsed)
+				debugf("diff is too large for:" + usage.symbolUsed)
 			}
 			//debugf("  patching symol addr into code : %s=%02x => %02x (%02x - %02x)\n",
-			//	sym.name, codeAddr, diff, sym.address , replaceInfo.nextInstrAddr)
-			allText[addr] = byte(diff) // @FIXME diff can be larget than a byte
+			//	sym.name, codeAddr, diff, sym.address , usage.nextInstrAddr)
+			allText[usage.placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
 		}
 	}
 	return allText

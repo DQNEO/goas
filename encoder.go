@@ -108,8 +108,24 @@ type Instruction struct {
 	startAddr uintptr
 	raw       *statement
 	code      []byte
+	next *Instruction
 }
 
+var symbolUsages []*symbolUsage
+
+type symbolUsage struct {
+	symbolUsed    string
+	instr *Instruction
+	placeToEmbed uintptr
+}
+
+func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr) {
+	symbolUsages = append(symbolUsages, &symbolUsage{
+		symbolUsed:    trgtSymbol,
+		instr: instr,
+		placeToEmbed: instr.startAddr+offset,
+	})
+}
 
 func encode(s *statement, instrAddr uintptr) *Instruction {
 	defer func() {
@@ -157,10 +173,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		r = []byte{0xeb}
 		r = append(r, 0)
-		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-			nextInstrAddr: instrAddr + uintptr(len(r)),
-			symbolUsed:    trgtSymbol,
-		}
+		refersSymbol(instr, trgtSymbol, 1)
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		isNear := false
@@ -168,18 +181,12 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 			// JE rel8
 			r = []byte{0x74}
 			r = append(r, 0)
-			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-				nextInstrAddr: instrAddr + uintptr(len(r)),
-				symbolUsed:    trgtSymbol,
-			}
+			refersSymbol(instr, trgtSymbol, 1)
 		} else {
 			// JE rel32
 			r = []byte{0x0f,0x84}
 			r = append(r, 0,0,0,0)
-			unresolvedCodeSymbols[instrAddr+2] = &addrToReplace{
-				nextInstrAddr: instrAddr + uintptr(len(r)),
-				symbolUsed:    trgtSymbol,
-			}
+			refersSymbol(instr, trgtSymbol, 2)
 		}
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
@@ -187,18 +194,13 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		if isNear {
 			r = []byte{0x75}
 			r = append(r, 0)
-			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-				nextInstrAddr: instrAddr + uintptr(len(r)),
-				symbolUsed:    trgtSymbol,
-			}
+			refersSymbol(instr, trgtSymbol, 1)
+
 		} else {
 			// rel32
 			r = []byte{0x0f,0x85}
 			r = append(r, 0,0,0,0)
-			unresolvedCodeSymbols[instrAddr+2] = &addrToReplace{
-				nextInstrAddr: instrAddr + uintptr(len(r)),
-				symbolUsed:    trgtSymbol,
-			}
+			refersSymbol(instr, trgtSymbol, 2)
 		}
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
@@ -212,11 +214,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		relaTextUsers = append(relaTextUsers, ru)
 
 		r = append(r, 0, 0, 0, 0)
-
-		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-			nextInstrAddr: instrAddr + uintptr(len(r)),
-			symbolUsed:    trgtSymbol,
-		}
+		refersSymbol(instr, trgtSymbol, 1)
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi
