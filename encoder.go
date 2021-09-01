@@ -127,6 +127,13 @@ func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr) {
 	})
 }
 
+func calcDistance(userInstr *Instruction, symdef *symbolDefinition) uintptr {
+	//debugf("  found symbol:%v\n", sym.name)
+	nextInstrAddr := userInstr.next.startAddr
+	diff := symdef.instr.startAddr - nextInstrAddr
+	return diff
+}
+
 func encode(s *statement) *Instruction {
 	defer func() {
 		if x:= recover(); x!=nil {

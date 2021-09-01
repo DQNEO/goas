@@ -298,6 +298,7 @@ type symbolDefinition struct {
 	name    string
 	section string
 	address uintptr
+	instr   *Instruction
 }
 
 var definedSymbols = make(map[string]*symbolDefinition)
@@ -371,12 +372,13 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		var addr uintptr
 		var shndx uint16
 		if isDefined {
-			addr = sym.address
 			switch sym.section {
 			case ".text":
 				shndx = s_text.index
+				addr = sym.instr.startAddr
 			case ".data":
 				shndx = s_data.index
+				addr = sym.address
 			default:
 				panic("TBI")
 			}
@@ -487,7 +489,7 @@ func encodeAllText(ss []*statement) []byte {
 		instr.startAddr = textAddr
 		s := instr.s
 		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol].address = instr.startAddr
+			definedSymbols[s.labelSymbol].instr = instr
 		}
 		allText = append(allText, instr.code...)
 		textAddr += uintptr(len(instr.code))
@@ -499,9 +501,8 @@ func encodeAllText(ss []*statement) []byte {
 		if !ok {
 			continue//debugf("  symbol not found: %s\n" , usage.symbolUsed)
 		}
-		//debugf("  found symbol:%v\n", sym.name)
-		nextInstrAddr := usage.instr.next.startAddr
-		diff := sym.address - nextInstrAddr
+		diff := calcDistance(usage.instr, sym)
+
 		isNear := diff <= 255
 		if isNear {
 			// 8bit
@@ -626,10 +627,17 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 			panic("label not found")
 		}
 
+		var addr uintptr
+		if sym.section == ".text" {
+			addr = sym.instr.startAddr
+		} else {
+			addr = sym.address
+		}
+
 		rla := &ElfRela{
 			r_offset: ru.addr,
 			r_info:   0x0100000001,
-			r_addend: int64(sym.address),
+			r_addend: int64(addr),
 		}
 		p := (*[24]byte)(unsafe.Pointer(rla))[:]
 		rela_data_c = append(rela_data_c, p...)
