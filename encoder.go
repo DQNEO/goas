@@ -164,7 +164,7 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		isNear := false
-		if isNear { // Is this correct ?
+		if isNear {
 			// JE rel8
 			r = []byte{0x74}
 			r = append(r, 0)
@@ -183,11 +183,22 @@ func encode(s *statement, instrAddr uintptr) *Instruction {
 		}
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		r = []byte{0x0f,0x85}
-		r = append(r, 0,0,0,0)
-		unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
-			nextInstrAddr: instrAddr + uintptr(len(r)),
-			symbolUsed:    trgtSymbol,
+		isNear := true
+		if isNear {
+			r = []byte{0x75}
+			r = append(r, 0)
+			unresolvedCodeSymbols[instrAddr+1] = &addrToReplace{
+				nextInstrAddr: instrAddr + uintptr(len(r)),
+				symbolUsed:    trgtSymbol,
+			}
+		} else {
+			// rel32
+			r = []byte{0x0f,0x85}
+			r = append(r, 0,0,0,0)
+			unresolvedCodeSymbols[instrAddr+2] = &addrToReplace{
+				nextInstrAddr: instrAddr + uintptr(len(r)),
+				symbolUsed:    trgtSymbol,
+			}
 		}
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
