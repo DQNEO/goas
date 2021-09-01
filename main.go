@@ -463,6 +463,7 @@ func encodeAllText(ss []*statement) []byte {
 	var textAddr uintptr
 	var insts []*Instruction
 	var prev *Instruction
+	var first *Instruction
 	for _, s := range ss {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
@@ -474,19 +475,21 @@ func encodeAllText(ss []*statement) []byte {
 		instr := encode(s)
 		instr.startAddr = textAddr
 		insts = append(insts, instr)
-		if prev != nil {
+		if first == nil {
+			first = instr
+		} else {
 			prev.next = instr
 		}
 		textAddr += uintptr(len(instr.code))
 
- 		prev = instr
 		if debugEncoder {
 			debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
 		}
+		prev = instr
 	}
 
 	var allText []byte
-	for _, instr := range insts {
+	for instr := first; instr != nil; instr = instr.next {
 		allText = append(allText, instr.code...)
 	}
 
