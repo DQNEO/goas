@@ -11,7 +11,7 @@ import (
 
 var oFlag = flag.String("o", "a.out", "output file")
 
-var debug bool = false
+var debug bool = true
 
 func debugf(s string, a ...interface{}) {
 	if !debug {
@@ -229,7 +229,7 @@ func calcOffsetOfSection(s *section, prev *section) {
 	}
 	s.header.sh_offset = tentative_offset + s.numZeroPad
 	s.header.sh_size = uintptr(len(s.contents))
-	debugf("size of section %s is %x\n", s.sh_name, s.header.sh_size)
+	//debugf("size of section %s is %x\n", s.sh_name, s.header.sh_size)
 }
 
 func makeStrTab(symbols []string) []byte {
@@ -322,8 +322,8 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		symbolIndex[".data"] = index
 
 	}
-	debugf("symbolsInLexicalOrder[%d]=%v\n", len(symbolsInLexicalOrder), symbolsInLexicalOrder)
-	debugf("globalSymbols=%v\n", globalSymbols)
+	//debugf("symbolsInLexicalOrder[%d]=%v\n", len(symbolsInLexicalOrder), symbolsInLexicalOrder)
+	//debugf("globalSymbols=%v\n", globalSymbols)
 
 	var localSymbols []string
 	var globalDefinedSymbols []string
@@ -409,7 +409,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		}
 		symbolTable = append(symbolTable, e)
 		symbolIndex[symname] = index
-		debugf("indexOfFirstNonLocalSymbol=%d\n", indexOfFirstNonLocalSymbol)
+		//debugf("indexOfFirstNonLocalSymbol=%d\n", indexOfFirstNonLocalSymbol)
 		//debugf("[buildSymbolTable] appended. index = %d, name = %s\n", index, symname)
 	}
 
@@ -460,11 +460,12 @@ func dumpText(code []byte) string {
 }
 
 var debugEncoder bool = false
+var first *Instruction
 
 func encodeAllText(ss []*statement) []byte {
 	var insts []*Instruction
+	var index int
 	var prev *Instruction
-	var first *Instruction
 	for _, s := range ss {
 		if s.labelSymbol == "" && s.keySymbol == "" {
 			continue
@@ -472,13 +473,15 @@ func encodeAllText(ss []*statement) []byte {
 
 		instr := encode(s)
 		insts = append(insts, instr)
+		instr.index = index
+		index++
 		if first == nil {
 			first = instr
 		} else {
 			prev.next = instr
 		}
 		if debugEncoder {
-			debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
+			//debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
 		}
 		prev = instr
 	}
@@ -495,14 +498,44 @@ func encodeAllText(ss []*statement) []byte {
 		textAddr += uintptr(len(instr.code))
 	}
 
+	for _, vr := range variableInstrs {
+		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
+		if !ok {
+			debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
+			continue
+		}
+		diff := calcDistance(vr, sym)
+		if -128 < diff && diff < 128 {
+			// rel8
+			vr.varcode.rel8Code[vr.varcode.rel8Offset] = uint8(diff)
+			vr.code = vr.varcode.rel8Code
+		} else {
+			// rel32
+			vr.varcode.rel32Code[vr.varcode.rel32Offset] = uint8(diff)
+			vr.code = vr.varcode.rel32Code
+		}
+		debugf("variable instr:%s, diff=%d\n", vr.s.raw, diff)
+
+		allText = nil
+		textAddr = 0
+		for instr := first; instr != nil; instr = instr.next {
+			instr.startAddr = textAddr
+			s := instr.s
+			if s.labelSymbol != "" {
+				definedSymbols[s.labelSymbol].instr = instr
+			}
+			allText = append(allText, instr.code...)
+			textAddr += uintptr(len(instr.code))
+		}
+	}
+
 	// determine relative addr to symbol
 	for _, usage := range symbolUsages {
 		sym, ok := definedSymbols[usage.symbolUsed]
 		if !ok {
 			continue//debugf("  symbol not found: %s\n" , usage.symbolUsed)
 		}
-		diff := calcDistance(usage.instr, sym)
-
+		diff := sym.instr.startAddr - usage.instr.next.startAddr
 		isNear := diff <= 255
 		if isNear {
 			// 8bit
@@ -512,7 +545,7 @@ func encodeAllText(ss []*statement) []byte {
 			allText[placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
 		} else {
 			// 32bit ?
-			debugf("diff is too large for:" + usage.symbolUsed)
+			debugf("diff is too large for %s\n" , usage.symbolUsed)
 		}
 
 	}
@@ -585,10 +618,10 @@ func main() {
 
 	}
 
-	debugf("Encoding .text ... [%v]\n", textStmts)
+	//debugf("Encoding .text ... [%v]\n", textStmts)
 	code := encodeAllText(textStmts)
-	debugf("%s\n", dumpText(code))
-	debugf("Encoding .data ...\n")
+	//debugf("%s\n", dumpText(code))
+	//debugf("Encoding .data ...\n")
 	data := encodeAllData(dataStmts)
 	//debugf("mapDataLabelAddr=%v\n", mapDataLabelAddr)
 	s_data.contents = data
@@ -682,7 +715,7 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 				r_addend: addr + ru.adjust - 4,     // 8 bytes
 			}
 			p := (*[24]byte)(unsafe.Pointer(rla))[:]
-			debugf("[rela.text] r_offset:%x, r_info=%x, r_addend=%x    (%s)\n", rla.r_offset, rla.r_info, rla.r_addend, ru.uses)
+			//debugf("[rela.text] r_offset:%x, r_info=%x, r_addend=%x    (%s)\n", rla.r_offset, rla.r_info, rla.r_addend, ru.uses)
 			rela_text_c = append(rela_text_c, p...)
 		}
 		s_rela_text.contents = rela_text_c

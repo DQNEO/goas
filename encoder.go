@@ -104,11 +104,33 @@ func composeSIB(scale byte, index byte, base byte) byte {
 	return scale<<6 + index<<3 + base
 }
 
+var variableInstrs []*Instruction
+
+// 3.1.1.3 Instruction Column in the Opcode Summary Table
+// The “Instruction” column gives the syntax of the instruction statement as it would appear in an ASM386 program.
+// The following is a list of the symbols used to represent operands in the instruction statements:
+//
+// • rel8 — A relative address in the range from 128 bytes before the end of the instruction to 127 bytes after the
+// end of the instruction.
+// • rel16, rel32 — A relative address within the same code segment as the instruction assembled. The rel16
+// symbol applies to instructions with an operand-size attribute of 16 bits; the rel32 symbol applies to instructions
+// with an operand-size attribute of 32 bits.
+//
+type variableCode struct{
+	trgtSymbol string
+	rel8Code []byte
+	rel8Offset uintptr
+	rel32Code []byte
+	rel32Offset uintptr
+}
+
 type Instruction struct {
 	startAddr uintptr
 	s         *statement
-	code      []byte
+	code      []byte // static code
 	next      *Instruction
+	index     int
+	varcode  *variableCode
 }
 
 var symbolUsages []*symbolUsage
@@ -127,10 +149,30 @@ func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr) {
 	})
 }
 
-func calcDistance(userInstr *Instruction, symdef *symbolDefinition) uintptr {
+func calcDistance(userInstr *Instruction, symdef *symbolDefinition) int {
 	//debugf("  found symbol:%v\n", sym.name)
-	nextInstrAddr := userInstr.next.startAddr
-	diff := symdef.instr.startAddr - nextInstrAddr
+	var from, to *Instruction
+	var forward bool
+	if userInstr.index > symdef.instr.index {
+		// backward reference
+		from , to = symdef.instr, userInstr.next
+	} else {
+		// forward reference
+		from , to = userInstr.next, symdef.instr
+		forward = true
+	}
+
+	var diff  int
+	for instr := from; instr != to; instr = instr.next {
+		var length int
+		length = len(instr.code)
+		diff += length
+	}
+
+	if !forward {
+		diff = - diff
+	}
+	debugf("calcDistance=%d\n", diff)
 	return diff
 }
 
@@ -171,26 +213,34 @@ func encode(s *statement) *Instruction {
 	switch s.keySymbol {
 	case "nop":
 		r = []byte{0x90}
-	case "jmp":
-		// EB cb
+	case "jmp": // JMP rel8 or rel32s
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		r = []byte{0xeb}
-		r = append(r, 0)
-		refersSymbol(instr, trgtSymbol, 1)
+		varcode := &variableCode{
+			trgtSymbol: trgtSymbol,
+			// JMP rel8: EB cb
+			rel8Code:    []byte{0xeb, 0},
+			rel8Offset:  1,
+			// JMP rel32: E9 cd
+			rel32Code:   []byte{0xe9,0xcd,0,0,0,0},
+			rel32Offset: 2,
+		}
+		instr.varcode = varcode
+		r = varcode.rel32Code // Conservative allocation
+		variableInstrs = append(variableInstrs, instr)
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		isNear := false
-		if isNear {
-			// JE rel8
-			r = []byte{0x74}
-			r = append(r, 0)
-			refersSymbol(instr, trgtSymbol, 1)
-		} else {
-			// JE rel32
-			r = []byte{0x0f,0x84}
-			r = append(r, 0,0,0,0)
-			refersSymbol(instr, trgtSymbol, 2)
+		varcode := &variableCode{
+			trgtSymbol: trgtSymbol,
+			// JE rel8: 74 cb
+			rel8Code:    []byte{0x74, 0},
+			rel8Offset:  1,
+			// JE rel32: 0F 84 cd
+			rel32Code:   []byte{0x0f,0x84,0,0,0,0},
+			rel32Offset: 2,
 		}
+		instr.varcode = varcode
+		r = varcode.rel32Code // Conservative allocation
+		variableInstrs = append(variableInstrs, instr)
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		isNear := true
