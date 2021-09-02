@@ -488,6 +488,7 @@ func encodeAllText(ss []*statement) []byte {
 
 	var allText []byte
 	var textAddr uintptr
+	allText, textAddr = nil , 0
 	for instr := first; instr != nil; instr = instr.next {
 		instr.startAddr = textAddr
 		s := instr.s
@@ -507,26 +508,26 @@ func encodeAllText(ss []*statement) []byte {
 		diff := calcDistance(vr, sym)
 		if -128 < diff && diff < 128 {
 			// rel8
-			vr.varcode.rel8Code[vr.varcode.rel8Offset] = uint8(diff)
 			vr.code = vr.varcode.rel8Code
+			vr.code[vr.varcode.rel8Offset] = uint8(diff)
+			vr.code = append(vr.code, 0x90,0x90,0x90)
 		} else {
 			// rel32
 			vr.varcode.rel32Code[vr.varcode.rel32Offset] = uint8(diff)
 			vr.code = vr.varcode.rel32Code
 		}
 		debugf("variable instr:%s, diff=%d\n", vr.s.raw, diff)
+	}
 
-		allText = nil
-		textAddr = 0
-		for instr := first; instr != nil; instr = instr.next {
-			instr.startAddr = textAddr
-			s := instr.s
-			if s.labelSymbol != "" {
-				definedSymbols[s.labelSymbol].instr = instr
-			}
-			allText = append(allText, instr.code...)
-			textAddr += uintptr(len(instr.code))
+	allText, textAddr = nil , 0
+	for instr := first; instr != nil; instr = instr.next {
+		instr.startAddr = textAddr
+		s := instr.s
+		if s.labelSymbol != "" {
+			definedSymbols[s.labelSymbol].instr = instr
 		}
+		allText = append(allText, instr.code...)
+		textAddr += uintptr(len(instr.code))
 	}
 
 	// determine relative addr to symbol

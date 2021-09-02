@@ -167,12 +167,13 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) int {
 		var length int
 		length = len(instr.code)
 		diff += length
+		debugf("  length=%d, diff=%d code=%s\n", length, diff, instr.s.raw)
 	}
 
 	if !forward {
 		diff = - diff
 	}
-	debugf("calcDistance=%d\n", diff)
+
 	return diff
 }
 
@@ -421,7 +422,7 @@ func encode(s *statement) *Instruction {
 						r = []byte{REX_W, opcode, modRM}
 
 						symbol := expr.left.(*symbolExpr).name
-						if _, defined := definedSymbols[symbol]; !defined {
+						//if _, defined := definedSymbols[symbol]; !defined {
 							// @TODO shouud use expr.right.(*numberExpr).val as an offset
 							ru := &relaTextUser{
 								instr: instr,
@@ -430,7 +431,7 @@ func encode(s *statement) *Instruction {
 								adjust: int64(evalNumExpr(expr.right)),
 							}
 							relaTextUsers = append(relaTextUsers, ru)
-						}
+						//}
 						r = append(r, 0, 0, 0, 0)
 
 					default:
