@@ -1,5 +1,6 @@
 /gas
 /*.o
+/*.bin
 /*.xxd
 /*.readelf
 /*.hexdump

@@ -29,6 +29,23 @@ objs: $(GNU_OBJS) $(MY_OBJS)
 as: $(GOSOURCES)
 	go build -o as $(GOSOURCES)
 
+t.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
+	as -o $@ $^
+
+t.gnu.bin: t.gnu.o
+	ld -e _rt0_amd64_linux -o $@ $<
+
+t.my.o: ../.shared/babygo-test.s ../src/runtime/runtime.s
+	cat $^ > t.s
+	./as -o $@ t.s
+
+t.my.bin: t.my.o
+	ld -e _rt0_amd64_linux -o $@ $<
+
+test: t.my.bin t.gnu.bin
+	./t.my.bin
+	./t.gnu.bin
+
 clean:
 	rm -f as *.o
 
