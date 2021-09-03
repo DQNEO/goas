@@ -35,9 +35,8 @@ t.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
 t.gnu.bin: t.gnu.o
 	ld -e _rt0_amd64_linux -o $@ $<
 
-t.my.o: ../.shared/babygo-test.s ../src/runtime/runtime.s
-	cat $^ > t.s
-	./as -o $@ t.s
+t.my.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
+	as -o $@ $^
 
 t.my.bin: t.my.o
 	ld -e _rt0_amd64_linux -o $@ $<

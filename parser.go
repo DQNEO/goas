@@ -503,6 +503,8 @@ func parseFile(path string) []*statement {
 	}
 	source = src
 	filename = path
+	idx = 0
+	lineno = 1
 
 	var stmts []*statement
 	var i int = 1

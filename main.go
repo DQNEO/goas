@@ -567,12 +567,12 @@ func encodeAllData(ss []*statement) []byte {
 func main() {
 	flag.Parse()
 
-	var inFile string
+	var inFiles []string
 
 	if flag.NArg() > 0 {
-		inFile = flag.Arg(0)
+		inFiles = flag.Args()
 	} else {
-		inFile = "/dev/stdin"
+		inFiles = []string{"/dev/stdin"}
 	}
 
 	outputFile := *oFlag
@@ -582,7 +582,11 @@ func main() {
 	}
 
 	//debugParser()
-	stmts := parseFile(inFile)
+	var stmts []*statement
+	for _, inFile := range inFiles {
+		ss := parseFile(inFile)
+		stmts = append(stmts, ss...)
+	}
 	//dumpStmts(stmts)
 
 	var textStmts []*statement
