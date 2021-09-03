@@ -224,8 +224,8 @@ func encode(s *statement) *Instruction {
 			rel8Code:    []byte{0xeb, 0},
 			rel8Offset:  1,
 			// JMP rel32: E9 cd
-			rel32Code:   []byte{0xe9,0xcd,0,0,0,0},
-			rel32Offset: 2,
+			rel32Code:   []byte{0xe9,0,0,0,0},
+			rel32Offset: 1,
 		}
 		instr.varcode = varcode
 		r = varcode.rel32Code // Conservative allocation
@@ -246,18 +246,18 @@ func encode(s *statement) *Instruction {
 		variableInstrs = append(variableInstrs, instr)
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		isNear := true
-		if isNear {
-			r = []byte{0x75}
-			r = append(r, 0)
-			refersSymbol(instr, trgtSymbol, 1, 1)
-
-		} else {
-			// rel32
-			r = []byte{0x0f,0x85}
-			r = append(r, 0,0,0,0)
-			refersSymbol(instr, trgtSymbol, 2, 4)
+		varcode := &variableCode{
+			trgtSymbol: trgtSymbol,
+			// JNE rel8: 75 cb
+			rel8Code:    []byte{0x75, 0},
+			rel8Offset:  1,
+			// JE rel32: 0F 85 cd
+			rel32Code:   []byte{0x0f,0x85,0,0,0,0},
+			rel32Offset: 2,
 		}
+		instr.varcode = varcode
+		r = varcode.rel32Code // Conservative allocation
+		variableInstrs = append(variableInstrs, instr)
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 
@@ -270,7 +270,6 @@ func encode(s *statement) *Instruction {
 			toJump: true,
 		}
 		relaTextUsers = append(relaTextUsers, ru)
-
 		r = append(r, 0, 0, 0, 0)
 		refersSymbol(instr, trgtSymbol, 1, 4)
 	case "leaq":
@@ -303,7 +302,12 @@ func encode(s *statement) *Instruction {
 
 				var  modRM, rm, reg byte
 				var displacementBytes []byte
-				if -128 < displacement && displacement < 128 {
+				if displacement == 0 {
+					mod := ModIndirectionWithNoDisplacement
+					rm = regi.toBits()
+					reg = trgtRegi.toBits()
+					modRM = composeModRM(mod, reg, rm)
+				} else 	if -128 < displacement && displacement < 128 {
 					mod := ModIndirectionWithDisplacement8
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
@@ -315,8 +319,7 @@ func encode(s *statement) *Instruction {
 					reg = trgtRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
 					var disp32 int32 = int32(displacement)
-					displacementBytes =  (*[4]byte)(unsafe.Pointer(&disp32))[:]
-
+					displacementBytes = (*[4]byte)(unsafe.Pointer(&disp32))[:]
 				}
 				if rm == regBits("sp") {
 					// use SIB

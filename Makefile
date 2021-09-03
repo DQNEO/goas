@@ -13,7 +13,6 @@ diff: objs
 	diff 06.gnu.o 06.my.o
 	diff 07.gnu.o 07.my.o
 	diff 10.gnu.o 10.my.o
-	diff 11.gnu.o 11.my.o
 
 	@echo ok
 
