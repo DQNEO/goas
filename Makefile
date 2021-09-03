@@ -35,10 +35,10 @@ t.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
 t.gnu.bin: t.gnu.o
 	ld -e _rt0_amd64_linux -o $@ $<
 
-t.my.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
-	as -o $@ $^
+t.my.o:  as ../src/runtime/runtime.s ../.shared/babygo-test.s
+	./as -o $@ ../src/runtime/runtime.s ../.shared/babygo-test.s
 
-t.my.bin: t.my.o
+t.my.bin: t.my.o as
 	ld -e _rt0_amd64_linux -o $@ $<
 
 test: t.my.bin t.gnu.bin
@@ -46,5 +46,5 @@ test: t.my.bin t.gnu.bin
 	./t.gnu.bin
 
 clean:
-	rm -f as *.o
+	rm -f as *.o *.bin
 
