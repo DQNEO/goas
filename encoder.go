@@ -139,13 +139,15 @@ type symbolUsage struct {
 	symbolUsed    string
 	instr *Instruction
 	offset uintptr
+	width int // 1 or 4 or 8
 }
 
-func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr) {
+func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr, width int) {
 	symbolUsages = append(symbolUsages, &symbolUsage{
 		symbolUsed:    trgtSymbol,
 		instr: instr,
 		offset: offset,
+		width: width,
 	})
 }
 
@@ -167,7 +169,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) int {
 		var length int
 		length = len(instr.code)
 		diff += length
-		debugf("  length=%d, diff=%d code=%s\n", length, diff, instr.s.raw)
+		//debugf("  length=%d, diff=%d code=%s\n", length, diff, instr.s.raw)
 	}
 
 	if !forward {
@@ -248,17 +250,18 @@ func encode(s *statement) *Instruction {
 		if isNear {
 			r = []byte{0x75}
 			r = append(r, 0)
-			refersSymbol(instr, trgtSymbol, 1)
+			refersSymbol(instr, trgtSymbol, 1, 1)
 
 		} else {
 			// rel32
 			r = []byte{0x0f,0x85}
 			r = append(r, 0,0,0,0)
-			refersSymbol(instr, trgtSymbol, 2)
+			refersSymbol(instr, trgtSymbol, 2, 4)
 		}
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 
+		// call rel16
 		r = []byte{0xe8}
 		ru := &relaTextUser{
 			instr: instr,
@@ -269,7 +272,7 @@ func encode(s *statement) *Instruction {
 		relaTextUsers = append(relaTextUsers, ru)
 
 		r = append(r, 0, 0, 0, 0)
-		refersSymbol(instr, trgtSymbol, 1)
+		refersSymbol(instr, trgtSymbol, 1, 4)
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi

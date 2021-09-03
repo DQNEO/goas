@@ -287,7 +287,7 @@ func resolveShNames(ss []*section) {
 		sh_name := s.sh_name
 		idx := bytes.Index(s_shstrtab.contents, []byte(sh_name))
 		if idx <= 0 {
-			debugf("idx of sh %s = %d\n", s.sh_name, idx)
+			//debugf("idx of sh %s = %d\n", s.sh_name, idx)
 			panic(s.sh_name + " is not found in .strtab contents")
 		}
 		s.header.sh_name = uint32(idx)
@@ -383,7 +383,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 				panic("TBI")
 			}
 		} else {
-			debugf("undefined symbol  %s\n", symname)
+			//debugf("undefined symbol  %s\n", symname)
 			isGlobal = true
 		}
 
@@ -502,7 +502,7 @@ func encodeAllText(ss []*statement) []byte {
 	for _, vr := range variableInstrs {
 		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
 		if !ok {
-			debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
+			//debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
 			continue
 		}
 		diff := calcDistance(vr, sym)
@@ -516,7 +516,7 @@ func encodeAllText(ss []*statement) []byte {
 			vr.varcode.rel32Code[vr.varcode.rel32Offset] = uint8(diff)
 			vr.code = vr.varcode.rel32Code
 		}
-		debugf("variable instr:%s, diff=%d\n", vr.s.raw, diff)
+		//debugf("variable instr:%s, diff=%d\n", vr.s.raw, diff)
 	}
 
 	allText, textAddr = nil , 0
@@ -534,19 +534,31 @@ func encodeAllText(ss []*statement) []byte {
 	for _, usage := range symbolUsages {
 		sym, ok := definedSymbols[usage.symbolUsed]
 		if !ok {
-			continue//debugf("  symbol not found: %s\n" , usage.symbolUsed)
+			debugf("  symbol not found .... skip : %s\n" , usage.symbolUsed)
+			continue
 		}
 		diff := sym.instr.startAddr - usage.instr.next.startAddr
-		isNear := diff <= 255
-		if isNear {
+		if diff == 0 {
+			panic("diff must not be zero")
+		}
+		debugf("  padding relative address for symbol usage of  %s\n" , usage.symbolUsed)
+		switch usage.width {
+		case 1:
 			// 8bit
 			//debugf("  patching symol addr into code : %s=%02x => %02x (%02x - %02x)\n",
 			//	sym.name, codeAddr, diff, sym.address , usage.nextInstrAddr)
 			placeToEmbed := usage.instr.startAddr + usage.offset
 			allText[placeToEmbed] = byte(diff) // @FIXME diff can be larget than a byte
-		} else {
-			// 32bit ?
-			debugf("diff is too large for %s\n" , usage.symbolUsed)
+		case 4:
+			placeToEmbed := usage.instr.startAddr + usage.offset
+			diffInt32 := int32(diff)
+			var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
+			allText[placeToEmbed] = buf[0]
+			allText[placeToEmbed+1] = buf[1]
+			allText[placeToEmbed+2] = buf[2]
+			allText[placeToEmbed+3] = buf[3]
+		default:
+			panic("TBI")
 		}
 
 	}
