@@ -12,6 +12,7 @@ movq 8+8(%rsp), %rcx
 movb %al, 0(%rsi)
 movw %ax, 0(%rsi)
 movzbq 0(%rax), %rax
+movzbq (%rsp), %rax
 movzwq 0(%rax), %rax
 
 leaq 8(%rsp),%rsi

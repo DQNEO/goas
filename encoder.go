@@ -307,7 +307,7 @@ func encode(s *statement) *Instruction {
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
-				} else 	if -128 < displacement && displacement < 128 {
+				} else 	if -128 <= displacement && displacement < 128 {
 					mod := ModIndirectionWithDisplacement8
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
@@ -551,10 +551,16 @@ func encode(s *statement) *Instruction {
 			r = []byte{REX_W, 0x0f, 0xb6, modRM}
 		case *indirection:
 			mod := ModIndirectionWithNoDisplacement
-			reg := src.regi.toBits()
-			rm := trgtOp.(*register).toBits()
+			rm := src.regi.toBits()
+			reg := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
-			r = []byte{REX_W, 0x0f, 0xb6, modRM}
+			if rm == regBits("sp") {
+				// use SIB
+				sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+				r = []byte{REX_W, 0x0f, 0xb6, modRM, sib}
+			} else {
+				r = []byte{REX_W, 0x0f, 0xb6, modRM}
+			}
 		default:
 			panic("TBI")
 		}
@@ -576,7 +582,7 @@ func encode(s *statement) *Instruction {
 		var modRM uint8 = 0b11000000 + regFieldN
 		r = []byte{opcode, modRM}
 	case "addq":
-		switch srcOp.(type) {
+		switch src := srcOp.(type) {
 		case *register:
 			opcode := uint8(0x01)
 			regi := srcOp.(*register).toBits()
@@ -584,12 +590,21 @@ func encode(s *statement) *Instruction {
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate: // "addq $32, %regi"
-			opcode := uint8(0x83)
-			rm := trgtOp.(*register).toBits()
-			modRM := composeModRM(ModRegi, 0, rm)
-			imm := srcOp.(*immediate)
-			imValue := evalNumExpr(imm.expr)
-			r = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
+			{
+				rm := trgtOp.(*register).toBits()
+				modRM := composeModRM(ModRegi, 0, rm)
+				imValue := evalNumExpr(src.expr)
+				switch {
+				case imValue < 128:
+					r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+				case imValue < 1<<31:
+					i32 := int32(imValue)
+					hex := (*[4]uint8)(unsafe.Pointer(&i32))
+					r = []byte{REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3]}
+				default:
+					panic("TBI")
+				}
+			}
 		default:
 			panic("TBI")
 		}
@@ -610,11 +625,11 @@ func encode(s *statement) *Instruction {
 				panic(err)
 			}
 			switch {
-			case imValue < 1<<8 :
+			case imValue < 1<<7 :
 				r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
-			case imValue < 1<<32 :
-				ui32 := uint32(imValue)
-				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
+			case imValue < 1<<31 :
+				i32 := int32(imValue)
+				hex := (*[4]uint8)(unsafe.Pointer(&i32))
 				r = []byte{REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3]}
 			default:
 				panic("TBI")
@@ -711,19 +726,20 @@ func encode(s *statement) *Instruction {
 				panic(err)
 			}
 			switch {
-			case imValue < 1<<8 :
+			case imValue < 1<<7 : //PUSH imm8 : 6a ib
 				r = []byte{0x6a, uint8(imValue)}
-			case imValue < 1<<16 :
-				ui16 := uint16(imValue)
-				hex := (*[2]uint8)(unsafe.Pointer(&ui16))
-				r = []byte{0x68, hex[0], hex[1]}
-			case imValue < 1<<32 :
-				ui32 := uint32(imValue)
+			//case imValue < 1<<14 : //PUSH imm16: 	68 iw
+			//	ui16 := int16(imValue)
+			//	hex := (*[2]uint8)(unsafe.Pointer(&ui16))
+			//	r = []byte{0x68, hex[0], hex[1]}
+			case imValue < 1<<31 : // PUSH imm32 68 id
+				ui32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
 				r = []byte{0x68, hex[0], hex[1], hex[2], hex[3]}
 			default:
 				panic("TBI")
 			}
+			debugf("[encoding]pushq %10s => %x\n",trgt.expr.(*numberLit).val, r)
 		default:
 			panic("[encoder] TBI:" + string(s.raw))
 		}

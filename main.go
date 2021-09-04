@@ -388,7 +388,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		}
 
 		index++
-		name_offset := bytes.Index(s_strtab.contents, []byte(symname))
+		name_offset := bytes.Index(s_strtab.contents, append([]byte(symname), 0x0))
 		if name_offset < 0 {
 			panic("name_offset should not be negative")
 		}
