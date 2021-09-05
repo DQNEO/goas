@@ -22,6 +22,7 @@ leaq 8(%rbp), %rax
 leaq -260(%rbp), %rax
 
 addq %rax, %rdi
+addq $0x20,%rsp
 subq $277, %rsp
 subq $1, %rsp
 divq %rcx

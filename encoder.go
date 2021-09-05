@@ -49,6 +49,7 @@ const RM_RIP_RELATIVE = 0b101
 // /digit — A digit between 0 and 7 indicates that the ModR/M byte of the instruction uses only the r/m (register
 // or memory) operand. The reg field contains the digit that provides an extension to the instruction's opcode.
 
+// shlash_n represents /n value which may be passed an a regOpcode.
 const slash_0 = 0 // /0
 const slash_1 = 1 // /1
 const slash_2 = 2 // /2
@@ -590,21 +591,25 @@ func encode(s *statement) *Instruction {
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate: // "addq $32, %regi"
-			{
-				rm := trgtOp.(*register).toBits()
-				modRM := composeModRM(ModRegi, 0, rm)
-				imValue := evalNumExpr(src.expr)
-				switch {
-				case imValue < 128:
-					r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
-				case imValue < 1<<31:
-					i32 := int32(imValue)
-					hex := (*[4]uint8)(unsafe.Pointer(&i32))
+		 	{
+			rm := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, slash_0, rm)
+			imValue := evalNumExpr(src.expr)
+			switch {
+			case imValue < 128:
+				r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+			case imValue < 1<<31:
+				i32 := int32(imValue)
+				hex := (*[4]uint8)(unsafe.Pointer(&i32))
+				if trgtOp.(*register).name == "rax" {
+					r = []byte{REX_W, 0x05, hex[0], hex[1], hex[2], hex[3]}
+				} else {
 					r = []byte{REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3]}
-				default:
-					panic("TBI")
 				}
+			default:
+				panic("TBI")
 			}
+		}
 		default:
 			panic("TBI")
 		}

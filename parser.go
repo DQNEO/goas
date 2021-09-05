@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/DQNEO/babygo/lib/strconv"
+	"strconv"
 	"os"
 )
 
@@ -150,8 +150,12 @@ func readStringLiteral() string {
 func evalNumExpr(expr expr) int {
 	switch e := expr.(type) {
 	case *numberLit:
-		num := strconv.Atoi(e.val)
-		return num
+		num,err := strconv.ParseInt(e.val, 0, 32)
+		if err != nil {
+			panic(err)
+		}
+		debugf("val, num = %s, %d\n", e.val, num)
+		return int(num)
 	case *charLit:
 		return int(e.val)
 	case *binaryExpr:
@@ -171,6 +175,7 @@ func evalNumExpr(expr expr) int {
 
 // binary or unary or primary expr
 func parseArithExpr() expr {
+
 	n := readNumberLitral()
 	skipWhitespaces()
 	ch := source[idx]
@@ -197,6 +202,7 @@ type numberLit struct {
 }
 
 func readNumberLitral() *numberLit {
+	skipWhitespaces()
 	first := source[idx]
 	idx++
 	var buf []byte = []byte{first}
