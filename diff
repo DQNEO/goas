@@ -7,4 +7,4 @@ subcmd="$@"
 my=${basename}.my.o
 gnu=${basename}.gnu.o
 
-diff -u  --color  <($subcmd $my) <($subcmd $gnu)
+diff -y --color --suppress-common-lines <($subcmd $my) <($subcmd $gnu)
