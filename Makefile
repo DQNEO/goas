@@ -4,7 +4,7 @@ GNU_OBJS = $(SOURCES:%.s=%.gnu.o)
 MY_OBJS = $(SOURCES:%.s=%.my.o)
 
 .PHONY: diff
-diff: objs
+diff: objs diffbbgtest
 	diff 00.gnu.o 00.my.o
 	diff 01.gnu.o 01.my.o
 	diff 02.gnu.o 02.my.o
@@ -40,9 +40,9 @@ t.my.o:  as ../src/runtime/runtime.s ../.shared/babygo-test.s
 t.my.bin: t.my.o as
 	ld -e _rt0_amd64_linux -o $@ $<
 
-bbgtest: t.my.bin t.gnu.bin
-	cd .. && assembler/t.gnu.bin
-	#cd .. && assembler/t.my.bin
+.PHONY: diffbbgtest
+diffbbgtest: t.my.o t.gnu.o
+	diff t.my.o t.gnu.o
 
 clean:
 	rm -f as *.o *.bin

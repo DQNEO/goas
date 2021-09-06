@@ -462,6 +462,53 @@ func dumpText(code []byte) string {
 var debugEncoder bool = false
 var first *Instruction
 
+func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
+	var todos []*Instruction
+	for _, vr := range instrs {
+		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
+		if !ok {
+			//debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
+			continue
+		}
+		diff, min, max, isLenDecided := calcDistance(vr, sym)
+		if sym.name == ".L.for.cond.355" {
+			debugf("  calculating distance to %s\n", sym.name)
+			debugf("    diff=%02x, min=%02x, max=%02x, isLenDecided=%v\n",  diff, min,max, isLenDecided)
+		}
+		if isLenDecided {
+			if -128 <= diff && diff < 128 {
+				// rel8
+				vr.code = vr.varcode.rel8Code
+				vr.code[vr.varcode.rel8Offset] = uint8(diff)
+			} else {
+				// rel32
+				diffInt32 := int32(diff)
+				var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
+				code ,offset := vr.varcode.rel32Code, vr.varcode.rel32Offset
+				code[offset] = buf[0]
+				code[offset+1] = buf[1]
+				code[offset+2] = buf[2]
+				code[offset+3] = buf[3]
+				vr.code = code
+			}
+			vr.isLenDecided = true
+		} else {
+			if -128 <= max && max < 128 {
+				vr.isLenDecided = true
+				vr.varcode.rel32Code = nil
+				vr.code = vr.varcode.rel8Code
+			} else if min < -128 || 128 <= min {
+				vr.isLenDecided = true
+				vr.varcode.rel8Code = nil
+				vr.code = vr.varcode.rel32Code
+			}
+			todos = append(todos, vr)
+		}
+	}
+
+	return todos
+}
+
 func encodeAllText(ss []*statement) []byte {
 	var insts []*Instruction
 	var index int
@@ -488,6 +535,14 @@ func encodeAllText(ss []*statement) []byte {
 		prev = instr
 	}
 
+	for {
+		debugf("checking variableInstrs len=%d\n", len(variableInstrs))
+		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
+		if len(variableInstrs) == 0 {
+			break
+		}
+	}
+
 	var allText []byte
 	var textAddr uintptr
 	allText, textAddr = nil , 0
@@ -497,73 +552,15 @@ func encodeAllText(ss []*statement) []byte {
 		textAddr += uintptr(len(instr.code))
 	}
 
-	for _, vr := range variableInstrs {
-		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
+	// Resolve call targets
+	for _, call := range callTargets {
+		callee, ok := definedSymbols[call.trgtSymbol]
 		if !ok {
-			//debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
+			//debugf("  symbol not found .... skip : %s\n" , call.trgtSymbol)
 			continue
 		}
-		diff := calcDistance(vr, sym)
-		if -128 < diff && diff < 128 {
-			// rel8
-			vr.code = vr.varcode.rel8Code
-			if diff < 0 {
-				// backward jump
-				diff = diff - 3
-			}
-			vr.code[vr.varcode.rel8Offset] = uint8(diff)
-		} else {
-			// rel32
-			vr.varcode.rel32Code[vr.varcode.rel32Offset] = uint8(diff)
-			vr.code = vr.varcode.rel32Code
-		}
-		//debugf("variable instr:%s, diff=%d\n", vr.s.raw, diff)
-	}
-
-	for _, vr := range variableInstrs {
-		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
-		if !ok {
-			//debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
-			continue
-		}
-		diff := calcDistance(vr, sym)
-		if -128 < diff && diff < 128 {
-			// rel8
-			vr.code = vr.varcode.rel8Code
-			if diff < 0 {
-				// backward jump
-				diff = diff - (len(vr.varcode.rel32Code) - len(vr.varcode.rel8Code))
-			}
-			vr.code[vr.varcode.rel8Offset] = uint8(diff)
-		} else {
-			// rel32
-			diffInt32 := int32(diff)
-			var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
-			code ,offset := vr.varcode.rel32Code, vr.varcode.rel32Offset
-			code[offset] = buf[0]
-			code[offset+1] = buf[1]
-			code[offset+2] = buf[2]
-			code[offset+3] = buf[3]
-			vr.code = code
-		}
-
-	}
-	allText, textAddr = nil , 0
-	for instr := first; instr != nil; instr = instr.next {
-		instr.startAddr = textAddr
-		allText = append(allText, instr.code...)
-		textAddr += uintptr(len(instr.code))
-	}
-
-	// determine relative addr to symbol
-	for _, usage := range symbolUsages {
-		sym, ok := definedSymbols[usage.symbolUsed]
-		if !ok {
-			//debugf("  symbol not found .... skip : %s\n" , usage.symbolUsed)
-			continue
-		}
-		diff := sym.instr.startAddr - usage.instr.next.startAddr
-		placeToEmbed := usage.instr.startAddr + usage.offset
+		diff := callee.instr.startAddr - call.caller.next.startAddr
+		placeToEmbed := call.caller.startAddr + call.offset
 		diffInt32 := int32(diff)
 		var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
 		allText[placeToEmbed] = buf[0]
@@ -579,7 +576,7 @@ func encodeAllData(ss []*statement) []byte {
 	var allData []byte
 	for _, s := range ss {
 		if s.labelSymbol != "" {
-			debugf("[data] addr %4x, %s:\n", dataAddr, s.labelSymbol)
+			//debugf("[data] addr %4x, %s:\n", dataAddr, s.labelSymbol)
 		}
 		buf := encodeData(s, dataAddr)
 		dataAddr += uintptr(len(buf))

@@ -131,27 +131,33 @@ type Instruction struct {
 	next      *Instruction
 	index     int
 	varcode  *variableCode
+	isLenDecided bool
 }
 
-var symbolUsages []*symbolUsage
+var callTargets []*callTarget
 
-type symbolUsage struct {
-	symbolUsed    string
-	instr *Instruction
-	offset uintptr
-	width int // 1 or 4 or 8
+type callTarget struct {
+	trgtSymbol string
+	caller     *Instruction
+	offset     uintptr
+	width      int // 1 or 4 or 8
 }
 
-func refersSymbol(instr *Instruction, trgtSymbol string, offset uintptr, width int) {
-	symbolUsages = append(symbolUsages, &symbolUsage{
-		symbolUsed:    trgtSymbol,
-		instr: instr,
-		offset: offset,
-		width: width,
+func registerCallTarget(caller *Instruction, trgtSymbol string, offset uintptr, width int) {
+	callTargets = append(callTargets, &callTarget{
+		trgtSymbol: trgtSymbol,
+		caller:     caller,
+		offset:     offset,
+		width:      width,
 	})
 }
 
-func calcDistance(userInstr *Instruction, symdef *symbolDefinition) int {
+func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, int, bool) {
+	var dbg bool
+	if symdef.name == ".L.for.cond.355" {
+		dbg = true
+		//debugf("calcDistance to %s\n", symdef.name,)
+	}
 	//debugf("  found symbol:%v\n", sym.name)
 	var from, to *Instruction
 	var forward bool
@@ -163,20 +169,37 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) int {
 		from , to = userInstr.next, symdef.instr
 		forward = true
 	}
+	if dbg {
+		//debugf("forward: %v\n", forward)
+	}
 
-	var diff  int
+	var hasVariableLength bool
+	var diff, min, max int
 	for instr := from; instr != to; instr = instr.next {
-		var length int
-		length = len(instr.code)
-		diff += length
-		//debugf("  length=%d, diff=%d code=%s\n", length, diff, instr.s.raw)
+		if !instr.isLenDecided {
+			//debugf("  Not len decided=%s\n", instr.s.raw)
+			hasVariableLength = true
+			lenShort, lenLarge := len(instr.varcode.rel8Code), len(instr.varcode.rel32Code)
+			min += lenShort
+			max += lenLarge
+			diff += lenLarge
+		} else {
+			length := len(instr.code)
+			diff += length
+			min += length
+			max += length
+		}
 	}
 
 	if !forward {
-		diff = - diff
+		diff, min, max = -diff, -min, -max
 	}
 
-	return diff
+	if dbg {
+		//debugf("  diff=%02x, min=%02x, max=%02x, hasVariableLength=%v\n",  diff, min,max, hasVariableLength)
+	}
+
+	return diff, min, max, !hasVariableLength
 }
 
 func encode(s *statement) *Instruction {
@@ -196,6 +219,7 @@ func encode(s *statement) *Instruction {
 
 	if s.keySymbol == "" {
 		//fmt.Printf(" (label)\n")
+		instr.isLenDecided = true
 		return instr
 	}
 
@@ -271,7 +295,9 @@ func encode(s *statement) *Instruction {
 		}
 		relaTextUsers = append(relaTextUsers, ru)
 		r = append(r, 0, 0, 0, 0)
-		refersSymbol(instr, trgtSymbol, 1, 4)
+
+		registerCallTarget(instr, trgtSymbol, 1, 4)
+
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi
@@ -780,6 +806,9 @@ func encode(s *statement) *Instruction {
 
 	//fmt.Printf("=>  %#x\n", r)
 	instr.code = r
+	if instr.varcode == nil {
+		instr.isLenDecided = true
+	}
 	return instr
 }
 
