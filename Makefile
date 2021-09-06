@@ -42,7 +42,7 @@ t.my.bin: t.my.o as
 
 bbgtest: t.my.bin t.gnu.bin
 	cd .. && assembler/t.gnu.bin
-	./t.my.bin
+	#cd .. && assembler/t.my.bin
 
 clean:
 	rm -f as *.o *.bin
