@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"unsafe"
 )
 
@@ -807,15 +806,9 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 		switch opDtype := op.(type) {
 		case *numberLit:
 			rawVal := opDtype.val
-			var i int64
-			if strings.HasPrefix(rawVal, "0x") {
-				var err error
-				i, err = strconv.ParseInt(rawVal, 0, 0)
-				if err != nil {
-					panic(err)
-				}
-			} else {
-				// TBI
+			i, err := strconv.ParseInt(rawVal, 0, 64)
+			if err != nil {
+				panic(err)
 			}
 			buf := (*[8]byte)(unsafe.Pointer(&i))
 			return buf[:]
