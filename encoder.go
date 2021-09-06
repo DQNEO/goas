@@ -800,6 +800,30 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 	}
 
 	switch s.keySymbol {
+	case ".byte":
+		op := s.operands[0]
+		switch opDtype := op.(type) {
+		case *numberLit:
+			rawVal := opDtype.val
+			i, err := strconv.ParseInt(rawVal, 0, 8)
+			if err != nil {
+				panic(err)
+			}
+			buf := (*[1]byte)(unsafe.Pointer(&i))
+			return buf[:]
+		case *charLit:
+			rawVal := opDtype.val
+			return []uint8{rawVal}
+		}
+	case ".word":
+		op := s.operands[0]
+		rawVal := op.(*numberLit).val
+		i, err := strconv.ParseInt(rawVal, 0, 16)
+		if err != nil {
+			panic(err)
+		}
+		buf := (*[2]byte)(unsafe.Pointer(&i))
+		return buf[:]
 	case ".quad":
 		op := s.operands[0]
 		//debugf(".quad type=%T\n", op.ifc)
@@ -827,20 +851,6 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 		val := op.(string)
 		bytes := append([]byte(val), 0)
 		return bytes
-	case ".byte":
-		op := s.operands[0]
-		val := evalNumExpr(op)
-		if val > 255 {
-			panic("val is too big")
-		}
-		return []byte{uint8(val)}
-	case ".word":
-		op := s.operands[0]
-		val := evalNumExpr(op)
-		if val > 255 {
-			panic("TBI")
-		}
-		return []byte{uint8(val)}
 	default:
 		panic("TBI:" + s.keySymbol)
 	}
