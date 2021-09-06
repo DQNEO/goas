@@ -40,9 +40,9 @@ t.my.o:  as ../src/runtime/runtime.s ../.shared/babygo-test.s
 t.my.bin: t.my.o as
 	ld -e _rt0_amd64_linux -o $@ $<
 
-test: t.my.bin t.gnu.bin
+bbgtest: t.my.bin t.gnu.bin
+	cd .. && assembler/t.gnu.bin
 	./t.my.bin
-	./t.gnu.bin
 
 clean:
 	rm -f as *.o *.bin
