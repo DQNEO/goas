@@ -744,7 +744,7 @@ func encode(s *statement) *Instruction {
 			default:
 				panic("TBI")
 			}
-			debugf("[encoding]pushq %10s => %x\n",trgt.expr.(*numberLit).val, r)
+			//debugf("[encoding]pushq %10s => %x\n",trgt.expr.(*numberLit).val, r)
 		default:
 			panic("[encoder] TBI:" + string(s.raw))
 		}

@@ -154,7 +154,7 @@ func evalNumExpr(expr expr) int {
 		if err != nil {
 			panic(err)
 		}
-		debugf("val, num = %s, %d\n", e.val, num)
+		//debugf("val, num = %s, %d\n", e.val, num)
 		return int(num)
 	case *charLit:
 		return int(e.val)
@@ -535,7 +535,7 @@ func dumpStmt(i int, stmt *statement) {
 }
 
 func dumpStmts(stmts []*statement) {
-	debugf("%4s|%29s: |%30s | %s\n", "Line", "Label", "Instruction", "Operands")
+	//debugf("%4s|%29s: |%30s | %s\n", "Line", "Label", "Instruction", "Operands")
 	for i, stmt := range stmts {
 		dumpStmt(i, stmt)
 	}

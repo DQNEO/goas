@@ -578,6 +578,9 @@ func encodeAllData(ss []*statement) []byte {
 	var dataAddr uintptr
 	var allData []byte
 	for _, s := range ss {
+		if s.labelSymbol != "" {
+			debugf("[data] addr %4x, %s:\n", dataAddr, s.labelSymbol)
+		}
 		buf := encodeData(s, dataAddr)
 		dataAddr += uintptr(len(buf))
 		allData = append(allData, buf...)
