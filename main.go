@@ -11,10 +11,10 @@ import (
 
 var oFlag = flag.String("o", "a.out", "output file")
 
-var debug bool = true
+var debug = flag.Bool("d", false, "show debug message")
 
 func debugf(s string, a ...interface{}) {
-	if !debug {
+	if !*debug {
 		return
 	}
 	fmt.Fprintf(os.Stderr, s, a...)
