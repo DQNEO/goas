@@ -329,7 +329,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 	var globalDefinedSymbols []string
 	var globalUndefinedSymbols []string
 	for _, sym := range symbolsInLexicalOrder {
-		if strings.HasPrefix(sym,".L") {
+		if strings.HasPrefix(sym, ".L") {
 			// https://sourceware.org/binutils/docs-2.37/as.html#Symbol-Names
 			// Local Symbol Names
 			// A local symbol is any symbol beginning with certain local label prefixes. By default, the local label prefix is ‘.L’ for ELF systems or ‘L’ for traditional a.out systems, but each target may have its own set of local label prefixes. On the HPPA local symbols begin with ‘L$’.
@@ -436,7 +436,7 @@ type relaDataUser struct {
 var relaDataUsers []*relaDataUser
 
 type relaTextUser struct {
-	instr *Instruction
+	instr  *Instruction
 	offset uintptr
 	toJump bool
 	uses   string
@@ -479,8 +479,8 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 			} else {
 				// rel32
 				diffInt32 := int32(diff)
-				var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
-				code ,offset := vr.varcode.rel32Code, vr.varcode.rel32Offset
+				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+				code, offset := vr.varcode.rel32Code, vr.varcode.rel32Offset
 				code[offset] = buf[0]
 				code[offset+1] = buf[1]
 				code[offset+2] = buf[2]
@@ -541,7 +541,7 @@ func encodeAllText(ss []*statement) []byte {
 
 	var allText []byte
 	var textAddr uintptr
-	allText, textAddr = nil , 0
+	allText, textAddr = nil, 0
 	for instr := first; instr != nil; instr = instr.next {
 		instr.startAddr = textAddr
 		allText = append(allText, instr.code...)
@@ -558,7 +558,7 @@ func encodeAllText(ss []*statement) []byte {
 		diff := callee.instr.startAddr - call.caller.next.startAddr
 		placeToEmbed := call.caller.startAddr + call.offset
 		diffInt32 := int32(diff)
-		var buf *[4]byte =  (*[4]byte)(unsafe.Pointer(&diffInt32))
+		var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 		allText[placeToEmbed] = buf[0]
 		allText[placeToEmbed+1] = buf[1]
 		allText[placeToEmbed+2] = buf[2]
@@ -732,7 +732,7 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 
 			r_offset := ru.instr.startAddr + ru.offset
 			rla := &ElfRela{
-				r_offset: r_offset,                  // 8 bytes
+				r_offset: r_offset,                 // 8 bytes
 				r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
 				r_addend: addr + ru.adjust - 4,     // 8 bytes
 			}

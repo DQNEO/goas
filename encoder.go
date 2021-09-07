@@ -37,6 +37,7 @@ func composeModRM(mod modField, regOpcode byte, rm byte) byte {
 }
 
 type modField uint8
+
 const ModIndirectionWithNoDisplacement modField = 0b00
 const ModIndirectionWithDisplacement8 modField = 0b01
 const ModIndirectionWithDisplacement32 modField = 0b10
@@ -63,15 +64,15 @@ const slash_7 = 7 // /7
 func regBits(reg string) uint8 {
 	var x_reg uint8
 	switch reg {
-	case "ax","al":
+	case "ax", "al":
 		x_reg = 0b0000
-	case "cx","cl":
+	case "cx", "cl":
 		x_reg = 0b0001
-	case "dx","dl":
+	case "dx", "dl":
 		x_reg = 0b0010
 	case "bx", "bl":
 		x_reg = 0b0011
-	case "sp","ah":
+	case "sp", "ah":
 		x_reg = 0b0100
 	case "bp", "ch":
 		x_reg = 0b0101 // or /5
@@ -116,21 +117,21 @@ var variableInstrs []*Instruction
 // symbol applies to instructions with an operand-size attribute of 16 bits; the rel32 symbol applies to instructions
 // with an operand-size attribute of 32 bits.
 //
-type variableCode struct{
-	trgtSymbol string
-	rel8Code []byte
-	rel8Offset uintptr
-	rel32Code []byte
+type variableCode struct {
+	trgtSymbol  string
+	rel8Code    []byte
+	rel8Offset  uintptr
+	rel32Code   []byte
 	rel32Offset uintptr
 }
 
 type Instruction struct {
-	startAddr uintptr
-	s         *statement
-	code      []byte // static code
-	next      *Instruction
-	index     int
-	varcode  *variableCode
+	startAddr    uintptr
+	s            *statement
+	code         []byte // static code
+	next         *Instruction
+	index        int
+	varcode      *variableCode
 	isLenDecided bool
 }
 
@@ -163,10 +164,10 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 	var forward bool
 	if userInstr.index > symdef.instr.index {
 		// backward reference
-		from , to = symdef.instr, userInstr.next
+		from, to = symdef.instr, userInstr.next
 	} else {
 		// forward reference
-		from , to = userInstr.next, symdef.instr
+		from, to = userInstr.next, symdef.instr
 		forward = true
 	}
 	if dbg {
@@ -204,7 +205,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 
 func encode(s *statement) *Instruction {
 	defer func() {
-		if x:= recover(); x!=nil {
+		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
 				x,
 				s.raw, *s.filename, s.lineno, s.raw))
@@ -235,7 +236,6 @@ func encode(s *statement) *Instruction {
 		panic("too many operands")
 	}
 
-
 	//fmt.Printf("[translator] %s (%d ops) => ", s.keySymbol, len(s.operands))
 	switch s.keySymbol {
 	case "nop":
@@ -245,10 +245,10 @@ func encode(s *statement) *Instruction {
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JMP rel8: EB cb
-			rel8Code:    []byte{0xeb, 0},
-			rel8Offset:  1,
+			rel8Code:   []byte{0xeb, 0},
+			rel8Offset: 1,
 			// JMP rel32: E9 cd
-			rel32Code:   []byte{0xe9,0,0,0,0},
+			rel32Code:   []byte{0xe9, 0, 0, 0, 0},
 			rel32Offset: 1,
 		}
 		instr.varcode = varcode
@@ -259,10 +259,10 @@ func encode(s *statement) *Instruction {
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JE rel8: 74 cb
-			rel8Code:    []byte{0x74, 0},
-			rel8Offset:  1,
+			rel8Code:   []byte{0x74, 0},
+			rel8Offset: 1,
 			// JE rel32: 0F 84 cd
-			rel32Code:   []byte{0x0f,0x84,0,0,0,0},
+			rel32Code:   []byte{0x0f, 0x84, 0, 0, 0, 0},
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
@@ -273,10 +273,10 @@ func encode(s *statement) *Instruction {
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JNE rel8: 75 cb
-			rel8Code:    []byte{0x75, 0},
-			rel8Offset:  1,
+			rel8Code:   []byte{0x75, 0},
+			rel8Offset: 1,
 			// JE rel32: 0F 85 cd
-			rel32Code:   []byte{0x0f,0x85,0,0,0,0},
+			rel32Code:   []byte{0x0f, 0x85, 0, 0, 0, 0},
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
@@ -288,7 +288,7 @@ func encode(s *statement) *Instruction {
 		// call rel16
 		r = []byte{0xe8}
 		ru := &relaTextUser{
-			instr: instr,
+			instr:  instr,
 			offset: uintptr(len(r)),
 			uses:   trgtSymbol,
 			toJump: true,
@@ -312,9 +312,9 @@ func encode(s *statement) *Instruction {
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
-					instr: instr,
+					instr:  instr,
 					offset: uintptr(len(r)),
-					uses: symbol,
+					uses:   symbol,
 				}
 
 				r = append(r, 0, 0, 0, 0)
@@ -326,14 +326,14 @@ func encode(s *statement) *Instruction {
 					panic(err)
 				}
 
-				var  modRM, rm, reg byte
+				var modRM, rm, reg byte
 				var displacementBytes []byte
 				if displacement == 0 {
 					mod := ModIndirectionWithNoDisplacement
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
-				} else 	if -128 <= displacement && displacement < 128 {
+				} else if -128 <= displacement && displacement < 128 {
 					mod := ModIndirectionWithDisplacement8
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
@@ -449,20 +449,20 @@ func encode(s *statement) *Instruction {
 						// REX.W 89 /r (MOV r/m64 r64, MR)
 						// "movq %rbx, runtime.__argv__+8(%rip)"
 						mod := ModIndirectionWithNoDisplacement
-						reg := src.toBits()  // src
+						reg := src.toBits() // src
 						modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
 						r = []byte{REX_W, opcode, modRM}
 
 						symbol := expr.left.(*symbolExpr).name
 						//if _, defined := definedSymbols[symbol]; !defined {
-							// @TODO shouud use expr.right.(*numberExpr).val as an offset
-							ru := &relaTextUser{
-								instr: instr,
-								offset: uintptr(len(r)),
-								uses:   symbol,
-								adjust: int64(evalNumExpr(expr.right)),
-							}
-							relaTextUsers = append(relaTextUsers, ru)
+						// @TODO shouud use expr.right.(*numberExpr).val as an offset
+						ru := &relaTextUser{
+							instr:  instr,
+							offset: uintptr(len(r)),
+							uses:   symbol,
+							adjust: int64(evalNumExpr(expr.right)),
+						}
+						relaTextUsers = append(relaTextUsers, ru)
 						//}
 						r = append(r, 0, 0, 0, 0)
 
@@ -512,9 +512,9 @@ func encode(s *statement) *Instruction {
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
-					instr: instr,
+					instr:  instr,
 					offset: uintptr(len(r)),
-					uses: symbol,
+					uses:   symbol,
 				}
 
 				r = append(r, 0, 0, 0, 0)
@@ -616,25 +616,25 @@ func encode(s *statement) *Instruction {
 			modRM := composeModRM(ModRegi, regi, rm)
 			r = []byte{REX_W, opcode, modRM}
 		case *immediate: // "addq $32, %regi"
-		 	{
-			rm := trgtOp.(*register).toBits()
-			modRM := composeModRM(ModRegi, slash_0, rm)
-			imValue := evalNumExpr(src.expr)
-			switch {
-			case imValue < 128:
-				r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
-			case imValue < 1<<31:
-				i32 := int32(imValue)
-				hex := (*[4]uint8)(unsafe.Pointer(&i32))
-				if trgtOp.(*register).name == "rax" {
-					r = []byte{REX_W, 0x05, hex[0], hex[1], hex[2], hex[3]}
-				} else {
-					r = []byte{REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3]}
+			{
+				rm := trgtOp.(*register).toBits()
+				modRM := composeModRM(ModRegi, slash_0, rm)
+				imValue := evalNumExpr(src.expr)
+				switch {
+				case imValue < 128:
+					r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+				case imValue < 1<<31:
+					i32 := int32(imValue)
+					hex := (*[4]uint8)(unsafe.Pointer(&i32))
+					if trgtOp.(*register).name == "rax" {
+						r = []byte{REX_W, 0x05, hex[0], hex[1], hex[2], hex[3]}
+					} else {
+						r = []byte{REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3]}
+					}
+				default:
+					panic("TBI")
 				}
-			default:
-				panic("TBI")
 			}
-		}
 		default:
 			panic("TBI")
 		}
@@ -655,9 +655,9 @@ func encode(s *statement) *Instruction {
 				panic(err)
 			}
 			switch {
-			case imValue < 1<<7 :
+			case imValue < 1<<7:
 				r = []byte{REX_W, 0x83, modRM, uint8(imValue)}
-			case imValue < 1<<31 :
+			case imValue < 1<<31:
 				i32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&i32))
 				r = []byte{REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3]}
@@ -675,7 +675,7 @@ func encode(s *statement) *Instruction {
 			rm := srcOp.(*register).toBits()
 			regi := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			r = []byte{REX_W, opcodes[0],opcodes[1], modRM}
+			r = []byte{REX_W, opcodes[0], opcodes[1], modRM}
 		case *immediate:
 			opcode := uint8(0x6b)
 			// IMUL r64, r/m64, imm8
@@ -756,13 +756,13 @@ func encode(s *statement) *Instruction {
 				panic(err)
 			}
 			switch {
-			case imValue < 1<<7 : //PUSH imm8 : 6a ib
+			case imValue < 1<<7: //PUSH imm8 : 6a ib
 				r = []byte{0x6a, uint8(imValue)}
 			//case imValue < 1<<14 : //PUSH imm16: 	68 iw
 			//	ui16 := int16(imValue)
 			//	hex := (*[2]uint8)(unsafe.Pointer(&ui16))
 			//	r = []byte{0x68, hex[0], hex[1]}
-			case imValue < 1<<31 : // PUSH imm32 68 id
+			case imValue < 1<<31: // PUSH imm32 68 id
 				ui32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
 				r = []byte{0x68, hex[0], hex[1], hex[2], hex[3]}
@@ -814,7 +814,7 @@ func encode(s *statement) *Instruction {
 
 func encodeData(s *statement, dataAddr uintptr) []byte {
 	defer func() {
-		if x:= recover(); x!=nil {
+		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
 				x,
 				s.raw, *s.filename, s.lineno, s.raw))

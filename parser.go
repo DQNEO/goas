@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"os"
+	"strconv"
 )
 
 // parser's global vars
@@ -53,7 +53,8 @@ func skipWhitespaces() {
 }
 
 func skipToEOL() {
-	for ;source[idx] != '\n';idx++ {}
+	for ; source[idx] != '\n'; idx++ {
+	}
 }
 
 func readParenthRegister() *register {
@@ -144,7 +145,7 @@ func readStringLiteral() string {
 func evalNumExpr(expr expr) int {
 	switch e := expr.(type) {
 	case *numberLit:
-		num,err := strconv.ParseInt(e.val, 0, 32)
+		num, err := strconv.ParseInt(e.val, 0, 32)
 		if err != nil {
 			panic(err)
 		}
@@ -229,11 +230,11 @@ func parseOperand() operand {
 			// indirection e.g. 24(%rbp)
 			regi := readParenthRegister()
 			return &indirection{
-					expr: &symbolExpr{
-						name: symbol,
-					},
-					regi: regi,
-				}
+				expr: &symbolExpr{
+					name: symbol,
+				},
+				regi: regi,
+			}
 		case '+': // e.g. foo+8(%rip)
 			expect('+')
 			e := parseArithExpr()
@@ -241,12 +242,12 @@ func parseOperand() operand {
 			case '(':
 				regi := readParenthRegister()
 				return &indirection{
-						expr: &binaryExpr{
-							op:    "+",
-							left:  &symbolExpr{name: symbol},
-							right: e,
-						},
-						regi: regi,
+					expr: &binaryExpr{
+						op:    "+",
+						left:  &symbolExpr{name: symbol},
+						right: e,
+					},
+					regi: regi,
 				}
 			default:
 				panic("Unexpected operand format")
@@ -387,7 +388,7 @@ type binaryExpr struct {
 }
 
 type statement struct {
-	filename *string
+	filename    *string
 	lineno      int
 	raw         string
 	labelSymbol string
@@ -441,8 +442,8 @@ func consumeEOL() {
 // Whitespace before a label or after a colon is permitted, but you may not have whitespace between a label’s symbol and its colon. See Labels.
 func parseStmt() *statement {
 	var stmt = &statement{
-		filename:  &filename,
-		lineno: lineno,
+		filename: &filename,
+		lineno:   lineno,
 	}
 	skipWhitespaces()
 	if source[idx] == '/' { // expect // comment
@@ -529,11 +530,11 @@ func parseFile(path string) []*statement {
 }
 
 func dumpStmt(i int, stmt *statement) {
-		//var ops []string
-		//for _, o := range stmt.operands {
-		//	ops = append(ops, o.string)
-		//}
-		//debugf("%04d|%29s: |%30s | %s\n", i, stmt.labelSymbol, stmt.keySymbol, strings.Join(ops, "  , "))
+	//var ops []string
+	//for _, o := range stmt.operands {
+	//	ops = append(ops, o.string)
+	//}
+	//debugf("%04d|%29s: |%30s | %s\n", i, stmt.labelSymbol, stmt.keySymbol, strings.Join(ops, "  , "))
 }
 
 func dumpStmts(stmts []*statement) {
@@ -544,4 +545,3 @@ func dumpStmts(stmts []*statement) {
 }
 
 type none bool
-
