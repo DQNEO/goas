@@ -30,26 +30,26 @@ objs: $(GNU_OBJS) $(MY_OBJS)
 as: $(GOSOURCES)
 	go build -o as $(GOSOURCES)
 
-t.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-test.s
+t.gnu.o: t/runtime.s t/babygo-test.s
 	as -o $@ $^
 
 t.gnu.bin: t.gnu.o
 	ld -e _rt0_amd64_linux -o $@ $<
 
-t.my.o:  as ../src/runtime/runtime.s ../.shared/babygo-test.s
-	./as -o $@ ../src/runtime/runtime.s ../.shared/babygo-test.s
+t.my.o:  as t/runtime.s t/babygo-test.s
+	./as -o $@ t/runtime.s t/babygo-test.s
 
-t.my.bin: t.my.o as
+t.my.bin: t/t.my.o as
 	ld -e _rt0_amd64_linux -o $@ $<
 
 .PHONY: diffbbgtest
 diffbbgtest: t.my.o t.gnu.o
 	diff t.my.o t.gnu.o
 
-b.my.o: as ../src/runtime/runtime.s ../.shared/babygo-main.s
-	./as -o $@ ../src/runtime/runtime.s ../.shared/babygo-main.s
+b.my.o: as t/runtime.s t/babygo-main.s
+	./as -o $@ t/runtime.s t/babygo-main.s
 
-b.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-main.s
+b.gnu.o: t/runtime.s t/babygo-main.s
 	as -o $@ $^
 
 .PHONY: diffbbgself
