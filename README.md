@@ -9,6 +9,15 @@ However, for any input it supports, it behaves exactly the same as `as`, which m
 
 The most interesting thing is that it can assemble [babygo](https://github.com/DQNEO/babygo), my Go compiler. ( `make babygo` shows the example .)
 
+# Requirements
+
+You need a linux with gcc installed.
+If you are using MacOS or Windows, you can use my docker image to run `goas`.
+
+```cgo
+docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-build-essential:go bash 
+```
+
 # BUILD
 
 ```
@@ -40,9 +49,7 @@ $ ./test; echo $?
 
 # Supported Instructions
 
-See test files under `./t` directory to know what syntax it can asseemble.
-
-
+See test files under `/t` and `/t2` directory to know what syntax it can asseemble.
 
 # LICENSE
 
