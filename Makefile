@@ -12,6 +12,7 @@ diff: objs diffbbgtest
 	diff 05.gnu.o 05.my.o
 	diff 06.gnu.o 06.my.o
 	diff 07.gnu.o 07.my.o
+	diff 08.gnu.o 08.my.o
 	diff 10.gnu.o 10.my.o
 
 	@echo ok

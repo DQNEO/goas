@@ -52,14 +52,8 @@ func skipWhitespaces() {
 	}
 }
 
-func skipLineComment() {
-	for {
-		ch := source[idx]
-		if ch == '\n' {
-			return
-		}
-		idx++
-	}
+func skipToEOL() {
+	for ;source[idx] != '\n';idx++ {}
 }
 
 func readParenthRegister() *register {
@@ -417,7 +411,8 @@ func parserAssert(bol bool, errorMsg string) {
 
 func consumeEOL() {
 	if source[idx] == '#' {
-		skipLineComment()
+		expect('#')
+		skipToEOL()
 	}
 	if idx == len(source) {
 		return
@@ -450,6 +445,13 @@ func parseStmt() *statement {
 		lineno: lineno,
 	}
 	skipWhitespaces()
+	if source[idx] == '/' { // expect // comment
+		expect('/')
+		expect('/')
+		skipToEOL()
+		consumeEOL()
+		return stmt
+	}
 	if atEOL() {
 		consumeEOL()
 		return stmt
