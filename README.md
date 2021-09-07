@@ -5,7 +5,7 @@ It supports Linux x86-64 AT&T syntax only
 
 # USAGE
 
-`test.s`
+Write a small assembly file `test.s`
 
 ```as
 # example code to exit with status 42
@@ -16,6 +16,8 @@ _start:
   movq $60, %rax # sys_exit
   syscall
 ```
+
+Assemble it
 
 ```terminal
 $ go build -o as *.go
