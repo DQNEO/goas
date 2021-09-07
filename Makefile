@@ -60,5 +60,5 @@ babygo: b.my.o
 	ld -e _rt0_amd64_linux -o $@ $<
 
 clean:
-	rm -f as *.o *.bin
+	rm -f as *.o *.bin a.out
 
