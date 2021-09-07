@@ -5,7 +5,8 @@ It supports Linux x86-64 AT&T syntax only
 
 # USAGE
 
-a.s
+`test.s`
+
 ```as
 # example code to exit with status 42
 .text
@@ -18,9 +19,9 @@ _start:
 
 ```terminal
 $ go build -o as *.go
-$ ./goas -o a.o a.s
-$ ld -o a a.o
-$ ./a; echo $?
+$ ./as -o test.o test.s
+$ ld -o test test.o
+$ ./test; echo $?
 42
 ```
 
