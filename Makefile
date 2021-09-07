@@ -21,10 +21,10 @@ diff: objs diffbbgtest
 .PHONY: objs
 objs: $(GNU_OBJS) $(MY_OBJS)
 
-%.gnu.o: %.s
+%.gnu.o: t/%.s
 	as -o $@ $<
 
-%.my.o: %.s as
+%.my.o: t/%.s as
 	./as -o $@ $<
 
 as: $(GOSOURCES)
