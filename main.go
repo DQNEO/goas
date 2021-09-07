@@ -471,10 +471,6 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 			continue
 		}
 		diff, min, max, isLenDecided := calcDistance(vr, sym)
-		if sym.name == ".L.for.cond.355" {
-			debugf("  calculating distance to %s\n", sym.name)
-			debugf("    diff=%02x, min=%02x, max=%02x, isLenDecided=%v\n",  diff, min,max, isLenDecided)
-		}
 		if isLenDecided {
 			if -128 <= diff && diff < 128 {
 				// rel8
@@ -536,7 +532,7 @@ func encodeAllText(ss []*statement) []byte {
 	}
 
 	for {
-		debugf("checking variableInstrs len=%d\n", len(variableInstrs))
+		//debugf("checking variableInstrs len=%d\n", len(variableInstrs))
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
 		if len(variableInstrs) == 0 {
 			break
