@@ -7,6 +7,8 @@ Currently It supports Linux x86-64 AT&T syntax only.
 
 However, for any input it supports, it behaves exactly the same as `as`, which means it produces the same binary *.o files as `as` does.
 
+The most interesting thing is that it can assemble [babygo](https://github.com/DQNEO/babygo), my Go compiler. ( `make babygo` shows the example .)
+
 # BUILD
 
 ```
