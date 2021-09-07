@@ -8,6 +8,7 @@ diff: objs diffbbgtest
 	diff 00.gnu.o 00.my.o
 	diff 01.gnu.o 01.my.o
 	diff 02.gnu.o 02.my.o
+	diff 03.gnu.o 03.my.o
 	diff 04.gnu.o 04.my.o
 	diff 05.gnu.o 05.my.o
 	diff 06.gnu.o 06.my.o
