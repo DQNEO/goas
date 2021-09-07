@@ -44,6 +44,19 @@ t.my.bin: t.my.o as
 diffbbgtest: t.my.o t.gnu.o
 	diff t.my.o t.gnu.o
 
+b.my.o: as ../src/runtime/runtime.s ../.shared/babygo-main.s
+	./as -o $@ ../src/runtime/runtime.s ../.shared/babygo-main.s
+
+b.gnu.o: ../src/runtime/runtime.s ../.shared/babygo-main.s
+	as -o $@ $^
+
+.PHONY: diffbbgself
+diffbbgself: b.my.o b.gnu.o
+	diff b.my.o b.gnu.o
+
+babygo: b.my.o
+	ld -e _rt0_amd64_linux -o $@ $<
+
 clean:
 	rm -f as *.o *.bin
 
