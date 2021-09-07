@@ -157,9 +157,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 	var dbg bool
 	if symdef.name == ".L.for.cond.355" {
 		dbg = true
-		//debugf("calcDistance to %s\n", symdef.name,)
 	}
-	//debugf("  found symbol:%v\n", sym.name)
 	var from, to *Instruction
 	var forward bool
 	if userInstr.index > symdef.instr.index {
@@ -171,14 +169,12 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 		forward = true
 	}
 	if dbg {
-		//debugf("forward: %v\n", forward)
 	}
 
 	var hasVariableLength bool
 	var diff, min, max int
 	for instr := from; instr != to; instr = instr.next {
 		if !instr.isLenDecided {
-			//debugf("  Not len decided=%s\n", instr.s.raw)
 			hasVariableLength = true
 			lenShort, lenLarge := len(instr.varcode.rel8Code), len(instr.varcode.rel32Code)
 			min += lenShort
@@ -196,10 +192,6 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 		diff, min, max = -diff, -min, -max
 	}
 
-	if dbg {
-		//debugf("  diff=%02x, min=%02x, max=%02x, hasVariableLength=%v\n",  diff, min,max, hasVariableLength)
-	}
-
 	return diff, min, max, !hasVariableLength
 }
 
@@ -212,7 +204,6 @@ func encode(s *statement) *Instruction {
 		}
 	}()
 
-	//debugf("stmt=%#v\n", s)
 	var r []byte
 	var instr = &Instruction{
 		s: s,
@@ -405,7 +396,6 @@ func encode(s *statement) *Instruction {
 	//	//op1Regi, IsOp1Regi := op1.(*register)
 	//	op2Regi := op2.(*register)
 	//
-	//	//debugf("op1,op2=%s,%s  ", op1, op2)
 	//	intNum, err := strconv.ParseInt(op1.string, 0, 32)
 	//	if err != nil {
 	//		panic(err)
@@ -769,7 +759,6 @@ func encode(s *statement) *Instruction {
 			default:
 				panic("TBI")
 			}
-			//debugf("[encoding]pushq %10s => %x\n",trgt.expr.(*numberLit).val, r)
 		default:
 			panic("[encoder] TBI:" + string(s.raw))
 		}
@@ -855,7 +844,6 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 		return buf[:]
 	case ".quad":
 		op := s.operands[0]
-		//debugf(".quad type=%T\n", op.ifc)
 		switch opDtype := op.(type) {
 		case *numberLit:
 			rawVal := opDtype.val

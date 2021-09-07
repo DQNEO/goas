@@ -149,7 +149,6 @@ func evalNumExpr(expr expr) int {
 		if err != nil {
 			panic(err)
 		}
-		//debugf("val, num = %s, %d\n", e.val, num)
 		return int(num)
 	case *charLit:
 		return int(e.val)
@@ -527,21 +526,6 @@ func parseFile(path string) []*statement {
 		i++
 	}
 	return stmts
-}
-
-func dumpStmt(i int, stmt *statement) {
-	//var ops []string
-	//for _, o := range stmt.operands {
-	//	ops = append(ops, o.string)
-	//}
-	//debugf("%04d|%29s: |%30s | %s\n", i, stmt.labelSymbol, stmt.keySymbol, strings.Join(ops, "  , "))
-}
-
-func dumpStmts(stmts []*statement) {
-	//debugf("%4s|%29s: |%30s | %s\n", "Line", "Label", "Instruction", "Operands")
-	for i, stmt := range stmts {
-		dumpStmt(i, stmt)
-	}
 }
 
 type none bool

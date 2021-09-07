@@ -229,7 +229,6 @@ func calcOffsetOfSection(s *section, prev *section) {
 	}
 	s.header.sh_offset = tentative_offset + s.numZeroPad
 	s.header.sh_size = uintptr(len(s.contents))
-	//debugf("size of section %s is %x\n", s.sh_name, s.header.sh_size)
 }
 
 func makeStrTab(symbols []string) []byte {
@@ -287,7 +286,6 @@ func resolveShNames(ss []*section) {
 		sh_name := s.sh_name
 		idx := bytes.Index(s_shstrtab.contents, []byte(sh_name))
 		if idx <= 0 {
-			//debugf("idx of sh %s = %d\n", s.sh_name, idx)
 			panic(s.sh_name + " is not found in .strtab contents")
 		}
 		s.header.sh_name = uint32(idx)
@@ -322,8 +320,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		symbolIndex[".data"] = index
 
 	}
-	//debugf("symbolsInLexicalOrder[%d]=%v\n", len(symbolsInLexicalOrder), symbolsInLexicalOrder)
-	//debugf("globalSymbols=%v\n", globalSymbols)
 
 	var localSymbols []string
 	var globalDefinedSymbols []string
@@ -358,9 +354,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 	allSymbolsForElf := append(localSymbols, globalDefinedSymbols...)
 	allSymbolsForElf = append(allSymbolsForElf, globalUndefinedSymbols...)
 
-	//debugf("allSymbolsForElf=%v\n", allSymbolsForElf)
 	s_strtab.contents = makeStrTab(allSymbolsForElf)
-	//panic(len(allSymbolsForElf))
 
 	// https://reviews.llvm.org/D28950
 	// The sh_info field of the SHT_SYMTAB section holds the index for the first non-local symbol.
@@ -383,7 +377,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 				panic("TBI")
 			}
 		} else {
-			//debugf("undefined symbol  %s\n", symname)
 			isGlobal = true
 		}
 
@@ -399,7 +392,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 				indexOfFirstNonLocalSymbol = index
 			}
 		}
-		//debugf("symbol %s shndx = %d\n", sym.name, shndx)
 		e := &ElfSym{
 			st_name:  uint32(name_offset),
 			st_info:  st_info,
@@ -409,8 +401,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 		}
 		symbolTable = append(symbolTable, e)
 		symbolIndex[symname] = index
-		//debugf("indexOfFirstNonLocalSymbol=%d\n", indexOfFirstNonLocalSymbol)
-		//debugf("[buildSymbolTable] appended. index = %d, name = %s\n", index, symname)
 	}
 
 	// I don't know why we need this. Just Follow GNU.
@@ -451,15 +441,6 @@ func assert(bol bool, errorMsg string) {
 	}
 }
 
-func dumpText(code []byte) string {
-	var r []string = make([]string, len(code))
-	for i, b := range code {
-		r[i] = fmt.Sprintf("%02x", b)
-	}
-	return strings.Join(r, " ")
-}
-
-var debugEncoder bool = false
 var first *Instruction
 
 func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
@@ -467,7 +448,6 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 	for _, vr := range instrs {
 		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
 		if !ok {
-			//debugf("  symbol \"%s\"not found. applying conservative code\n" , vr.varcode.trgtSymbol)
 			continue
 		}
 		diff, min, max, isLenDecided := calcDistance(vr, sym)
@@ -525,14 +505,10 @@ func encodeAllText(ss []*statement) []byte {
 		} else {
 			prev.next = instr
 		}
-		if debugEncoder {
-			//debugf("[encoder] %04x : %s\t=>\t%s\n", instr.startAddr, s.raw, dumpText(instr.code))
-		}
 		prev = instr
 	}
 
 	for {
-		//debugf("checking variableInstrs len=%d\n", len(variableInstrs))
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
 		if len(variableInstrs) == 0 {
 			break
@@ -552,7 +528,6 @@ func encodeAllText(ss []*statement) []byte {
 	for _, call := range callTargets {
 		callee, ok := definedSymbols[call.trgtSymbol]
 		if !ok {
-			//debugf("  symbol not found .... skip : %s\n" , call.trgtSymbol)
 			continue
 		}
 		diff := callee.instr.startAddr - call.caller.next.startAddr
@@ -571,9 +546,6 @@ func encodeAllData(ss []*statement) []byte {
 	var dataAddr uintptr
 	var allData []byte
 	for _, s := range ss {
-		if s.labelSymbol != "" {
-			//debugf("[data] addr %4x, %s:\n", dataAddr, s.labelSymbol)
-		}
 		buf := encodeData(s, dataAddr)
 		dataAddr += uintptr(len(buf))
 		allData = append(allData, buf...)
@@ -591,8 +563,9 @@ func main() {
 	} else {
 		inFiles = []string{"/dev/stdin"}
 	}
-
+	debugf("[main] input files are: %s\n", inFiles)
 	outputFile := *oFlag
+	debugf("[main] output file is: %s\n", outputFile)
 	w, err := os.Create(outputFile)
 	if err != nil {
 		panic(err)
@@ -601,6 +574,7 @@ func main() {
 	//debugParser()
 	var stmts []*statement
 	for _, inFile := range inFiles {
+		debugf("[main] parsing file: %s\n", inFile)
 		ss := parseFile(inFile)
 		stmts = append(stmts, ss...)
 	}
@@ -640,27 +614,23 @@ func main() {
 
 	}
 
-	//debugf("Encoding .text ... [%v]\n", textStmts)
 	code := encodeAllText(textStmts)
-	//debugf("%s\n", dumpText(code))
-	//debugf("Encoding .data ...\n")
 	data := encodeAllData(dataStmts)
-	//debugf("mapDataLabelAddr=%v\n", mapDataLabelAddr)
 	s_data.contents = data
 	s_text.contents = code
 
-	//fmt.Printf("symbols=%+v\n",p.symStruct)
 	hasRelaText := len(relaTextUsers) > 0
-	//panic(hasRelaText)
 	hasRelaData := len(relaDataUsers) > 0
 	hasSymbols := len(definedSymbols) > 0
 	sectionHeaders := prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols)
 	if len(definedSymbols) > 0 {
+		debugf("[main] building symbol table ...\n")
 		buildSymbolTable(hasRelaData, globalSymbols)
 	}
 
 	buildRelaSections(relaTextUsers, relaDataUsers)
 
+	debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
 	makeShStrTab(sectionNames)
 
@@ -668,6 +638,7 @@ func main() {
 	resolveShNames(sectionBodies)
 
 	// prepare ELF File format
+	debugf("[main] writing ELF file ...\n")
 	elfFile := prepareElfFile(sectionBodies, sectionHeaders)
 	elfFile.writeTo(w)
 }
@@ -710,7 +681,6 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 					// skip symbols that belong to the same section
 					continue
 				}
-				//	debugf("symbol not found:" + ru.uses)
 				addr = int64(sym.address)
 			}
 
@@ -737,7 +707,6 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 				r_addend: addr + ru.adjust - 4,     // 8 bytes
 			}
 			p := (*[24]byte)(unsafe.Pointer(rla))[:]
-			//debugf("[rela.text] r_offset:%x, r_info=%x, r_addend=%x    (%s)\n", rla.r_offset, rla.r_info, rla.r_addend, ru.uses)
 			rela_text_c = append(rela_text_c, p...)
 		}
 		s_rela_text.contents = rela_text_c
