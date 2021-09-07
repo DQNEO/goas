@@ -1,7 +1,17 @@
 # goas - a port of GNU Assembler written in go
 
-# Platform
-It supports Linux x86-64 AT&T syntax only
+`goas` is an assembler that behaves like `as`, GNU Assembler.
+
+This is just a toy program. It does not to support all syntax or instructions.
+Currently It supports Linux x86-64 AT&T syntax only.
+
+However, for any input it supports, it behaves exactly the same as `as`, which means it produces the same binary *.o files as `as` does.
+
+# BUILD
+
+```
+$ go build -o goas *.go
+```
 
 # USAGE
 
@@ -20,12 +30,17 @@ _start:
 Assemble it
 
 ```terminal
-$ go build -o as *.go
-$ ./as -o test.o test.s
+$ ./goas -o test.o test.s
 $ ld -o test test.o
 $ ./test; echo $?
 42
 ```
+
+# Supported Instructions
+
+See test files under `./t` directory to know what syntax it can asseemble.
+
+
 
 # LICENSE
 
