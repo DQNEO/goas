@@ -34,8 +34,11 @@ type ElfFile struct {
 //  	Elf64_Half	e_shnum;		/* Section header table entry count */
 //  	Elf64_Half	e_shstrndx;		/* Section header string table index */
 //  } Elf64_Ehdr;
+
+const EI_NIDENT = 16
+
 type Elf64_Ehdr struct {
-	e_ident     [16]uint8
+	e_ident     [EI_NIDENT]uint8
 	e_type      uint16
 	e_machine   uint16
 	e_version   uint32
@@ -56,7 +59,7 @@ const ELFHeaderSize = unsafe.Sizeof(Elf64_Ehdr{})
 // Fixed data for ELF header.
 // e_shoff, e_shentsize, and e_shstrndx should be set dynamically
 var elfHeader = &Elf64_Ehdr{
-	e_ident: [16]uint8{
+	e_ident: [EI_NIDENT]uint8{
 		0x7f, 0x45, 0x4c, 0x46, // 0x7F followed by "ELF"(45 4c 46) in ASCII;
 		0x02,                                     // EI_CLASS:2=64-bit
 		0x01,                                     // EI_DATA:1=little endian

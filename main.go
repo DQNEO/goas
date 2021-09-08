@@ -714,9 +714,9 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 }
 
 func determineSectionOffsets(sectionBodies []*section) {
-	firtSectionInBodies := sectionBodies[0]
-	firtSectionInBodies.header.sh_offset = ELFHeaderSize
-	firtSectionInBodies.header.sh_size = uintptr(len(firtSectionInBodies.contents))
+	firstSection := sectionBodies[0]
+	firstSection.header.sh_offset = ELFHeaderSize
+	firstSection.header.sh_size = uintptr(len(firstSection.contents))
 	for i := 1; i < len(sectionBodies); i++ {
 		calcOffsetOfSection(
 			sectionBodies[i], sectionBodies[i-1])
