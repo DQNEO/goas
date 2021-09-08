@@ -29,7 +29,7 @@ $ go build -o goas
 
 Write a small assembly file `test.s`
 
-```as
+```asm
 # example code to exit with status 42
 .text
 .global _start
