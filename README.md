@@ -22,7 +22,7 @@ docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-build-essential
 # BUILD
 
 ```
-$ go build -o goas *.go
+$ go build -o goas
 ```
 
 # USAGE
