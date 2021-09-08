@@ -1,25 +1,21 @@
 name: Go
 
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [push, pull_request]
 
 jobs:
-
-  build:
+  container:
     runs-on: ubuntu-latest
+    container: dqneo/ubuntu-build-essential:go
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
+      - name: Show versions
+        run: as --version
 
-    - name: Build
-      run: go build -v ./...
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
 
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: make test
