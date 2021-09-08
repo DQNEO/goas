@@ -7,7 +7,7 @@ MY_OBJS = $(SOURCES:t/%.s=t/%.my.o)
 test: test-single test-multi
 
 goas: $(GOSOURCES)
-	go build -o goas $(GOSOURCES)
+	go build
 
 # Test single-source program
 .PHONY: test-single
