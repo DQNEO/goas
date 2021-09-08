@@ -2,13 +2,12 @@
 
 `goas` is an assembler that behaves like `as`, GNU Assembler.
 
-This is just a toy program. It does not to support all syntax or instructions.
-Currently It supports Linux x86-64 AT&T syntax only.
+This is just a toy program. It does not to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
 
 However, for any input it supports, it behaves exactly the same as `as`,
  which means it produces the same object files (*.o) as `as` does.
 
-The most interesting thing is that it can assemble [babygo](https://github.com/DQNEO/babygo), my Go compiler. ( `make babygo` shows the example .)
+The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). ( `make babygo` proves it.)
 
 # Requirements
 
@@ -19,15 +18,15 @@ If you are using MacOS or Windows, you can use my docker image to run `goas`.
 docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-build-essential:go bash 
 ```
 
-# BUILD
+# How to build
 
 ```
-$ go build -o goas
+$ go build
 ```
 
-# USAGE
+# How to use
 
-Write a small assembly file `test.s`
+Prepare a small assembly file `test.s`
 
 ```asm
 # example code to exit with status 42
@@ -39,7 +38,7 @@ _start:
   syscall
 ```
 
-Assemble it
+And you can assemble it
 
 ```terminal
 $ ./goas -o test.o test.s
@@ -50,13 +49,26 @@ $ ./test; echo $?
 
 # Supported Instructions
 
-See test files under `/t` and `/t2` directory to know what syntax it can asseemble.
+See test files under `/t` and `/t2` directory to know what syntax it can assemble.
 
-# LICENSE
+# Test
+
+```
+$ make test
+```
+
+# References
+
+* https://sourceware.org/binutils/docs/as/ Manual of GNU Assembler
+* https://refspecs.linuxfoundation.org/elf/elf.pdf ELF Specification
+* https://man7.org/linux/man-pages/man5/elf.5.html ELF man
+* https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html Intel® 64 and IA-32 Architectures Software Developer Manuals
+*  https://sourceware.org/git/?p=glibc.git;a=blob;f=elf/elf.h;h=4738dfa28f6549fc11654996a15659dc8007e686;hb=HEAD libc elf.h
+# License
 
 MIT
 
-# AUTHOR
+# Author
 
-@DQNEO
+[@DQNEO](https://twitter.com/DQNEO)
 
