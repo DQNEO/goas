@@ -192,13 +192,13 @@ func evalNumExpr(expr expr) int {
 // binary or unary or primary expr
 func (p *parser) parseArithExpr() expr {
 
-	n := p.readNumberLitral()
+	n := p.readNumberLiteral()
 	p.skipWhitespaces()
 	ch := p.peekCh()
 	switch ch {
 	case '+', '-', '*', '/':
 		p.idx++
-		n2 := p.readNumberLitral()
+		n2 := p.readNumberLiteral()
 		return &binaryExpr{
 			op:    string(ch),
 			left:  n,
@@ -217,10 +217,9 @@ type numberLit struct {
 	val string
 }
 
-func (p *parser) readNumberLitral() *numberLit {
+func (p *parser) readNumberLiteral() *numberLit {
 	p.skipWhitespaces()
-	first := p.source[p.idx]
-	p.idx++
+	first := p.readCh()
 	var buf []byte = []byte{first}
 	for {
 		ch := p.peekCh()
@@ -233,7 +232,7 @@ func (p *parser) readNumberLitral() *numberLit {
 	}
 }
 
-func (p *parser) parseOperand() operand {
+func (p *parser) parseOperand() Operand {
 	p.skipWhitespaces()
 	ch := p.peekCh()
 	p.assert(ch != '\n', "")
@@ -242,7 +241,7 @@ func (p *parser) parseOperand() operand {
 	case isSymbolBeginning(ch):
 		symbol := p.readSymbol(ch)
 		collectAppearedSymbols(symbol)
-		switch p.source[p.idx] {
+		switch p.peekCh() {
 		case '(':
 			// indirection e.g. 24(%rbp)
 			regi := p.readParenthRegister()
@@ -255,7 +254,7 @@ func (p *parser) parseOperand() operand {
 		case '+': // e.g. foo+8(%rip)
 			p.expect('+')
 			e := p.parseArithExpr()
-			switch p.source[p.idx] {
+			switch p.peekCh() {
 			case '(':
 				regi := p.readParenthRegister()
 				return &indirection{
@@ -279,7 +278,7 @@ func (p *parser) parseOperand() operand {
 		return p.readStringLiteral()
 	case '0' <= ch && ch <= '9' || ch == '-': // "24", "-24(%rbp)"
 		e := p.parseArithExpr()
-		if p.source[p.idx] == '(' {
+		if p.peekCh() == '(' {
 			// indirection e.g. 24(%rbp)
 			regi := p.readParenthRegister()
 			return &indirection{
@@ -315,18 +314,18 @@ func (p *parser) parseOperand() operand {
 	return nil
 }
 
-func (p *parser) parseOperands(keySymbol string) []operand {
+func (p *parser) parseOperands(keySymbol string) []Operand {
 	//if keySymbol[0] == '.' {
 	//	// directive
 	//} else {
 	//	// instruction
 	//}
-	var operands []operand
+	var operands []Operand
 	for !p.atEOL() {
 		op := p.parseOperand()
 		operands = append(operands, op)
 		p.skipWhitespaces()
-		if p.source[p.idx] == ',' {
+		if p.peekCh() == ',' {
 			p.idx++
 			continue
 		} else {
@@ -353,7 +352,7 @@ type parser struct {
 	idx    int
 }
 
-type operand interface{}
+type Operand interface{}
 
 type register struct {
 	name string // e.g. "rax"
@@ -399,13 +398,13 @@ type binaryExpr struct {
 	right expr
 }
 
-type statement struct {
+type Stmt struct {
 	filePath    *string
 	lineno      int
 	source      string // for debug output
 	labelSymbol string
 	keySymbol   string
-	operands    []operand
+	operands    []Operand
 }
 
 func (p *parser) atEOL() bool {
@@ -455,8 +454,8 @@ func (p *parser) consumeEOL() {
 //
 // A label is a symbol immediately followed by a colon (:).
 // Whitespace before a label or after a colon is permitted, but you may not have whitespace between a label’s symbol and its colon. See Labels.
-func (p *parser) parseStmt() *statement {
-	var stmt = &statement{
+func (p *parser) parseStmt() *Stmt {
+	var stmt = &Stmt{
 		filePath: &p.path,
 		lineno:   p.lineno,
 	}
@@ -506,8 +505,8 @@ func (p *parser) parseStmt() *statement {
 	return stmt
 }
 
-func (p *parser) parse() []*statement {
-	var stmts []*statement
+func (p *parser) parse() []*Stmt {
+	var stmts []*Stmt
 	for !p.atEOF() {
 		idxBegin := p.idx
 		s := p.parseStmt()
@@ -518,7 +517,7 @@ func (p *parser) parse() []*statement {
 	return stmts
 }
 
-func ParseFile(path string) []*statement {
+func ParseFile(path string) []*Stmt {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)

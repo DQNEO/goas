@@ -485,7 +485,7 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 	return todos
 }
 
-func encodeAllText(ss []*statement) []byte {
+func encodeAllText(ss []*Stmt) []byte {
 	var insts []*Instruction
 	var index int
 	var prev *Instruction
@@ -542,7 +542,7 @@ func encodeAllText(ss []*statement) []byte {
 	return allText
 }
 
-func encodeAllData(ss []*statement) []byte {
+func encodeAllData(ss []*Stmt) []byte {
 	var dataAddr uintptr
 	var allData []byte
 	for _, s := range ss {
@@ -571,15 +571,15 @@ func main() {
 		panic(err)
 	}
 
-	var stmts []*statement
+	var stmts []*Stmt
 	for _, inFile := range inFiles {
 		debugf("[main] parsing file: %s\n", inFile)
 		ss := ParseFile(inFile)
 		stmts = append(stmts, ss...)
 	}
 
-	var textStmts []*statement
-	var dataStmts []*statement
+	var textStmts []*Stmt
+	var dataStmts []*Stmt
 
 	var globalSymbols = make(map[string]bool)
 	var currentSection = ".text"

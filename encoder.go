@@ -127,7 +127,7 @@ type variableCode struct {
 
 type Instruction struct {
 	startAddr    uintptr
-	s            *statement
+	s            *Stmt
 	code         []byte // static code
 	next         *Instruction
 	index        int
@@ -195,7 +195,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 	return diff, min, max, !hasVariableLength
 }
 
-func encode(s *statement) *Instruction {
+func encode(s *Stmt) *Instruction {
 	defer func() {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
@@ -215,7 +215,7 @@ func encode(s *statement) *Instruction {
 		return instr
 	}
 
-	var srcOp, trgtOp operand
+	var srcOp, trgtOp Operand
 	switch len(s.operands) {
 	case 0:
 		// No operands. "ret", "leave" etc.
@@ -801,7 +801,7 @@ func encode(s *statement) *Instruction {
 	return instr
 }
 
-func encodeData(s *statement, dataAddr uintptr) []byte {
+func encodeData(s *Stmt, dataAddr uintptr) []byte {
 	defer func() {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
