@@ -55,10 +55,8 @@ type section struct {
 func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 
 	r := []*section{
-		&section{
-			header: &Elf64_Shdr{},
-		},      // NULL
-		s_text, // .text
+		{header: &Elf64_Shdr{}}, // NULL section
+		s_text,
 	}
 
 	if hasRelaText {
@@ -638,15 +636,13 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
+			// skip symbols that belong to the same section
 			if sym.section == ".text" {
-				// skip symbols that belong to the same section
 				continue
 			}
 			addr = int64(sym.address)
 		}
 
-		const R_X86_64_PC32 = 2
-		const R_X86_64_PLT32 = 4
 		var typ uint64
 		if ru.toJump {
 			typ = R_X86_64_PLT32
@@ -661,13 +657,12 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 			symIdx = symbolIndex[ru.uses]
 		}
 
-		r_offset := ru.instr.addr + ru.offset
-		rla := &Elf64_Rela{
-			r_offset: r_offset,
+		rela := &Elf64_Rela{
+			r_offset: ru.instr.addr + ru.offset,
 			r_info:   uint64(symIdx)<<32 + typ,
 			r_addend: addr + ru.adjust - 4,
 		}
-		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rla))[:]
+		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
 	return contents
@@ -688,12 +683,12 @@ func buildRelaDataBody(relaDataUsers []*relaDataUser) []byte {
 			addr = sym.address
 		}
 
-		rla := &Elf64_Rela{
+		rela := &Elf64_Rela{
 			r_offset: ru.addr,
 			r_info:   0x0100000001,
 			r_addend: int64(addr),
 		}
-		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rla))[:]
+		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
 	return contents

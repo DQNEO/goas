@@ -119,6 +119,10 @@ type Elf64_Rela struct {
 	r_addend int64
 }
 
+const R_X86_64_PC32 = 2
+const R_X86_64_PLT32 = 4
+
+
 //  An object file's symbol table holds information needed to locate
 //       and relocate a program's symbolic definitions and references.  A
 //       symbol table index is a subscript into this array.
