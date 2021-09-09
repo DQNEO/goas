@@ -41,6 +41,15 @@ func (p *parser) peekChorEOF() (byte, bool) {
 	return p.source[p.idx], false
 }
 
+func (p *parser) readCh() byte {
+	if p.idx == len(p.source) {
+		panic("Sudden EOF")
+	}
+	ch := p.source[p.idx]
+	p.idx++
+	return ch
+}
+
 func (p *parser) peekCh() byte {
 	if p.idx == len(p.source) {
 		panic("Sudden EOF")
@@ -54,7 +63,7 @@ func (p *parser) peekCh() byte {
 // Unless within character constants (see Character Constants), any whitespace means the same as exactly one space.
 func (p *parser) skipWhitespaces() {
 	for p.idx < len(p.source) && p.source[p.idx] != '\n' {
-		ch := p.source[p.idx]
+		ch := p.peekCh()
 		if ch == ' ' || ch == '\t' {
 			p.idx++
 			continue
@@ -63,14 +72,9 @@ func (p *parser) skipWhitespaces() {
 	}
 }
 
-func (p *parser) skipToEOL() {
-	for ; p.source[p.idx] != '\n'; p.idx++ {
-	}
-}
-
 func (p *parser) readParenthRegister() *register {
 	p.expect('(')
-	if p.source[p.idx] == '%' {
+	if p.peekCh() == '%' {
 		regi := p.readRegi()
 		p.expect(')')
 		return &register{name: regi}
@@ -95,7 +99,7 @@ func (p *parser) readRegi() string {
 	p.expect('%')
 	var buf []byte
 	for {
-		ch := p.source[p.idx]
+		ch := p.peekCh()
 		if isAlphabet(ch) {
 			p.idx++
 			buf = append(buf, ch)
@@ -107,23 +111,21 @@ func (p *parser) readRegi() string {
 
 func (p *parser) readSymbol(first byte) string {
 	p.expect(first)
-	var buf []byte = []byte{first}
+	buf := []byte{first}
 	for {
-		ch := p.source[p.idx]
+		ch := p.peekCh()
 		if isSymbolLetter(ch) {
 			buf = append(buf, ch)
 			p.idx++
 		} else {
-			sym := string(buf)
-			return sym
+			return string(buf)
 		}
 	}
 }
 
 func (p *parser) readCharLiteral() *charLit {
 	p.expect('\'')
-	b := p.source[p.idx]
-	p.idx++
+	b := p.readCh()
 	p.expect('\'')
 	return &charLit{
 		val: b,
@@ -192,7 +194,7 @@ func (p *parser) parseArithExpr() expr {
 
 	n := p.readNumberLitral()
 	p.skipWhitespaces()
-	ch := p.source[p.idx]
+	ch := p.peekCh()
 	switch ch {
 	case '+', '-', '*', '/':
 		p.idx++
@@ -233,7 +235,7 @@ func (p *parser) readNumberLitral() *numberLit {
 
 func (p *parser) parseOperand() operand {
 	p.skipWhitespaces()
-	ch := p.source[p.idx]
+	ch := p.peekCh()
 	p.assert(ch != '\n', "")
 
 	switch {
@@ -335,7 +337,7 @@ func (p *parser) parseOperands(keySymbol string) []operand {
 }
 
 func (p *parser) trySymbol() string {
-	first := p.source[p.idx]
+	first := p.peekCh()
 	if isSymbolBeginning(first) {
 		return p.readSymbol(first)
 	} else {
@@ -423,18 +425,15 @@ func (p *parser) assert(bol bool, errorMsg string) {
 func (p *parser) consumeEOL() {
 	if p.source[p.idx] == '#' {
 		p.expect('#')
-		p.skipToEOL()
 	} else if p.source[p.idx] == '/' {
 		// expect "//" comment
 		p.expect('/')
 		p.expect('/')
-		p.skipToEOL()
 	}
 
-	if p.idx == len(p.source) {
-		return
+	for ; p.source[p.idx] != '\n'; p.idx++ {
 	}
-	p.assert(p.source[p.idx] == '\n', "not newline, but got "+string(p.source[p.idx]))
+
 	p.idx++
 	p.lineno++
 }
