@@ -21,26 +21,32 @@ func debugf(s string, a ...interface{}) {
 }
 
 func sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols bool) []*section {
-	var sections = []*section{
-		s_text,
-		s_data,
-		s_bss,
-	}
+	var ss sections = make([]*section, 0, 8)
+	ss.add(s_text)
+	ss.add(s_data)
+	ss.add(s_bss)
 
 	if hasSymbols {
-		sections = append(sections, s_symtab, s_strtab)
+		ss.add(s_symtab)
+		ss.add(s_strtab)
 	}
 
 	if hasRelaText {
-		sections = append(sections, s_rela_text)
+		ss.add(s_rela_text)
 	}
 
 	if hasRelaData {
-		sections = append(sections, s_rela_data)
+		ss.add(s_rela_data)
 	}
 
-	sections = append(sections, s_shstrtab)
-	return sections
+	ss.add(s_shstrtab)
+	return ss
+}
+
+type sections []*section
+
+func (ss *sections) add(s *section) {
+	*ss = append(*ss, s)
 }
 
 type section struct {
@@ -53,32 +59,31 @@ type section struct {
 }
 
 func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
-
-	r := []*section{
-		{header: &Elf64_Shdr{}}, // NULL section
-		s_text,
-	}
-
+	var ss sections = make([]*section, 0, 8)
+	ss.add(&section{header: &Elf64_Shdr{}}) // NULL section
+	ss.add(s_text)
 	if hasRelaText {
-		r = append(r, s_rela_text)
+		ss.add(s_rela_text)
 	}
 
-	r = append(r, s_data)
+	ss.add(s_data)
 
 	if hasRelaData {
-		r = append(r, s_rela_data)
+		ss.add(s_rela_data)
 	}
-	r = append(r, s_bss)
+	ss.add(s_bss)
 
 	if hasSymbols {
-		r = append(r, s_symtab, s_strtab)
+		ss.add(s_symtab)
+		ss.add(s_strtab)
 	}
-	r = append(r, s_shstrtab)
-	for i, s := range r {
+	ss.add(s_shstrtab)
+
+	for i, s := range ss {
 		s.index = uint16(i)
 	}
 
-	return r
+	return ss
 }
 
 var s_text = &section{
