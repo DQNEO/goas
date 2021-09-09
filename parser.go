@@ -231,10 +231,6 @@ func (p *parser) readNumberLitral() *numberLit {
 	}
 }
 
-func isDirective(symbol string) bool {
-	return len(symbol) > 0 && symbol[0] == '.'
-}
-
 func (p *parser) parseOperand() operand {
 	p.skipWhitespaces()
 	ch := p.source[p.idx]
