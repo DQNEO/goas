@@ -30,63 +30,74 @@ func isSymbolLetter(ch byte) bool {
 	return isSymbolBeginning(ch) || '0' <= ch && ch <= '9' || ch == '$'
 }
 
-func peekCh() byte {
-	if idx == len(source) {
-		return 255
+func (p *parser) atEOF() bool {
+	return p.idx >= len(p.source)
+}
+
+func (p *parser) peekChorEOF() (byte, bool) {
+	if p.idx == len(p.source) {
+		return 0, true
 	}
-	return source[idx]
+	return p.source[p.idx], false
+}
+
+func (p *parser) peekCh() byte {
+	if p.idx == len(p.source) {
+		panic("Sudden EOF")
+	}
+	return p.source[p.idx]
 }
 
 // https://sourceware.org/binutils/docs-2.37/as.html#Whitespace
 // Whitespace is one or more blanks or tabs, in any order.
 // Whitespace is used to separate symbols, and to make programs neater for people to read.
 // Unless within character constants (see Character Constants), any whitespace means the same as exactly one space.
-func skipWhitespaces() {
-	for idx < len(source) && source[idx] != '\n' {
-		ch := source[idx]
+func (p *parser) skipWhitespaces() {
+	for p.idx < len(p.source) && p.source[p.idx] != '\n' {
+		ch := p.source[p.idx]
 		if ch == ' ' || ch == '\t' {
-			idx++
+			p.idx++
 			continue
 		}
 		return
 	}
 }
 
-func skipToEOL() {
-	for ; source[idx] != '\n'; idx++ {
+func (p *parser) skipToEOL() {
+	for ; p.source[p.idx] != '\n'; p.idx++ {
 	}
 }
 
-func readParenthRegister() *register {
-	expect('(')
-	if source[idx] == '%' {
-		regi := readRegi()
-		expect(')')
+func (p *parser) readParenthRegister() *register {
+	p.expect('(')
+	if p.source[p.idx] == '%' {
+		regi := p.readRegi()
+		p.expect(')')
 		return &register{name: regi}
 	} else {
-		parseFail("TBI")
+		p.parseFail("TBI")
 		return nil
 	}
 }
 
-func expect(ch byte) {
-	if source[idx] != ch {
-		panic(fmt.Sprintf("[parser] %c is expected, but got %c at line %d", ch, source[idx], lineno))
+func (p *parser) expect(ch byte) {
+	if p.source[p.idx] != ch {
+		panic(fmt.Sprintf("[parser] %c is expected, but got %c at line %d", ch, p.source[p.idx], p.lineno))
 	}
-	idx++
+	p.idx++
 }
 
 func isAlphabet(ch byte) bool {
 	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z')
 }
 
-func readRegi() string {
-	expect('%')
+func (p *parser) readRegi() string {
+	p.expect('%')
 	var buf []byte
 	for {
-		ch := source[idx]
+		ch := p.source[p.idx]
 		if isAlphabet(ch) {
-			idx++
+			p.idx++
 			buf = append(buf, ch)
 		} else {
 			return string(buf)
@@ -94,14 +105,14 @@ func readRegi() string {
 	}
 }
 
-func readSymbol(first byte) string {
-	expect(first)
+func (p *parser) readSymbol(first byte) string {
+	p.expect(first)
 	var buf []byte = []byte{first}
 	for {
-		ch := source[idx]
+		ch := p.source[p.idx]
 		if isSymbolLetter(ch) {
 			buf = append(buf, ch)
-			idx++
+			p.idx++
 		} else {
 			sym := string(buf)
 			return sym
@@ -109,15 +120,15 @@ func readSymbol(first byte) string {
 	}
 }
 
-func readStringLiteral() string {
-	expect('"')
+func (p *parser) readStringLiteral() string {
+	p.expect('"')
 	var buf []byte
 	for {
-		ch := peekCh()
+		ch := p.peekCh()
 		switch ch {
 		case '\\':
-			expect('\\')
-			ch := peekCh()
+			p.expect('\\')
+			ch := p.peekCh()
 			var out byte
 			switch ch {
 			case 'n':
@@ -129,14 +140,14 @@ func readStringLiteral() string {
 			default:
 				out = ch
 			}
-			idx++
+			p.idx++
 			buf = append(buf, out)
 			continue
 		case '"':
-			idx++
+			p.idx++
 			return string(buf)
 		default:
-			idx++
+			p.idx++
 			buf = append(buf, ch)
 		}
 	}
@@ -168,15 +179,15 @@ func evalNumExpr(expr expr) int {
 }
 
 // binary or unary or primary expr
-func parseArithExpr() expr {
+func (p *parser) parseArithExpr() expr {
 
-	n := readNumberLitral()
-	skipWhitespaces()
-	ch := source[idx]
+	n := p.readNumberLitral()
+	p.skipWhitespaces()
+	ch := p.source[p.idx]
 	switch ch {
 	case '+', '-', '*', '/':
-		idx++
-		n2 := readNumberLitral()
+		p.idx++
+		n2 := p.readNumberLitral()
 		return &binaryExpr{
 			op:    string(ch),
 			left:  n,
@@ -195,16 +206,16 @@ type numberLit struct {
 	val string
 }
 
-func readNumberLitral() *numberLit {
-	skipWhitespaces()
-	first := source[idx]
-	idx++
+func (p *parser) readNumberLitral() *numberLit {
+	p.skipWhitespaces()
+	first := p.source[p.idx]
+	p.idx++
 	var buf []byte = []byte{first}
 	for {
-		ch := peekCh()
+		ch := p.peekCh()
 		if ('0' <= ch && ch <= '9') || ch == 'x' || ('a' <= ch && ch <= 'f') {
 			buf = append(buf, ch)
-			idx++
+			p.idx++
 		} else {
 			return &numberLit{val: string(buf)}
 		}
@@ -215,19 +226,19 @@ func isDirective(symbol string) bool {
 	return len(symbol) > 0 && symbol[0] == '.'
 }
 
-func parseOperand() operand {
-	skipWhitespaces()
-	ch := source[idx]
-	parserAssert(ch != '\n', "")
+func (p *parser) parseOperand() operand {
+	p.skipWhitespaces()
+	ch := p.source[p.idx]
+	p.parserAssert(ch != '\n', "")
 
 	switch {
 	case isSymbolBeginning(ch):
-		symbol := readSymbol(ch)
+		symbol := p.readSymbol(ch)
 		collectAppearedSymbols(symbol)
-		switch source[idx] {
+		switch p.source[p.idx] {
 		case '(':
 			// indirection e.g. 24(%rbp)
-			regi := readParenthRegister()
+			regi := p.readParenthRegister()
 			return &indirection{
 				expr: &symbolExpr{
 					name: symbol,
@@ -235,11 +246,11 @@ func parseOperand() operand {
 				regi: regi,
 			}
 		case '+': // e.g. foo+8(%rip)
-			expect('+')
-			e := parseArithExpr()
-			switch source[idx] {
+			p.expect('+')
+			e := p.parseArithExpr()
+			switch p.source[p.idx] {
 			case '(':
-				regi := readParenthRegister()
+				regi := p.readParenthRegister()
 				return &indirection{
 					expr: &binaryExpr{
 						op:    "+",
@@ -256,21 +267,21 @@ func parseOperand() operand {
 			return &symbolExpr{name: symbol}
 		}
 	case ch == '\'':
-		expect('\'')
-		b := source[idx]
-		idx++
-		expect('\'')
+		p.expect('\'')
+		b := p.source[p.idx]
+		p.idx++
+		p.expect('\'')
 		return &charLit{
 			val: b,
 		}
 	case ch == '"':
-		s := readStringLiteral()
+		s := p.readStringLiteral()
 		return s
 	case '0' <= ch && ch <= '9' || ch == '-': // "24", "-24(%rbp)"
-		e := parseArithExpr()
-		if source[idx] == '(' {
+		e := p.parseArithExpr()
+		if p.source[p.idx] == '(' {
 			// indirection e.g. 24(%rbp)
-			regi := readParenthRegister()
+			regi := p.readParenthRegister()
 			return &indirection{
 				expr: e,
 				regi: regi,
@@ -281,42 +292,42 @@ func parseOperand() operand {
 			return numExpr
 		}
 	case ch == '(':
-		regi := readParenthRegister()
+		regi := p.readParenthRegister()
 		return &indirection{
 			regi: regi,
 		}
 	case ch == '$':
 		// AT&T immediate operands are preceded by ‘$’;
-		expect('$')
+		p.expect('$')
 		// "$123" "$-7", "$ 2 * 3"
-		e := parseArithExpr()
+		e := p.parseArithExpr()
 		return &immediate{
 			expr: e,
 		}
 	case ch == '%':
-		regName := readRegi()
+		regName := p.readRegi()
 		return &register{
 			name: regName,
 		}
 	default:
-		parseFail("default:buf=" + string(source[idx:idx+4]))
+		p.parseFail("default:buf=" + string(p.source[p.idx:p.idx+4]))
 	}
 	return nil
 }
 
-func parseOperands(keySymbol string) []operand {
+func (p *parser) parseOperands(keySymbol string) []operand {
 	//if keySymbol[0] == '.' {
 	//	// directive
 	//} else {
 	//	// instruction
 	//}
 	var operands []operand
-	for !atEOL() {
-		op := parseOperand()
+	for !p.atEOL() {
+		op := p.parseOperand()
 		operands = append(operands, op)
-		skipWhitespaces()
-		if source[idx] == ',' {
-			idx++
+		p.skipWhitespaces()
+		if p.source[p.idx] == ',' {
+			p.idx++
 			continue
 		} else {
 			break
@@ -325,20 +336,22 @@ func parseOperands(keySymbol string) []operand {
 	return operands
 }
 
-func trySymbol() string {
-	first := source[idx]
+func (p *parser) trySymbol() string {
+	first := p.source[p.idx]
 	if isSymbolBeginning(first) {
-		return readSymbol(first)
+		return p.readSymbol(first)
 	} else {
-		idx++
+		p.idx++
 		return ""
 	}
 }
 
-var filename string
-var source []byte
-var idx int
-var lineno int = 1
+type parser struct {
+	path   string
+	lineno int
+	source []byte
+	idx    int
+}
 
 type operand interface{}
 
@@ -387,39 +400,39 @@ type binaryExpr struct {
 }
 
 type statement struct {
-	filename    *string
+	filePath    *string
 	lineno      int
-	raw         string
+	source      string // for debug output
 	labelSymbol string
 	keySymbol   string
 	operands    []operand
 }
 
-func atEOL() bool {
-	return source[idx] == '\n' || source[idx] == '#'
+func (p *parser) atEOL() bool {
+	return p.source[p.idx] == '\n' || p.source[p.idx] == '#'
 }
 
-func parseFail(msg string) {
-	panic(msg + " at line " + strconv.Itoa(lineno))
+func (p *parser) parseFail(msg string) {
+	panic(msg + " at line " + strconv.Itoa(p.lineno))
 }
 
-func parserAssert(bol bool, errorMsg string) {
+func (p *parser) parserAssert(bol bool, errorMsg string) {
 	if !bol {
-		parseFail("assert failed: " + errorMsg)
+		p.parseFail("assert failed: " + errorMsg)
 	}
 }
 
-func consumeEOL() {
-	if source[idx] == '#' {
-		expect('#')
-		skipToEOL()
+func (p *parser) consumeEOL() {
+	if p.source[p.idx] == '#' {
+		p.expect('#')
+		p.skipToEOL()
 	}
-	if idx == len(source) {
+	if p.idx == len(p.source) {
 		return
 	}
-	parserAssert(source[idx] == '\n', "not newline, but got "+string(source[idx]))
-	idx++
-	lineno++
+	p.parserAssert(p.source[p.idx] == '\n', "not newline, but got "+string(p.source[p.idx]))
+	p.idx++
+	p.lineno++
 }
 
 // https://sourceware.org/binutils/docs-2.37/as.html#Statements
@@ -439,48 +452,48 @@ func consumeEOL() {
 //
 // A label is a symbol immediately followed by a colon (:).
 // Whitespace before a label or after a colon is permitted, but you may not have whitespace between a label’s symbol and its colon. See Labels.
-func parseStmt() *statement {
+func (p *parser) parseStmt() *statement {
 	var stmt = &statement{
-		filename: &filename,
-		lineno:   lineno,
+		filePath: &p.path,
+		lineno:   p.lineno,
 	}
-	skipWhitespaces()
-	if source[idx] == '/' { // expect // comment
-		expect('/')
-		expect('/')
-		skipToEOL()
-		consumeEOL()
+	p.skipWhitespaces()
+	if p.source[p.idx] == '/' { // expect // comment
+		p.expect('/')
+		p.expect('/')
+		p.skipToEOL()
+		p.consumeEOL()
 		return stmt
 	}
-	if atEOL() {
-		consumeEOL()
+	if p.atEOL() {
+		p.consumeEOL()
 		return stmt
 	}
-	symbol := trySymbol()
+	symbol := p.trySymbol()
 	//println("  got symbol " + symbol)
-	//println("(a) next char is  " + string(source[idx]) + ".")
+	//println("(a) next char is  " + string(source[p.idx]) + ".")
 	if symbol == "" {
-		parserAssert(atEOL(), "not at EOL")
-		consumeEOL()
+		p.parserAssert(p.atEOL(), "not at EOL")
+		p.consumeEOL()
 		return stmt
 	}
 
 	var keySymbol string
 
-	if source[idx] == ':' {
+	if p.source[p.idx] == ':' {
 		// this symbol is a label
 		stmt.labelSymbol = symbol
 		collectAppearedSymbols(symbol)
-		skipWhitespaces()
-		if atEOL() {
-			consumeEOL()
+		p.skipWhitespaces()
+		if p.atEOL() {
+			p.consumeEOL()
 			return stmt
 		}
-		keySymbol = trySymbol()
+		keySymbol = p.trySymbol()
 		if len(keySymbol) == 0 {
-			skipWhitespaces()
-			parserAssert(atEOL(), "not at EOL")
-			consumeEOL()
+			p.skipWhitespaces()
+			p.parserAssert(p.atEOL(), "not at EOL")
+			p.consumeEOL()
 			return stmt
 		}
 	} else {
@@ -489,40 +502,44 @@ func parseStmt() *statement {
 	}
 	stmt.keySymbol = keySymbol
 
-	skipWhitespaces()
-	//println("(b) next char is  " + string(source[idx]))
-	if atEOL() {
-		consumeEOL()
+	p.skipWhitespaces()
+	//println("(b) next char is  " + string(source[p.idx]))
+	if p.atEOL() {
+		p.consumeEOL()
 		return stmt
 	}
 
 	//println("  parsing operands...")
-	operands := parseOperands(keySymbol)
+	operands := p.parseOperands(keySymbol)
 	stmt.operands = operands
-	consumeEOL()
+	p.consumeEOL()
 	return stmt
 }
 
-func parseFile(path string) []*statement {
+func (p *parser) parse() []*statement {
+	var stmts []*statement
+	for !p.atEOF() {
+		idxBegin := p.idx
+		s := p.parseStmt()
+		idxEnd := p.idx - 1
+		s.source = string(p.source[idxBegin:idxEnd])
+		stmts = append(stmts, s)
+	}
+	return stmts
+}
+
+func ParseFile(path string) []*statement {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
-	source = src
-	filename = path
-	idx = 0
-	lineno = 1
 
-	var stmts []*statement
-	var i int = 1
-	for idx < len(source) {
-		//println(i, " reading...")
-		idxBegin := idx
-		s := parseStmt()
-		idxEnd := idx
-		s.raw = string(source[idxBegin : idxEnd-1])
-		stmts = append(stmts, s)
-		i++
+	p := &parser{
+		path:   path,
+		lineno: 1,
+		source: src,
+		idx:    0,
 	}
-	return stmts
+	return p.parse()
+
 }

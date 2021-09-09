@@ -574,7 +574,7 @@ func main() {
 	var stmts []*statement
 	for _, inFile := range inFiles {
 		debugf("[main] parsing file: %s\n", inFile)
-		ss := parseFile(inFile)
+		ss := ParseFile(inFile)
 		stmts = append(stmts, ss...)
 	}
 

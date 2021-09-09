@@ -200,7 +200,7 @@ func encode(s *statement) *Instruction {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
 				x,
-				s.raw, *s.filename, s.lineno, s.raw))
+				s.source, *s.filePath, s.lineno, s.source))
 		}
 	}()
 
@@ -349,7 +349,7 @@ func encode(s *statement) *Instruction {
 				r = append(r, displacementBytes...)
 			}
 		default:
-			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, s.raw))
+			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, s.source))
 		}
 	case "movb":
 		switch src := srcOp.(type) {
@@ -457,7 +457,7 @@ func encode(s *statement) *Instruction {
 						r = append(r, 0, 0, 0, 0)
 
 					default:
-						panic("TBI:" + string(s.raw))
+						panic("TBI:" + string(s.source))
 					}
 				} else {
 					// movq %rax, 32(%rsp)
@@ -704,7 +704,7 @@ func encode(s *statement) *Instruction {
 			modRM := composeModRM(ModRegi, 7, rm)
 			r = []byte{REX_W, opcode, modRM, uint8(imValue)}
 		default:
-			panic("TBI:" + s.raw)
+			panic("TBI:" + s.source)
 		}
 	case "setl":
 		opcode1 := uint8(0x0f)
@@ -760,7 +760,7 @@ func encode(s *statement) *Instruction {
 				panic("TBI")
 			}
 		default:
-			panic("[encoder] TBI:" + string(s.raw))
+			panic("[encoder] TBI:" + string(s.source))
 		}
 	case "popq":
 		switch trgt := trgtOp.(type) {
@@ -768,7 +768,7 @@ func encode(s *statement) *Instruction {
 			// 58 +rd. POP r64.
 			r = []byte{0x58 + trgt.toBits()}
 		default:
-			panic("[encoder] TBI:" + string(s.raw))
+			panic("[encoder] TBI:" + string(s.source))
 		}
 	case "xor":
 		// XOR r/m64, imm8
@@ -790,7 +790,7 @@ func encode(s *statement) *Instruction {
 		// Ignore. captured in main routine
 	default:
 		panic(fmt.Sprintf("[encoder] TBI: %s at line %d\n\necho '%s' |./encode as",
-			s.raw, 0, s.raw))
+			s.source, 0, s.source))
 	}
 
 	//fmt.Printf("=>  %#x\n", r)
@@ -806,7 +806,7 @@ func encodeData(s *statement, dataAddr uintptr) []byte {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
 				x,
-				s.raw, *s.filename, s.lineno, s.raw))
+				s.source, *s.filePath, s.lineno, s.source))
 		}
 	}()
 
