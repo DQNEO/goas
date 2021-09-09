@@ -2,8 +2,9 @@
 
 `goas` is an assembler that behaves like `as`, GNU Assembler.
 
-This is just a toy program. It does not to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
+This is just a toy program to illustrate how an assembler works. Acutally I learned how an assembler works by writing this program :).
 
+It does not to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
 However, for any input it supports, it behaves exactly the same as `as`,
  which means it produces the same object files (*.o) as `as` does.
 
