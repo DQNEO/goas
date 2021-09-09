@@ -508,11 +508,8 @@ func encodeAllText(ss []*Stmt) []byte {
 		prev = instr
 	}
 
-	for {
+	for len(variableInstrs) > 0 {
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
-		if len(variableInstrs) == 0 {
-			break
-		}
 	}
 
 	var allText []byte
