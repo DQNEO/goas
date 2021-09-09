@@ -46,15 +46,15 @@ func buildSectionBodies(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 type section struct {
 	sh_name    string
 	index      uint16
-	header     *ElfSectionHeader
+	header     *Elf64_Shdr
 	numZeroPad uintptr
 	zeros      []uint8
 	contents   []uint8
 }
 
 // .symtab
-var symbolTable = []*ElfSym{
-	&ElfSym{}, // NULL entry
+var symbolTable = []*Elf64_Sym{
+	&Elf64_Sym{}, // NULL entry
 }
 
 func prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols bool) []*section {
@@ -100,12 +100,12 @@ func prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols bool) []*s
 }
 
 var s_null = &section{
-	header: &ElfSectionHeader{},
+	header: &Elf64_Shdr{},
 }
 
 var s_text = &section{
 	sh_name: ".text",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x01, // SHT_PROGBITS
 		sh_flags:     0x06, // SHF_ALLOC|SHF_EXECINSTR
 		sh_addr:      0,
@@ -118,7 +118,7 @@ var s_text = &section{
 
 var s_rela_text = &section{
 	sh_name: ".rela.text",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x04, // SHT_RELA
 		sh_flags:     0x40, // * ??
 		sh_link:      0x00, // The section header index of the associated symbol table
@@ -131,7 +131,7 @@ var s_rela_text = &section{
 // ".rela.data"
 var s_rela_data = &section{
 	sh_name: ".rela.data",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x04, // SHT_RELA
 		sh_flags:     0x40, // I ??
 		sh_info:      0x02, // section idx of .data
@@ -142,7 +142,7 @@ var s_rela_data = &section{
 
 var s_data = &section{
 	sh_name: ".data",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x01, // SHT_PROGBITS
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
 		sh_addr:      0,
@@ -155,7 +155,7 @@ var s_data = &section{
 
 var s_bss = &section{
 	sh_name: ".bss",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x08, // SHT_NOBITS
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
 		sh_addr:      0,
@@ -170,7 +170,7 @@ var s_bss = &section{
 //  SHT_SYMTAB (symbol table)
 var s_symtab = &section{
 	sh_name: ".symtab",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:  0x02, // SHT_SYMTAB
 		sh_flags: 0,
 		sh_addr:  0,
@@ -182,7 +182,7 @@ var s_symtab = &section{
 
 var s_shstrtab = &section{
 	sh_name: ".shstrtab",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x03, // SHT_STRTAB
 		sh_flags:     0,
 		sh_addr:      0,
@@ -203,7 +203,7 @@ var s_shstrtab = &section{
 //              section is of type SHT_STRTAB.
 var s_strtab = &section{
 	sh_name: ".strtab",
-	header: &ElfSectionHeader{
+	header: &Elf64_Shdr{
 		sh_type:      0x03, // SHT_STRTAB
 		sh_flags:     0,
 		sh_addr:      0,
@@ -309,7 +309,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 	var index int
 	if hasRelaData {
 		index++
-		symbolTable = append(symbolTable, &ElfSym{
+		symbolTable = append(symbolTable, &Elf64_Sym{
 			st_name:  0,
 			st_info:  STT_SECTION,
 			st_other: 0,
@@ -392,7 +392,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
 				indexOfFirstNonLocalSymbol = index
 			}
 		}
-		e := &ElfSym{
+		e := &Elf64_Sym{
 			st_name:  uint32(name_offset),
 			st_info:  st_info,
 			st_other: 0,
@@ -660,7 +660,7 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 			addr = sym.address
 		}
 
-		rla := &ElfRela{
+		rla := &Elf64_Rela{
 			r_offset: ru.addr,
 			r_info:   0x0100000001,
 			r_addend: int64(addr),
@@ -701,7 +701,7 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 			}
 
 			r_offset := ru.instr.startAddr + ru.offset
-			rla := &ElfRela{
+			rla := &Elf64_Rela{
 				r_offset: r_offset,                 // 8 bytes
 				r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
 				r_addend: addr + ru.adjust - 4,     // 8 bytes
@@ -715,7 +715,7 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 
 func determineSectionOffsets(sectionBodies []*section) {
 	firstSection := sectionBodies[0]
-	firstSection.header.sh_offset = ELFHeaderSize
+	firstSection.header.sh_offset = unsafe.Sizeof(Elf64_Ehdr{})
 	firstSection.header.sh_size = uintptr(len(firstSection.contents))
 	for i := 1; i < len(sectionBodies); i++ {
 		calcOffsetOfSection(
@@ -723,7 +723,7 @@ func determineSectionOffsets(sectionBodies []*section) {
 	}
 }
 
-func calcEShoff(last *ElfSectionHeader) (uintptr, uintptr) {
+func calcEShoff(last *Elf64_Shdr) (uintptr, uintptr) {
 
 	endOfLastSection := last.sh_offset + last.sh_size
 
@@ -755,7 +755,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 		// Some sections may not have any contents
 		if sect.contents != nil {
 			sc := &ElfSectionBodies{
-				body: sect.contents,
+				bodies: sect.contents,
 			}
 			if sect.numZeroPad > 0 {
 				// pad zeros when required
@@ -765,15 +765,15 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 		}
 	}
 
-	var sht []*ElfSectionHeader
+	var sht []*Elf64_Shdr
 	for _, s := range sectionHeaders {
 		sht = append(sht, s.header)
 	}
 
 	return &ElfFile{
 		header:         elfHeader,
-		sections:       sections,
-		zerosBeforeSHT: make([]uint8, paddingBeforeSHT),
-		sht:            sht,
+		sectionBodies:  sections,
+		zeroPadding:    make([]uint8, paddingBeforeSHT),
+		sectionHeaders: sht,
 	}
 }

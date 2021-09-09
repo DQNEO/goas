@@ -8,56 +8,53 @@ import (
 // ELF format
 type ElfFile struct {
 	header         *Elf64_Ehdr
-	sections       []*ElfSectionBodies
-	zerosBeforeSHT []uint8
-	sht            []*ElfSectionHeader
+	sectionBodies  []*ElfSectionBodies
+	zeroPadding    []uint8
+	sectionHeaders []*Elf64_Shdr
 }
 
 // Part1: ELF Header
 
 //  #define EI_NIDENT (16)
-//
-//  typedef struct
-//  {
-//  	unsigned char	e_ident[EI_NIDENT];	/* Magic number and other info */
-//  	Elf64_Half	e_type;			/* Object file type */
-//  	Elf64_Half	e_machine;		/* Architecture */
-//  	Elf64_Word	e_version;		/* Object file version */
-//  	Elf64_Addr	e_entry;		/* Entry point virtual address */
-//  	Elf64_Off	e_phoff;		/* Program header table file offset */
-//  	Elf64_Off	e_shoff;		/* Section header table file offset */
-//  	Elf64_Word	e_flags;		/* Processor-specific flags */
-//  	Elf64_Half	e_ehsize;		/* ELF header size in bytes */
-//  	Elf64_Half	e_phentsize;		/* Program header table entry size */
-//  	Elf64_Half	e_phnum;		/* Program header table entry count */
-//  	Elf64_Half	e_shentsize;		/* Section header table entry size */
-//  	Elf64_Half	e_shnum;		/* Section header table entry count */
-//  	Elf64_Half	e_shstrndx;		/* Section header string table index */
-//  } Elf64_Ehdr;
-
 const EI_NIDENT = 16
 
+//  typedef struct
+//  {
+//  	unsigned char	e_ident[EI_NIDENT];
+//  	Elf64_Half	e_type;
+//  	Elf64_Half	e_machine;
+//  	Elf64_Word	e_version;
+//  	Elf64_Addr	e_entry;
+//  	Elf64_Off	e_phoff;
+//  	Elf64_Off	e_shoff;
+//  	Elf64_Word	e_flags;
+//  	Elf64_Half	e_ehsize;
+//  	Elf64_Half	e_phentsize;
+//  	Elf64_Half	e_phnum;
+//  	Elf64_Half	e_shentsize;
+//  	Elf64_Half	e_shnum;
+//  	Elf64_Half	e_shstrndx;
+//  } Elf64_Ehdr;
+//
 type Elf64_Ehdr struct {
-	e_ident     [EI_NIDENT]uint8
-	e_type      uint16
-	e_machine   uint16
-	e_version   uint32
-	e_entry     uintptr
-	e_phoff     uintptr
-	e_shoff     uintptr
-	e_flags     uint32
-	e_ehsize    uint16
-	e_phentsize uint16
-	e_phnum     uint16
-	e_shentsize uint16
-	e_shnum     uint16
-	e_shstrndx  uint16
+	e_ident     [EI_NIDENT]uint8  /* Magic number and other info */
+	e_type      uint16		      /* Object file type */
+	e_machine   uint16	          /* Architecture */
+	e_version   uint32	          /* Object file version */
+	e_entry     uintptr	          /* Entry point virtual address */
+	e_phoff     uintptr	          /* Program header table file offset */
+	e_shoff     uintptr	          /* Section header table file offset */
+	e_flags     uint32	          /* Processor-specific flags */
+	e_ehsize    uint16	          /* ELF header size in bytes */
+	e_phentsize uint16	          /* Program header table entry size */
+	e_phnum     uint16	          /* Program header table entry count */
+	e_shentsize uint16	          /* Section header table entry size */
+	e_shnum     uint16	          /* Section header table entry count */
+	e_shstrndx  uint16	          /* Section header string table index */
 }
 
-const ELFHeaderSize = unsafe.Sizeof(Elf64_Ehdr{})
-
-// Fixed data for ELF header.
-// e_shoff, e_shentsize, and e_shstrndx should be set dynamically
+// static data for ELF header.
+// e_shoff, e_shnum, and e_shstrndx will be set later dynamically.
 var elfHeader = &Elf64_Ehdr{
 	e_ident: [EI_NIDENT]uint8{
 		0x7f, 0x45, 0x4c, 0x46, // 0x7F followed by "ELF"(45 4c 46) in ASCII;
@@ -74,16 +71,16 @@ var elfHeader = &Elf64_Ehdr{
 	e_entry:     0,
 	e_phoff:     0,
 	e_flags:     0,
-	e_ehsize:    uint16(ELFHeaderSize),
+	e_ehsize:    uint16(unsafe.Sizeof(Elf64_Ehdr{})), // 64
 	e_phentsize: 0,
 	e_phnum:     0,
-	e_shentsize: uint16(SectionHeaderEntrySize), // 64
+	e_shentsize: uint16(unsafe.Sizeof(Elf64_Shdr{})), // 64
 }
 
 // Part2: Section Bodies
 type ElfSectionBodies struct {
-	zeros []uint8
-	body  []uint8
+	zeros  []uint8
+	bodies []uint8
 }
 
 // Relocation entries (Rel & Rela)
@@ -101,28 +98,24 @@ type ElfSectionBodies struct {
 //               int64_t    r_addend;
 //           } Elf64_Rela;
 //
-//       r_offset
-//              This member gives the location at which to apply the
-//              relocation action.  For a relocatable file, the value is
-//              the byte offset from the beginning of the section to the
-//              storage unit affected by the relocation.  For an
-//              executable file or shared object, the value is the virtual
-//              address of the storage unit affected by the relocation.
-//
-//       r_info This member gives both the symbol table index with respect
-//              to which the relocation must be made and the type of
-//              relocation to apply.  Relocation types are processor-
-//              specific.  When the text refers to a relocation entry's
-//              relocation type or symbol table index, it means the result
-//              of applying ELF[32|64]_R_TYPE or ELF[32|64]_R_SYM,
-//              respectively, to the entry's r_info member.
-//
-//       r_addend
-//              This member specifies a constant addend used to compute
-//              the value to be stored into the relocatable field.
-type ElfRela struct {
+type Elf64_Rela struct {
+	//              This member gives the location at which to apply the
+	//              relocation action.  For a relocatable file, the value is
+	//              the byte offset from the beginning of the section to the
+	//              storage unit affected by the relocation.  For an
+	//              executable file or shared object, the value is the virtual
+	//              address of the storage unit affected by the relocation.
 	r_offset uintptr
+	//              This member gives both the symbol table index with respect
+	//              to which the relocation must be made and the type of
+	//              relocation to apply.  Relocation types are processor-
+	//              specific.  When the text refers to a relocation entry's
+	//              relocation type or symbol table index, it means the result
+	//              of applying ELF[32|64]_R_TYPE or ELF[32|64]_R_SYM,
+	//              respectively, to the entry's r_info member.
 	r_info   uint64
+	//              This member specifies a constant addend used to compute
+	//              the value to be stored into the relocatable field.
 	r_addend int64
 }
 
@@ -138,8 +131,8 @@ type ElfRela struct {
 //               Elf64_Addr    st_value;
 //               uint64_t      st_size;
 //           } Elf64_Sym;
-
-type ElfSym struct {
+//
+type Elf64_Sym struct {
 	// This member holds an index into the object file's symbol
 	//              string table, which holds character representations of the
 	//              symbol names.  If the value is nonzero, it represents a
@@ -172,10 +165,10 @@ type ElfSym struct {
 	st_size  uint64
 }
 
-// # Part3: Section Header Table
+// Part3: Section Header Table
 
-// https://man7.org/linux/man-pages/man5/elf.5.html
-//   typedef struct { //               uint32_t   sh_name;
+//   typedef struct {
+//               uint32_t   sh_name;
 //               uint32_t   sh_type;
 //               uint64_t   sh_flags;
 //               Elf64_Addr sh_addr;
@@ -186,22 +179,22 @@ type ElfSym struct {
 //               uint64_t   sh_addralign;
 //               uint64_t   sh_entsize;
 //           } Elf64_Shdr;
-
-type ElfSectionHeader struct {
+//
+type Elf64_Shdr struct {
 	// This member specifies the name of the section.
 	// Its value is an index into the section header string table section,
 	// giving the location of a null-terminated string.
-	sh_name   uint32  // 4
-	sh_type   uint32  // 8
-	sh_flags  uintptr // 16
-	sh_addr   uintptr // 24
-	sh_offset uintptr // 32
-	sh_size   uintptr // 40
+	sh_name   uint32
+	sh_type   uint32
+	sh_flags  uintptr
+	sh_addr   uintptr
+	sh_offset uintptr
+	sh_size   uintptr
 
 	// This member holds a section header table index link,
 	// whose interpretation depends on the section type.
-	sh_link uint32 // 44
-	sh_info uint32 // 48
+	sh_link uint32
+	sh_info uint32
 
 	// Some sections have address alignment constraints.  If a
 	// section holds a doubleword, the system must ensure
@@ -210,29 +203,27 @@ type ElfSectionHeader struct {
 	// value of sh_addralign.  Only zero and positive integral
 	// powers of two are allowed.  The value 0 or 1 means that
 	// the section has no alignment constraints.
-	sh_addralign uintptr // 56
-	sh_entsize   uintptr // 64
+	sh_addralign uintptr
+	sh_entsize   uintptr
 }
-
-const SectionHeaderEntrySize = unsafe.Sizeof(ElfSectionHeader{})
 
 func (elfFile *ElfFile) writeTo(w io.Writer) {
 	// Part 1: Write ELF Header
 	h := elfFile.header
-	buf := ((*[unsafe.Sizeof(*h)]byte)(unsafe.Pointer(h)))[:]
+	buf := ((*[unsafe.Sizeof(Elf64_Ehdr{})]uint8)(unsafe.Pointer(h)))[:]
 	w.Write(buf)
 
-	// Part 2: Write section contents
-	for _, s := range elfFile.sections {
+	// Part 2: Write section bodies
+	for _, s := range elfFile.sectionBodies {
 		w.Write(s.zeros)
-		w.Write(s.body)
+		w.Write(s.bodies)
 	}
 
-	w.Write(elfFile.zerosBeforeSHT)
+	w.Write(elfFile.zeroPadding)
 
-	// Part 3: Write Section Header Table
-	for _, sh := range elfFile.sht {
-		buf := ((*[unsafe.Sizeof(*sh)]byte)(unsafe.Pointer(sh)))[:]
+	// Part 3: Write section headers
+	for _, sh := range elfFile.sectionHeaders {
+		buf := ((*[unsafe.Sizeof(Elf64_Shdr{})]uint8)(unsafe.Pointer(sh)))[:]
 		w.Write(buf)
 	}
 }
