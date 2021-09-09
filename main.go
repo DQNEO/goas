@@ -671,7 +671,7 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 			r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
 			r_addend: addr + ru.adjust - 4,     // 8 bytes
 		}
-		p := (*[24]byte)(unsafe.Pointer(rla))[:]
+		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rla))[:]
 		contents = append(contents, p...)
 	}
 	return contents
@@ -697,7 +697,7 @@ func buildRelaDataBody(relaDataUsers []*relaDataUser) []byte {
 			r_info:   0x0100000001,
 			r_addend: int64(addr),
 		}
-		p := (*[24]byte)(unsafe.Pointer(rla))[:]
+		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rla))[:]
 		contents = append(contents, p...)
 	}
 	return contents
