@@ -75,7 +75,7 @@ func (p *parser) readParenthRegister() *register {
 		p.expect(')')
 		return &register{name: regi}
 	} else {
-		p.parseFail("TBI")
+		p.fail("TBI")
 		return nil
 	}
 }
@@ -229,7 +229,7 @@ func isDirective(symbol string) bool {
 func (p *parser) parseOperand() operand {
 	p.skipWhitespaces()
 	ch := p.source[p.idx]
-	p.parserAssert(ch != '\n', "")
+	p.assert(ch != '\n', "")
 
 	switch {
 	case isSymbolBeginning(ch):
@@ -310,7 +310,7 @@ func (p *parser) parseOperand() operand {
 			name: regName,
 		}
 	default:
-		p.parseFail("default:buf=" + string(p.source[p.idx:p.idx+4]))
+		p.fail("default:buf=" + string(p.source[p.idx:p.idx+4]))
 	}
 	return nil
 }
@@ -409,16 +409,16 @@ type statement struct {
 }
 
 func (p *parser) atEOL() bool {
-	return p.source[p.idx] == '\n' || p.source[p.idx] == '#'
+	return p.source[p.idx] == '\n' || p.source[p.idx] == '#' || p.source[p.idx] == '/'
 }
 
-func (p *parser) parseFail(msg string) {
+func (p *parser) fail(msg string) {
 	panic(msg + " at line " + strconv.Itoa(p.lineno))
 }
 
-func (p *parser) parserAssert(bol bool, errorMsg string) {
+func (p *parser) assert(bol bool, errorMsg string) {
 	if !bol {
-		p.parseFail("assert failed: " + errorMsg)
+		p.fail("assert failed: " + errorMsg)
 	}
 }
 
@@ -426,11 +426,17 @@ func (p *parser) consumeEOL() {
 	if p.source[p.idx] == '#' {
 		p.expect('#')
 		p.skipToEOL()
+	} else if p.source[p.idx] == '/' {
+		// expect "//" comment
+		p.expect('/')
+		p.expect('/')
+		p.skipToEOL()
 	}
+
 	if p.idx == len(p.source) {
 		return
 	}
-	p.parserAssert(p.source[p.idx] == '\n', "not newline, but got "+string(p.source[p.idx]))
+	p.assert(p.source[p.idx] == '\n', "not newline, but got "+string(p.source[p.idx]))
 	p.idx++
 	p.lineno++
 }
@@ -458,29 +464,19 @@ func (p *parser) parseStmt() *statement {
 		lineno:   p.lineno,
 	}
 	p.skipWhitespaces()
-	if p.source[p.idx] == '/' { // expect // comment
-		p.expect('/')
-		p.expect('/')
-		p.skipToEOL()
-		p.consumeEOL()
-		return stmt
-	}
 	if p.atEOL() {
 		p.consumeEOL()
 		return stmt
 	}
 	symbol := p.trySymbol()
-	//println("  got symbol " + symbol)
-	//println("(a) next char is  " + string(source[p.idx]) + ".")
 	if symbol == "" {
-		p.parserAssert(p.atEOL(), "not at EOL")
 		p.consumeEOL()
 		return stmt
 	}
 
 	var keySymbol string
 
-	if p.source[p.idx] == ':' {
+	if p.peekCh() == ':' {
 		// this symbol is a label
 		stmt.labelSymbol = symbol
 		collectAppearedSymbols(symbol)
@@ -492,7 +488,6 @@ func (p *parser) parseStmt() *statement {
 		keySymbol = p.trySymbol()
 		if len(keySymbol) == 0 {
 			p.skipWhitespaces()
-			p.parserAssert(p.atEOL(), "not at EOL")
 			p.consumeEOL()
 			return stmt
 		}
@@ -503,13 +498,11 @@ func (p *parser) parseStmt() *statement {
 	stmt.keySymbol = keySymbol
 
 	p.skipWhitespaces()
-	//println("(b) next char is  " + string(source[p.idx]))
 	if p.atEOL() {
 		p.consumeEOL()
 		return stmt
 	}
 
-	//println("  parsing operands...")
 	operands := p.parseOperands(keySymbol)
 	stmt.operands = operands
 	p.consumeEOL()
