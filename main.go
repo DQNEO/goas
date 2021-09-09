@@ -52,11 +52,6 @@ type section struct {
 	contents   []uint8
 }
 
-// .symtab
-var symbolTable = []*Elf64_Sym{
-	&Elf64_Sym{}, // NULL entry
-}
-
 func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 
 	r := []*section{
@@ -306,9 +301,12 @@ const STT_SECTION = 0x03
 var debugSymbolTable bool = true
 
 func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) {
-	var index int
+	var symbolTable = []*Elf64_Sym{
+		&Elf64_Sym{}, // NULL entry
+	}
+
 	if hasRelaData {
-		index++
+		symbolIndex[".data"] = len(symbolTable)
 		symbolTable = append(symbolTable, &Elf64_Sym{
 			st_name:  0,
 			st_info:  STT_SECTION,
@@ -317,8 +315,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 			st_value: 0,
 			st_size:  0,
 		})
-		symbolIndex[".data"] = index
-
 	}
 
 	var localSymbols []string
@@ -380,7 +376,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 			isGlobal = true
 		}
 
-		index++
+
 		name_offset := bytes.Index(s_strtab.contents, append([]byte(symname), 0x0))
 		if name_offset < 0 {
 			panic("name_offset should not be negative")
@@ -388,9 +384,6 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 		var st_info uint8
 		if isGlobal {
 			st_info = 0x10 // GLOBAL ?
-			if indexOfFirstNonLocalSymbol == 0 {
-				indexOfFirstNonLocalSymbol = index
-			}
 		}
 		e := &Elf64_Sym{
 			st_name:  uint32(name_offset),
@@ -399,8 +392,15 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 			st_shndx: shndx,
 			st_value: addr,
 		}
+		index := len(symbolTable)
 		symbolTable = append(symbolTable, e)
+
 		symbolIndex[symname] = index
+		if isGlobal {
+			if indexOfFirstNonLocalSymbol == 0 {
+				indexOfFirstNonLocalSymbol = index
+			}
+		}
 	}
 
 	// I don't know why we need this. Just Follow GNU.
