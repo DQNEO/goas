@@ -625,7 +625,6 @@ func main() {
 	sectionBodies := buildSectionBodies(hasRelaText, hasRelaData, hasSymbols)
 	resolveShNames(sectionBodies)
 
-	// prepare ELF File format
 	debugf("[main] writing ELF file ...\n")
 	elfFile := prepareElfFile(sectionBodies, sectionHeaders)
 	elfFile.writeTo(w)
