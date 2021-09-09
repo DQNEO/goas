@@ -6,14 +6,15 @@ import (
 	"strconv"
 )
 
-// parser's global vars
-var symbolsInLexicalOrder []string
-var symbolsAppeared = make(map[string]bool)
+type symbolCollection struct {
+	symbolsInLexicalOrder []string
+	symbolsAppeared       map[string]bool
+}
 
-func collectAppearedSymbols(symbol string) {
-	if !symbolsAppeared[symbol] {
-		symbolsInLexicalOrder = append(symbolsInLexicalOrder, symbol)
-		symbolsAppeared[symbol] = true
+func (p *parser) collectAppearedSymbols(symbol string) {
+	if !p.sc.symbolsAppeared[symbol] {
+		p.sc.symbolsInLexicalOrder = append(p.sc.symbolsInLexicalOrder, symbol)
+		p.sc.symbolsAppeared[symbol] = true
 	}
 }
 
@@ -240,7 +241,7 @@ func (p *parser) parseOperand() Operand {
 	switch {
 	case isSymbolBeginning(ch):
 		symbol := p.readSymbol(ch)
-		collectAppearedSymbols(symbol)
+		p.collectAppearedSymbols(symbol)
 		switch p.peekCh() {
 		case '(':
 			// indirection e.g. 24(%rbp)
@@ -345,6 +346,7 @@ type parser struct {
 	lineno int
 	source []byte
 	idx    int
+	sc *symbolCollection
 }
 
 type Operand interface{}
@@ -470,7 +472,7 @@ func (p *parser) parseStmt() *Stmt {
 	if p.peekCh() == ':' {
 		// this symbol is a label
 		stmt.labelSymbol = symbol
-		collectAppearedSymbols(symbol)
+		p.collectAppearedSymbols(symbol)
 		p.skipWhitespaces()
 		if p.atEOL() {
 			p.consumeEOL()
@@ -512,7 +514,19 @@ func (p *parser) parse() []*Stmt {
 	return stmts
 }
 
-func ParseFile(path string) []*Stmt {
+func ParseFiles(files []string) ([]*Stmt, []string) {
+	var stmts []*Stmt
+	sc := &symbolCollection{
+		symbolsAppeared: make(map[string]bool),
+	}
+	for _, f := range files {
+		ss := ParseFile(f, sc)
+		stmts = append(stmts, ss...)
+	}
+	return stmts, sc.symbolsInLexicalOrder
+}
+
+func ParseFile(path string, sc *symbolCollection) []*Stmt {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -523,7 +537,8 @@ func ParseFile(path string) []*Stmt {
 		lineno: 1,
 		source: src,
 		idx:    0,
+		sc:sc,
 	}
-	return p.parse()
-
+	stmts := p.parse()
+	return stmts
 }

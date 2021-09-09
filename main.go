@@ -305,7 +305,7 @@ const STT_SECTION = 0x03
 
 var debugSymbolTable bool = true
 
-func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool) {
+func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) {
 	var index int
 	if hasRelaData {
 		index++
@@ -571,12 +571,7 @@ func main() {
 		panic(err)
 	}
 
-	var stmts []*Stmt
-	for _, inFile := range inFiles {
-		debugf("[main] parsing file: %s\n", inFile)
-		ss := ParseFile(inFile)
-		stmts = append(stmts, ss...)
-	}
+	stmts, symbolsInLexicalOrder := ParseFiles(inFiles)
 
 	var textStmts []*Stmt
 	var dataStmts []*Stmt
@@ -584,6 +579,14 @@ func main() {
 	var globalSymbols = make(map[string]bool)
 	var currentSection = ".text"
 	for _, s := range stmts {
+
+		if s.labelSymbol != "" {
+			definedSymbols[s.labelSymbol] = &symbolDefinition{
+				name:    s.labelSymbol,
+				section: currentSection,
+			}
+		}
+
 		switch s.keySymbol {
 		case ".data":
 			currentSection = ".data"
@@ -593,13 +596,7 @@ func main() {
 			continue
 		case ".global":
 			globalSymbols[s.operands[0].(*symbolExpr).name] = true
-		}
-
-		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol] = &symbolDefinition{
-				name:    s.labelSymbol,
-				section: currentSection,
-			}
+			continue
 		}
 
 		switch currentSection {
@@ -607,15 +604,11 @@ func main() {
 			dataStmts = append(dataStmts, s)
 		case ".text":
 			textStmts = append(textStmts, s)
-		default:
 		}
-
 	}
 
-	code := encodeAllText(textStmts)
-	data := encodeAllData(dataStmts)
-	s_data.contents = data
-	s_text.contents = code
+	s_text.contents = encodeAllText(textStmts)
+	s_data.contents = encodeAllData(dataStmts)
 
 	hasRelaText := len(relaTextUsers) > 0
 	hasRelaData := len(relaDataUsers) > 0
@@ -623,7 +616,7 @@ func main() {
 	sectionHeaders := prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols)
 	if len(definedSymbols) > 0 {
 		debugf("[main] building symbol table ...\n")
-		buildSymbolTable(hasRelaData, globalSymbols)
+		buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
 	}
 
 	buildRelaSections(relaTextUsers, relaDataUsers)
