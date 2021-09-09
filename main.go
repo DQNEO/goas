@@ -298,7 +298,7 @@ var definedSymbols = make(map[string]*symbolDefinition)
 
 const STT_SECTION = 0x03
 
-func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) {
+func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8) {
 	var symbolTable = []*Elf64_Sym{
 		&Elf64_Sym{}, // NULL entry
 	}
@@ -401,17 +401,21 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 		}
 	}
 
+	var sh_info uint32
 	// I don't know why we need this. Just Follow GNU.
 	if indexOfFirstNonLocalSymbol == 0 {
-		indexOfFirstNonLocalSymbol = len(symbolTable)
+		sh_info = uint32(len(symbolTable))
+	} else {
+		sh_info = uint32(indexOfFirstNonLocalSymbol)
 	}
 
-	s_symtab.header.sh_info = uint32(indexOfFirstNonLocalSymbol)
-
+	var contents []uint8
 	for _, entry := range symbolTable {
-		var buf []byte = ((*[24]byte)(unsafe.Pointer(entry)))[:]
-		s_symtab.contents = append(s_symtab.contents, buf...)
+		buf := ((*[24]byte)(unsafe.Pointer(entry)))[:]
+		contents = append(contents, buf...)
 	}
+
+	return sh_info, contents
 }
 
 var symbolIndex = make(map[string]int)
@@ -612,7 +616,7 @@ func main() {
 	sectionHeaders := buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols)
 	if len(definedSymbols) > 0 {
 		debugf("[main] building symbol table ...\n")
-		buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
+		s_symtab.header.sh_info , s_symtab.contents = buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
 	}
 
 	debugf("[main] building sections ...\n")
