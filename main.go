@@ -298,8 +298,6 @@ var definedSymbols = make(map[string]*symbolDefinition)
 
 const STT_SECTION = 0x03
 
-var debugSymbolTable bool = true
-
 func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) {
 	var symbolTable = []*Elf64_Sym{
 		&Elf64_Sym{}, // NULL entry
