@@ -99,7 +99,7 @@ func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 var s_text = &section{
 	name: ".text",
 	header: &Elf64_Shdr{
-		sh_type:      0x01, // SHT_PROGBITS
+		sh_type:      SHT_PROGBITS,
 		sh_flags:     0x06, // SHF_ALLOC|SHF_EXECINSTR
 		sh_addr:      0,
 		sh_link:      0,
@@ -112,7 +112,7 @@ var s_text = &section{
 var s_rela_text = &section{
 	name: ".rela.text",
 	header: &Elf64_Shdr{
-		sh_type:      0x04, // SHT_RELA
+		sh_type:      SHT_RELA,
 		sh_flags:     0x40, // * ??
 		sh_link:      0x00, // The section header index of the associated symbol table
 		sh_info:      0x01,
@@ -121,11 +121,10 @@ var s_rela_text = &section{
 	},
 }
 
-// ".rela.data"
 var s_rela_data = &section{
 	name: ".rela.data",
 	header: &Elf64_Shdr{
-		sh_type:      0x04, // SHT_RELA
+		sh_type:      SHT_RELA,
 		sh_flags:     0x40, // I ??
 		sh_info:      0x02, // section idx of .data
 		sh_addralign: 0x08,
@@ -136,7 +135,7 @@ var s_rela_data = &section{
 var s_data = &section{
 	name: ".data",
 	header: &Elf64_Shdr{
-		sh_type:      0x01, // SHT_PROGBITS
+		sh_type:      SHT_PROGBITS,
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
 		sh_addr:      0,
 		sh_link:      0,
@@ -149,7 +148,7 @@ var s_data = &section{
 var s_bss = &section{
 	name: ".bss",
 	header: &Elf64_Shdr{
-		sh_type:      0x08, // SHT_NOBITS
+		sh_type:      SHT_NOBITS,
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
 		sh_addr:      0,
 		sh_link:      0,
@@ -164,7 +163,7 @@ var s_bss = &section{
 var s_symtab = &section{
 	name: ".symtab",
 	header: &Elf64_Shdr{
-		sh_type:  0x02, // SHT_SYMTAB
+		sh_type:  SHT_SYMTAB, // SHT_SYMTAB
 		sh_flags: 0,
 		sh_addr:  0,
 		//	sh_link:      0x05, // section index of .strtab ?
@@ -176,7 +175,7 @@ var s_symtab = &section{
 var s_shstrtab = &section{
 	name: ".shstrtab",
 	header: &Elf64_Shdr{
-		sh_type:      0x03, // SHT_STRTAB
+		sh_type:      SHT_STRTAB,
 		sh_flags:     0,
 		sh_addr:      0,
 		sh_link:      0,
@@ -188,16 +187,16 @@ var s_shstrtab = &section{
 
 // ".strtab"
 //
-//   This section holds strings, most commonly the strings that
+// This section holds strings, most commonly the strings that
 //              represent the names associated with symbol table entries.
 //              If the file has a loadable segment that includes the
 //              symbol string table, the section's attributes will include
-//              the SHF_ALLOC bit.  Otherwise, the bit will be off.  This
-//              section is of type SHT_STRTAB.
+//              the SHF_ALLOC bit.  Otherwise, the bit will be off.
+// This section is of type SHT_STRTAB.
 var s_strtab = &section{
 	name: ".strtab",
 	header: &Elf64_Shdr{
-		sh_type:      0x03, // SHT_STRTAB
+		sh_type:      SHT_STRTAB,
 		sh_flags:     0,
 		sh_addr:      0,
 		sh_link:      0,

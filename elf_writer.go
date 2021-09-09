@@ -167,6 +167,8 @@ type Elf64_Sym struct {
 
 // Part3: Section Header Table
 
+
+
 //   typedef struct {
 //               uint32_t   sh_name;
 //               uint32_t   sh_type;
@@ -185,7 +187,7 @@ type Elf64_Shdr struct {
 	// Its value is an index into the section header string table section,
 	// giving the location of a null-terminated string.
 	sh_name   uint32
-	sh_type   uint32
+	sh_type   SHT
 	sh_flags  uintptr
 	sh_addr   uintptr
 	sh_offset uintptr
@@ -206,6 +208,13 @@ type Elf64_Shdr struct {
 	sh_addralign uintptr
 	sh_entsize   uintptr
 }
+
+type SHT uint32
+const SHT_PROGBITS SHT = 1 /* Program data */
+const SHT_SYMTAB SHT = 2   /* Symbol table */
+const SHT_STRTAB SHT = 3   /* String table */
+const SHT_RELA SHT = 4     /* Relocation entries with addends */
+const SHT_NOBITS SHT = 8   /* Program space with no data (bss) */
 
 func (elfFile *ElfFile) writeTo(w io.Writer) {
 	// Part 1: Write ELF Header
