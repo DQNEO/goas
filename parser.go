@@ -315,11 +315,6 @@ func (p *parser) parseOperand() Operand {
 }
 
 func (p *parser) parseOperands(keySymbol string) []Operand {
-	//if keySymbol[0] == '.' {
-	//	// directive
-	//} else {
-	//	// instruction
-	//}
 	var operands []Operand
 	for !p.atEOL() {
 		op := p.parseOperand()
