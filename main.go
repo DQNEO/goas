@@ -20,7 +20,7 @@ func debugf(s string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, s, a...)
 }
 
-func buildSectionBodies(hasRelaText, hasRelaData, hasSymbols bool) []*section {
+func sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 	var sections = []*section{
 		s_text,
 		s_data,
@@ -265,18 +265,18 @@ func makeSectionNames(hasRelaText, hasRelaData, hasSymbols bool) []string {
 }
 
 // Make contents of .shstrtab"
-func makeShStrTab(sectionNames []string) {
+func makeShStrTab(sectionNames []string) []byte {
 	buf := []byte{0x00}
 	for _, name := range sectionNames {
 		buf = append(buf, name...)
 		buf = append(buf, 0)
 	}
-	s_shstrtab.contents = buf
+	return buf
 }
 
-func resolveShNames(ss []*section) {
+func resolveShNames(shstrtab_contents []byte, ss []*section) {
 	for _, s := range ss {
-		idx := bytes.Index(s_shstrtab.contents, []byte(s.name))
+		idx := bytes.Index(shstrtab_contents, []byte(s.name))
 		if idx <= 0 {
 			panic(s.name + " is not found in .strtab contents")
 		}
@@ -619,16 +619,16 @@ func main() {
 
 	debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
-	makeShStrTab(sectionNames)
+	s_shstrtab.contents = makeShStrTab(sectionNames)
+	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
 
 	s_rela_text.contents = buildRelaTextBody(relaTextUsers, symbolIndex)
 	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
 
-	sectionBodies := buildSectionBodies(hasRelaText, hasRelaData, hasSymbols)
-	resolveShNames(sectionBodies)
-
+	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
+	assert(len(sectionInBodyOrder) == len(sectionHeaders)-1, "sections len unmatch")
 	debugf("[main] writing ELF file ...\n")
-	elfFile := prepareElfFile(sectionBodies, sectionHeaders)
+	elfFile := prepareElfFile(sectionInBodyOrder, sectionHeaders)
 	elfFile.writeTo(w)
 }
 
