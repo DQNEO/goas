@@ -44,7 +44,7 @@ func buildSectionBodies(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 }
 
 type section struct {
-	sh_name    string
+	name       string
 	index      uint16
 	header     *Elf64_Shdr
 	numZeroPad uintptr
@@ -55,7 +55,9 @@ type section struct {
 func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 
 	r := []*section{
-		s_null, // NULL
+		&section{
+			header: &Elf64_Shdr{},
+		},      // NULL
 		s_text, // .text
 	}
 
@@ -94,12 +96,8 @@ func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 	return r
 }
 
-var s_null = &section{
-	header: &Elf64_Shdr{},
-}
-
 var s_text = &section{
-	sh_name: ".text",
+	name: ".text",
 	header: &Elf64_Shdr{
 		sh_type:      0x01, // SHT_PROGBITS
 		sh_flags:     0x06, // SHF_ALLOC|SHF_EXECINSTR
@@ -112,7 +110,7 @@ var s_text = &section{
 }
 
 var s_rela_text = &section{
-	sh_name: ".rela.text",
+	name: ".rela.text",
 	header: &Elf64_Shdr{
 		sh_type:      0x04, // SHT_RELA
 		sh_flags:     0x40, // * ??
@@ -125,7 +123,7 @@ var s_rela_text = &section{
 
 // ".rela.data"
 var s_rela_data = &section{
-	sh_name: ".rela.data",
+	name: ".rela.data",
 	header: &Elf64_Shdr{
 		sh_type:      0x04, // SHT_RELA
 		sh_flags:     0x40, // I ??
@@ -136,7 +134,7 @@ var s_rela_data = &section{
 }
 
 var s_data = &section{
-	sh_name: ".data",
+	name: ".data",
 	header: &Elf64_Shdr{
 		sh_type:      0x01, // SHT_PROGBITS
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
@@ -149,7 +147,7 @@ var s_data = &section{
 }
 
 var s_bss = &section{
-	sh_name: ".bss",
+	name: ".bss",
 	header: &Elf64_Shdr{
 		sh_type:      0x08, // SHT_NOBITS
 		sh_flags:     0x03, // SHF_WRITE|SHF_ALLOC
@@ -164,7 +162,7 @@ var s_bss = &section{
 //  ".symtab"
 //  SHT_SYMTAB (symbol table)
 var s_symtab = &section{
-	sh_name: ".symtab",
+	name: ".symtab",
 	header: &Elf64_Shdr{
 		sh_type:  0x02, // SHT_SYMTAB
 		sh_flags: 0,
@@ -176,7 +174,7 @@ var s_symtab = &section{
 }
 
 var s_shstrtab = &section{
-	sh_name: ".shstrtab",
+	name: ".shstrtab",
 	header: &Elf64_Shdr{
 		sh_type:      0x03, // SHT_STRTAB
 		sh_flags:     0,
@@ -197,7 +195,7 @@ var s_shstrtab = &section{
 //              the SHF_ALLOC bit.  Otherwise, the bit will be off.  This
 //              section is of type SHT_STRTAB.
 var s_strtab = &section{
-	sh_name: ".strtab",
+	name: ".strtab",
 	header: &Elf64_Shdr{
 		sh_type:      0x03, // SHT_STRTAB
 		sh_flags:     0,
@@ -278,10 +276,9 @@ func makeShStrTab(sectionNames []string) {
 
 func resolveShNames(ss []*section) {
 	for _, s := range ss {
-		sh_name := s.sh_name
-		idx := bytes.Index(s_shstrtab.contents, []byte(sh_name))
+		idx := bytes.Index(s_shstrtab.contents, []byte(s.name))
 		if idx <= 0 {
-			panic(s.sh_name + " is not found in .strtab contents")
+			panic(s.name + " is not found in .strtab contents")
 		}
 		s.header.sh_name = uint32(idx)
 	}
