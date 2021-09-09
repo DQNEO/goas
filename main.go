@@ -57,7 +57,7 @@ var symbolTable = []*Elf64_Sym{
 	&Elf64_Sym{}, // NULL entry
 }
 
-func prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols bool) []*section {
+func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 
 	r := []*section{
 		s_null, // NULL
@@ -610,18 +610,19 @@ func main() {
 	hasRelaText := len(relaTextUsers) > 0
 	hasRelaData := len(relaDataUsers) > 0
 	hasSymbols := len(definedSymbols) > 0
-	sectionHeaders := prepareSectionHeaderEntries(hasRelaText, hasRelaData, hasSymbols)
+
+	sectionHeaders := buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols)
 	if len(definedSymbols) > 0 {
 		debugf("[main] building symbol table ...\n")
 		buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
 	}
 
-	s_rela_text.contents = buildRelaTextBody(relaTextUsers)
-	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
-
 	debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
 	makeShStrTab(sectionNames)
+
+	s_rela_text.contents = buildRelaTextBody(relaTextUsers)
+	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
 
 	sectionBodies := buildSectionBodies(hasRelaText, hasRelaData, hasSymbols)
 	resolveShNames(sectionBodies)
