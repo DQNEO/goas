@@ -78,19 +78,6 @@ func buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 		s.index = uint16(i)
 	}
 
-	if hasSymbols {
-		s_symtab.header.sh_link = uint32(s_strtab.index) // @TODO confirm the reason to do this
-
-		if hasRelaText {
-			s_rela_text.header.sh_link = uint32(s_symtab.index)
-		}
-
-		if hasRelaData {
-			s_rela_data.header.sh_link = uint32(s_symtab.index)
-			s_rela_data.header.sh_info = uint32(s_data.index)
-		}
-	}
-
 	return r
 }
 
@@ -608,6 +595,20 @@ func main() {
 	hasSymbols := len(definedSymbols) > 0
 
 	sectionHeaders := buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols)
+
+	if hasSymbols {
+		s_symtab.header.sh_link = uint32(s_strtab.index) // @TODO confirm the reason to do this
+
+		if hasRelaText {
+			s_rela_text.header.sh_link = uint32(s_symtab.index)
+		}
+
+		if hasRelaData {
+			s_rela_data.header.sh_link = uint32(s_symtab.index)
+			s_rela_data.header.sh_info = uint32(s_data.index)
+		}
+	}
+
 	var symbolIndex map[string]int
 	if len(definedSymbols) > 0 {
 		debugf("[main] building symbol table ...\n")
