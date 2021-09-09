@@ -413,7 +413,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 
 	var contents []uint8
 	for _, entry := range symbolTable {
-		buf := ((*[24]byte)(unsafe.Pointer(entry)))[:]
+		buf := ((*[unsafe.Sizeof(Elf64_Sym{})]byte)(unsafe.Pointer(entry)))[:]
 		contents = append(contents, buf...)
 	}
 
