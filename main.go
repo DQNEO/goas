@@ -616,7 +616,8 @@ func main() {
 		buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
 	}
 
-	buildRelaSections(relaTextUsers, relaDataUsers)
+	s_rela_text.contents = buildRelaTextBody(relaTextUsers)
+	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
 
 	debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
@@ -630,10 +631,50 @@ func main() {
 	elfFile.writeTo(w)
 }
 
-// build rela text and data contents and headers
-func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataUser) {
+func buildRelaTextBody(relaTextUsers []*relaTextUser) []byte {
+	var contents []byte
 
-	var rela_data_c []byte
+	for _, ru := range relaTextUsers {
+		sym, defined := definedSymbols[ru.uses]
+		var addr int64
+		if defined {
+			if sym.section == ".text" {
+				// skip symbols that belong to the same section
+				continue
+			}
+			addr = int64(sym.address)
+		}
+
+		const R_X86_64_PC32 = 2
+		const R_X86_64_PLT32 = 4
+		var typ uint64
+		if ru.toJump {
+			typ = R_X86_64_PLT32
+		} else {
+			typ = R_X86_64_PC32
+		}
+
+		var symIdx int
+		if defined && sym.section == ".data" {
+			symIdx = symbolIndex[".data"]
+		} else {
+			symIdx = symbolIndex[ru.uses]
+		}
+
+		r_offset := ru.instr.startAddr + ru.offset
+		rla := &Elf64_Rela{
+			r_offset: r_offset,                 // 8 bytes
+			r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
+			r_addend: addr + ru.adjust - 4,     // 8 bytes
+		}
+		p := (*[24]byte)(unsafe.Pointer(rla))[:]
+		contents = append(contents, p...)
+	}
+	return contents
+}
+
+func buildRelaDataBody(relaDataUsers []*relaDataUser) []byte {
+	var contents []byte
 	for _, ru := range relaDataUsers {
 		sym, ok := definedSymbols[ru.uses]
 		if !ok {
@@ -653,51 +694,9 @@ func buildRelaSections(relaTextUsers []*relaTextUser, relaDataUsers []*relaDataU
 			r_addend: int64(addr),
 		}
 		p := (*[24]byte)(unsafe.Pointer(rla))[:]
-		rela_data_c = append(rela_data_c, p...)
+		contents = append(contents, p...)
 	}
-	s_rela_data.contents = rela_data_c
-
-	if len(relaTextUsers) > 0 {
-		var rela_text_c []byte
-
-		for _, ru := range relaTextUsers {
-			sym, defined := definedSymbols[ru.uses]
-			var addr int64
-			if defined {
-				if sym.section == ".text" {
-					// skip symbols that belong to the same section
-					continue
-				}
-				addr = int64(sym.address)
-			}
-
-			const R_X86_64_PC32 = 2
-			const R_X86_64_PLT32 = 4
-			var typ uint64
-			if ru.toJump {
-				typ = R_X86_64_PLT32
-			} else {
-				typ = R_X86_64_PC32
-			}
-
-			var symIdx int
-			if defined && sym.section == ".data" {
-				symIdx = symbolIndex[".data"]
-			} else {
-				symIdx = symbolIndex[ru.uses]
-			}
-
-			r_offset := ru.instr.startAddr + ru.offset
-			rla := &Elf64_Rela{
-				r_offset: r_offset,                 // 8 bytes
-				r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
-				r_addend: addr + ru.adjust - 4,     // 8 bytes
-			}
-			p := (*[24]byte)(unsafe.Pointer(rla))[:]
-			rela_text_c = append(rela_text_c, p...)
-		}
-		s_rela_text.contents = rela_text_c
-	}
+	return contents
 }
 
 func determineSectionOffsets(sectionBodies []*section) {
