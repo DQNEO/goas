@@ -298,7 +298,9 @@ var definedSymbols = make(map[string]*symbolDefinition)
 
 const STT_SECTION = 0x03
 
-func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8) {
+func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
+	var symbolIndex = make(map[string]int)
+
 	var symbolTable = []*Elf64_Sym{
 		&Elf64_Sym{}, // NULL entry
 	}
@@ -415,10 +417,8 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 		contents = append(contents, buf...)
 	}
 
-	return sh_info, contents
+	return sh_info, contents, symbolIndex
 }
-
-var symbolIndex = make(map[string]int)
 
 type relaDataUser struct {
 	addr uintptr
@@ -614,16 +614,17 @@ func main() {
 	hasSymbols := len(definedSymbols) > 0
 
 	sectionHeaders := buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols)
+	var symbolIndex map[string]int
 	if len(definedSymbols) > 0 {
 		debugf("[main] building symbol table ...\n")
-		s_symtab.header.sh_info , s_symtab.contents = buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
+		s_symtab.header.sh_info , s_symtab.contents, symbolIndex = buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
 	}
 
 	debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
 	makeShStrTab(sectionNames)
 
-	s_rela_text.contents = buildRelaTextBody(relaTextUsers)
+	s_rela_text.contents = buildRelaTextBody(relaTextUsers, symbolIndex)
 	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
 
 	sectionBodies := buildSectionBodies(hasRelaText, hasRelaData, hasSymbols)
@@ -634,7 +635,7 @@ func main() {
 	elfFile.writeTo(w)
 }
 
-func buildRelaTextBody(relaTextUsers []*relaTextUser) []byte {
+func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int) []byte {
 	var contents []byte
 
 	for _, ru := range relaTextUsers {
