@@ -136,6 +136,9 @@ func (p *parser) readStringLiteral() string {
 	for {
 		ch := p.peekCh()
 		switch ch {
+		case '"':
+			p.idx++
+			return string(buf)
 		case '\\':
 			p.expect('\\')
 			ch := p.peekCh()
@@ -152,10 +155,6 @@ func (p *parser) readStringLiteral() string {
 			}
 			p.idx++
 			buf = append(buf, out)
-			continue
-		case '"':
-			p.idx++
-			return string(buf)
 		default:
 			p.idx++
 			buf = append(buf, ch)
