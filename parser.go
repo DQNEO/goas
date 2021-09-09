@@ -503,7 +503,6 @@ func parseStmt() *statement {
 	return stmt
 }
 
-// GAS Manual: https://sourceware.org/binutils/docs-2.37/as.html
 func parseFile(path string) []*statement {
 	src, err := os.ReadFile(path)
 	if err != nil {
@@ -527,5 +526,3 @@ func parseFile(path string) []*statement {
 	}
 	return stmts
 }
-
-type none bool

@@ -59,7 +59,7 @@ $ make test
 
 # References
 
-* https://sourceware.org/binutils/docs/as/ Manual of GNU Assembler
+* https://sourceware.org/binutils/docs-2.37/as.html Manual of GNU Assembler
 * https://refspecs.linuxfoundation.org/elf/elf.pdf ELF Specification
 * https://man7.org/linux/man-pages/man5/elf.5.html ELF man
 * https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html Intel® 64 and IA-32 Architectures Software Developer Manuals

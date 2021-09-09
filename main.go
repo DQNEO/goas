@@ -571,14 +571,12 @@ func main() {
 		panic(err)
 	}
 
-	//debugParser()
 	var stmts []*statement
 	for _, inFile := range inFiles {
 		debugf("[main] parsing file: %s\n", inFile)
 		ss := parseFile(inFile)
 		stmts = append(stmts, ss...)
 	}
-	//dumpStmts(stmts)
 
 	var textStmts []*statement
 	var dataStmts []*statement
