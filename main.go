@@ -496,13 +496,13 @@ func encodeAllText(ss []*Stmt) []byte {
 		prev = instr
 	}
 
+	// Optimize instructions length
 	for len(variableInstrs) > 0 {
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
 	}
 
 	var allText []byte
 	var textAddr uintptr
-	allText, textAddr = nil, 0
 	for instr := first; instr != nil; instr = instr.next {
 		instr.addr = textAddr
 		allText = append(allText, instr.code...)
