@@ -667,9 +667,9 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 
 		r_offset := ru.instr.addr + ru.offset
 		rla := &Elf64_Rela{
-			r_offset: r_offset,                 // 8 bytes
-			r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
-			r_addend: addr + ru.adjust - 4,     // 8 bytes
+			r_offset: r_offset,
+			r_info:   uint64(symIdx)<<32 + typ,
+			r_addend: addr + ru.adjust - 4,
 		}
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rla))[:]
 		contents = append(contents, p...)
