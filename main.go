@@ -22,9 +22,9 @@ func debugf(s string, a ...interface{}) {
 
 func buildSectionBodies(hasRelaText, hasRelaData, hasSymbols bool) []*section {
 	var sections = []*section{
-		s_text, // .text
-		s_data, // .data
-		s_bss,  // .bss (always empty)
+		s_text,
+		s_data,
+		s_bss,
 	}
 
 	if hasSymbols {
