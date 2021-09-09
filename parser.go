@@ -120,6 +120,16 @@ func (p *parser) readSymbol(first byte) string {
 	}
 }
 
+func (p *parser) readCharLiteral() *charLit {
+	p.expect('\'')
+	b := p.source[p.idx]
+	p.idx++
+	p.expect('\'')
+	return &charLit{
+		val: b,
+	}
+}
+
 func (p *parser) readStringLiteral() string {
 	p.expect('"')
 	var buf []byte
@@ -267,16 +277,9 @@ func (p *parser) parseOperand() operand {
 			return &symbolExpr{name: symbol}
 		}
 	case ch == '\'':
-		p.expect('\'')
-		b := p.source[p.idx]
-		p.idx++
-		p.expect('\'')
-		return &charLit{
-			val: b,
-		}
+		return p.readCharLiteral()
 	case ch == '"':
-		s := p.readStringLiteral()
-		return s
+		return p.readStringLiteral()
 	case '0' <= ch && ch <= '9' || ch == '-': // "24", "-24(%rbp)"
 		e := p.parseArithExpr()
 		if p.source[p.idx] == '(' {
