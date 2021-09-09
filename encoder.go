@@ -126,7 +126,7 @@ type variableCode struct {
 }
 
 type Instruction struct {
-	startAddr    uintptr
+	addr         uintptr
 	s            *Stmt
 	code         []byte // static code
 	next         *Instruction

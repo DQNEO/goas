@@ -369,7 +369,7 @@ func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsIn
 			switch sym.section {
 			case ".text":
 				shndx = s_text.index
-				addr = sym.instr.startAddr
+				addr = sym.instr.addr
 			case ".data":
 				shndx = s_data.index
 				addr = sym.address
@@ -516,7 +516,7 @@ func encodeAllText(ss []*Stmt) []byte {
 	var textAddr uintptr
 	allText, textAddr = nil, 0
 	for instr := first; instr != nil; instr = instr.next {
-		instr.startAddr = textAddr
+		instr.addr = textAddr
 		allText = append(allText, instr.code...)
 		textAddr += uintptr(len(instr.code))
 	}
@@ -527,8 +527,8 @@ func encodeAllText(ss []*Stmt) []byte {
 		if !ok {
 			continue
 		}
-		diff := callee.instr.startAddr - call.caller.next.startAddr
-		placeToEmbed := call.caller.startAddr + call.offset
+		diff := callee.instr.addr - call.caller.next.addr
+		placeToEmbed := call.caller.addr + call.offset
 		diffInt32 := int32(diff)
 		var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 		allText[placeToEmbed] = buf[0]
@@ -662,7 +662,7 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser) []byte {
 			symIdx = symbolIndex[ru.uses]
 		}
 
-		r_offset := ru.instr.startAddr + ru.offset
+		r_offset := ru.instr.addr + ru.offset
 		rla := &Elf64_Rela{
 			r_offset: r_offset,                 // 8 bytes
 			r_info:   uint64(symIdx)<<32 + typ, // 8 bytes
@@ -684,7 +684,7 @@ func buildRelaDataBody(relaDataUsers []*relaDataUser) []byte {
 
 		var addr uintptr
 		if sym.section == ".text" {
-			addr = sym.instr.startAddr
+			addr = sym.instr.addr
 		} else {
 			addr = sym.address
 		}
