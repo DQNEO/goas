@@ -75,7 +75,7 @@ func regBits(reg string) uint8 {
 	case "sp", "ah":
 		x_reg = 0b0100
 	case "bp", "ch":
-		x_reg = 0b0101 // or /5
+		x_reg = 0b0101
 	case "si", "dh":
 		x_reg = 0b0110
 	case "di", "bh":
@@ -214,7 +214,7 @@ func encode(s *Stmt) *Instruction {
 	}
 
 	if s.keySymbol == "" {
-		//fmt.Printf(" (label)\n")
+		// label only
 		instr.isLenDecided = true
 		return instr
 	}
@@ -233,8 +233,16 @@ func encode(s *Stmt) *Instruction {
 
 	//fmt.Printf("[translator] %s (%d ops) => ", s.keySymbol, len(s.operands))
 	switch s.keySymbol {
+	case ".text":
+	case ".global":
 	case "nop":
 		code = []byte{0x90}
+	case "ret", "retq":
+		code = []byte{0xc3}
+	case "syscall":
+		code = []byte{0x0f, 0x05}
+	case "leave":
+		code = []byte{0xc9}
 	case "jmp": // JMP rel8 or rel32s
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		varcode := &variableCode{
@@ -774,16 +782,6 @@ func encode(s *Stmt) *Instruction {
 		modRM := composeModRM(ModRegi, slash_6, rm)
 		imValue := evalNumExpr(srcOp.(*immediate).expr)
 		code = []byte{REX_W, opcode, modRM, uint8(imValue)}
-	case "ret", "retq":
-		code = []byte{0xc3}
-	case "syscall":
-		code = []byte{0x0f, 0x05}
-	case "leave":
-		code = []byte{0xc9}
-	case ".text":
-		//fmt.Printf(" skip\n")
-	case ".global":
-		// Ignore. captured in main routine
 	default:
 		panic(fmt.Sprintf("[encoder] TBI: %s at line %d\n\necho '%s' |./encode as",
 			s.source, 0, s.source))
