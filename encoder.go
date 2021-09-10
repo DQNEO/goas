@@ -739,7 +739,7 @@ func encode(s *Stmt) *Instruction {
 				panic("TBI")
 			}
 		default:
-			panic("[encoder] TBI:" + string(s.source))
+			panic("[encoder] TBI:" + s.source)
 		}
 	case "popq":
 		switch trgt := trgtOp.(type) {
@@ -747,7 +747,7 @@ func encode(s *Stmt) *Instruction {
 			// 58 +rd. POP r64.
 			code = []byte{0x58 + trgt.toBits()}
 		default:
-			panic("[encoder] TBI:" + string(s.source))
+			panic("[encoder] TBI:" + s.source)
 		}
 	case "xor":
 		// XOR r/m64, imm8
