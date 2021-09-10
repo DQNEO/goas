@@ -440,7 +440,7 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 		}
 		diff, min, max, isLenDecided := calcDistance(vr, sym)
 		if isLenDecided {
-			if -128 <= diff && diff < 128 {
+			if isInInt8Range(diff) {
 				// rel8
 				vr.code = vr.varcode.rel8Code
 				vr.code[vr.varcode.rel8Offset] = uint8(diff)
@@ -457,11 +457,11 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 			}
 			vr.isLenDecided = true
 		} else {
-			if -128 <= max && max < 128 {
+			if isInInt8Range(max) {
 				vr.isLenDecided = true
 				vr.varcode.rel32Code = nil
 				vr.code = vr.varcode.rel8Code
-			} else if min < -128 || 128 <= min {
+			} else if !isInInt8Range(min) {
 				vr.isLenDecided = true
 				vr.varcode.rel8Code = nil
 				vr.code = vr.varcode.rel32Code

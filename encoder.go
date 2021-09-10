@@ -107,6 +107,10 @@ func composeSIB(scale byte, index byte, base byte) byte {
 
 var variableInstrs []*Instruction
 
+func isInInt8Range(n int) bool {
+	return -128 <= n && n<= 127
+}
+
 // 3.1.1.3 Instruction Column in the Opcode Summary Table
 // The “Instruction” column gives the syntax of the instruction statement as it would appear in an ASM386 program.
 // The following is a list of the symbols used to represent operands in the instruction statements:
@@ -318,7 +322,7 @@ func encode(s *Stmt) *Instruction {
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
-				} else if -128 <= displacement && displacement < 128 {
+				} else if isInInt8Range(int(displacement)) {
 					mod := ModIndirectionWithDisplacement8
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
@@ -603,7 +607,7 @@ func encode(s *Stmt) *Instruction {
 				modRM := composeModRM(ModRegi, slash_0, rm)
 				imValue := evalNumExpr(src.expr)
 				switch {
-				case imValue < 128:
+				case isInInt8Range(imValue):
 					code = []byte{REX_W, 0x83, modRM, uint8(imValue)}
 				case imValue < 1<<31:
 					i32 := int32(imValue)
