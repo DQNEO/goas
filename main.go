@@ -737,7 +737,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 	elfHeader.e_shstrndx = s_shstrtab.index
 
 	// adjust zero padding before each section
-	var sections []*ElfSectionBodies
+	var sbs []*ElfSectionBodies
 	for _, sect := range sectionBodies {
 		// Some sections may not have any contents
 		if sect.contents != nil {
@@ -748,7 +748,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 				// pad zeros when required
 				sc.zeros = make([]uint8, sect.numZeroPad)
 			}
-			sections = append(sections, sc)
+			sbs = append(sbs, sc)
 		}
 	}
 
@@ -759,7 +759,7 @@ func prepareElfFile(sectionBodies []*section, sectionHeaders []*section) *ElfFil
 
 	return &ElfFile{
 		header:         elfHeader,
-		sectionBodies:  sections,
+		sectionBodies:  sbs,
 		zeroPadding:    make([]uint8, paddingBeforeSHT),
 		sectionHeaders: sht,
 	}
