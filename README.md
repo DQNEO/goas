@@ -6,7 +6,7 @@ This is just a toy program to illustrate how an assembler works. Acutally I lear
 
 It does not mean to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
 However, for any input it supports, it behaves exactly the same as `as`,
- which means it produces the same object files (*.o) as `as` does.
+ which means it produces the very same binary files (*.o) as `as` does.
 
 The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). ( `make babygo` proves it.)
 
