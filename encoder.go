@@ -207,7 +207,7 @@ func encode(s *Stmt) *Instruction {
 	}
 
 	if s.keySymbol == "" {
-		// label only
+		// No instruction
 		instr.isLenDecided = true
 		return instr
 	}
@@ -224,7 +224,6 @@ func encode(s *Stmt) *Instruction {
 		panic("too many operands")
 	}
 
-	//fmt.Printf("[translator] %s (%d ops) => ", s.keySymbol, len(s.operands))
 	switch s.keySymbol {
 	case ".text":
 	case ".global":
@@ -334,7 +333,6 @@ func encode(s *Stmt) *Instruction {
 					displacementBytes = (*[4]byte)(unsafe.Pointer(&disp32))[:]
 				}
 				if rm == regBits("sp") {
-					// use SIB
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 					code = []byte{REX_W, opcode, modRM, sib}
 				} else {
@@ -631,7 +629,6 @@ func encode(s *Stmt) *Instruction {
 			code = []byte{REX_W, opcode, modRM}
 		case *immediate:
 			rm := trgtOp.(*register).toBits()
-			// modRM = 0xec = 1110_1100 = 11_101_100 = 11_5_sp
 			modRM := composeModRM(ModRegi, slash_5, rm)
 			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 32)
 			if err != nil {
