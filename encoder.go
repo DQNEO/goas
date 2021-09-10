@@ -49,7 +49,7 @@ const RM_RIP_RELATIVE = 0b101
 // /digit — A digit between 0 and 7 indicates that the ModR/M byte of the instruction uses only the r/m (register
 // or memory) operand. The reg field contains the digit that provides an extension to the instruction's opcode.
 
-// shlash_n represents /n value which may be passed an a regOpcode.
+// shlash_n represents /n value which may be passed as a regOpcode.
 const slash_0 = 0 // /0
 const slash_1 = 1 // /1
 const slash_2 = 2 // /2
@@ -408,22 +408,20 @@ func encode(s *Stmt) *Instruction {
 	//	tmp := []byte{opcode}
 	//	r = append(tmp, (bytesNum[:])...)
 	case "movq":
-		//		assert(op1.typ == "$number", "op1 type should be $number")
-		//assert(op2.typ == "register", "op2 type should be register")
 		switch src := srcOp.(type) {
 		case *immediate: // movq $123, %regi
 			intNum, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 32)
 			if err != nil {
 				panic(err)
 			}
-			var num int32 = int32(intNum)
+			num := int32(intNum)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
-			var opcode uint8 = 0xc7
-			var modRM uint8 = composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
+			opcode := uint8(0xc7)
+			modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 			code = []byte{REX_W, opcode, modRM}
 			code = append(code, bytesNum[:]...)
 		case *register:
-			var opcode uint8 = 0x89
+			opcode := uint8(0x89)
 			switch trgt := trgtOp.(type) {
 			case *register:
 				mod := ModRegi
