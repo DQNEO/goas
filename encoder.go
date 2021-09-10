@@ -696,35 +696,25 @@ func encode(s *Stmt) *Instruction {
 			panic("TBI:" + s.source)
 		}
 	case "setl":
-		opcode1 := uint8(0x0f)
-		opcode2 := uint8(0x9c)
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{opcode1, opcode2, modRM}
+		code = []byte{0x0f, 0x9c, modRM}
 	case "setle":
-		opcode1 := uint8(0x0f)
-		opcode2 := uint8(0x9e)
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{opcode1, opcode2, modRM}
+		code = []byte{0x0f, 0x9e, modRM}
 	case "setg":
-		opcode1 := uint8(0x0f)
-		opcode2 := uint8(0x9f)
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{opcode1, opcode2, modRM}
+		code = []byte{0x0f, 0x9f, modRM}
 	case "setge":
-		opcode1 := uint8(0x0f)
-		opcode2 := uint8(0x9d)
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{opcode1, opcode2, modRM}
+		code = []byte{0x0f, 0x9d, modRM}
 	case "sete":
-		opcode1 := uint8(0x0f)
-		opcode2 := uint8(0x94)
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{opcode1, opcode2, modRM}
+		code = []byte{0x0f, 0x94, modRM}
 	case "pushq":
 		switch trgt := trgtOp.(type) {
 		case *register:
