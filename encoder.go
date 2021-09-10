@@ -281,20 +281,16 @@ func encode(s *Stmt) *Instruction {
 		instr.varcode = varcode
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
-
 		// call rel16
-		code = []byte{0xe8}
+		code = []byte{0xe8, 0, 0, 0, 0}
 		ru := &relaTextUser{
 			instr:  instr,
-			offset: uintptr(len(code)),
+			offset: 1,
 			uses:   trgtSymbol,
 			toJump: true,
 		}
 		relaTextUsers = append(relaTextUsers, ru)
-		code = append(code, 0, 0, 0, 0)
-
 		registerCallTarget(instr, trgtSymbol, 1, 4)
-
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi
