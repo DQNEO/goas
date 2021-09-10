@@ -416,7 +416,7 @@ func encode(s *Stmt) *Instruction {
 			case *register:
 				mod := ModRegi
 				reg := src.toBits()
-				rm := trgt.toBits() // dst
+				rm := trgt.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				code = []byte{REX_W, opcode, modRM}
 			case *indirection:
@@ -448,7 +448,7 @@ func encode(s *Stmt) *Instruction {
 					}
 				} else {
 					// movq %rax, 32(%rsp)
-					reg := src.toBits() // src
+					reg := src.toBits()
 					rm := trgt.regi.toBits()
 					num := trgt.expr.(*numberLit).val
 					displacement, err := strconv.ParseInt(num, 0, 8)
