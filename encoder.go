@@ -128,11 +128,11 @@ type variableCode struct {
 type Instruction struct {
 	addr         uintptr
 	s            *Stmt
-	code         []byte // static code
-	next         *Instruction
 	index        int
+	code         []byte // fixed length code
 	varcode      *variableCode
 	isLenDecided bool
+	next         *Instruction
 }
 
 var callTargets []*callTarget
@@ -179,7 +179,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 			lenShort, lenLarge := len(instr.varcode.rel8Code), len(instr.varcode.rel32Code)
 			min += lenShort
 			max += lenLarge
-			diff += lenLarge
+			diff += lenLarge // because instr.code is nil in this case
 		} else {
 			length := len(instr.code)
 			diff += length
@@ -243,8 +243,6 @@ func encode(s *Stmt) *Instruction {
 			rel32Offset: 1,
 		}
 		instr.varcode = varcode
-		code = varcode.rel32Code // Conservative allocation
-		variableInstrs = append(variableInstrs, instr)
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		varcode := &variableCode{
@@ -257,8 +255,6 @@ func encode(s *Stmt) *Instruction {
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
-		code = varcode.rel32Code // Conservative allocation
-		variableInstrs = append(variableInstrs, instr)
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		varcode := &variableCode{
@@ -271,8 +267,6 @@ func encode(s *Stmt) *Instruction {
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
-		code = varcode.rel32Code // Conservative allocation
-		variableInstrs = append(variableInstrs, instr)
 	case "callq", "call":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 
@@ -791,9 +785,11 @@ func encode(s *Stmt) *Instruction {
 			s.source, 0, s.source))
 	}
 
-	//fmt.Printf("=>  %#x\n", r)
 	instr.code = code
-	if instr.varcode == nil {
+
+	if instr.varcode != nil {
+		variableInstrs = append(variableInstrs, instr)
+	} else {
 		instr.isLenDecided = true
 	}
 	return instr
