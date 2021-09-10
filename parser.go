@@ -133,7 +133,7 @@ func (p *parser) readCharLiteral() *charLit {
 	}
 }
 
-func (p *parser) readStringLiteral() string {
+func (p *parser) readStringLiteral() *strLit {
 	p.expect('"')
 	var buf []byte
 	for {
@@ -141,7 +141,7 @@ func (p *parser) readStringLiteral() string {
 		switch ch {
 		case '"':
 			p.idx++
-			return string(buf)
+			return &strLit{val:string(buf)}
 		case '\\':
 			p.expect('\\')
 			ch := p.peekCh()
@@ -215,6 +215,10 @@ type charLit struct {
 	val uint8
 }
 type numberLit struct {
+	val string
+}
+
+type strLit struct {
 	val string
 }
 
@@ -349,6 +353,7 @@ type parser struct {
 	sc *symbolCollection
 }
 
+// indirection | symbolExpr | immediate | register | charLit | strLit
 type Operand interface{}
 
 type register struct {

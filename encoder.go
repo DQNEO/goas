@@ -863,7 +863,7 @@ func encodeData(s *Stmt, dataAddr uintptr) []byte {
 		}
 	case ".string":
 		op := s.operands[0]
-		val := op.(string)
+		val := op.(*strLit).val
 		bytes := append([]byte(val), 0)
 		return bytes
 	default:
