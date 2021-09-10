@@ -10,6 +10,8 @@ However, for any input it supports, it behaves exactly the same as `as`,
 
 The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). ( `make babygo` proves it.)
 
+![Demo](https://user-images.githubusercontent.com/188741/132816324-b01f74b2-76b9-4f82-bc58-d094ca04bde0.gif)
+
 # Requirements
 
 You need a linux with gcc installed.
