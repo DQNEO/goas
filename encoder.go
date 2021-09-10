@@ -158,10 +158,6 @@ func registerCallTarget(caller *Instruction, trgtSymbol string, offset uintptr, 
 }
 
 func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, int, bool) {
-	var dbg bool
-	if symdef.name == ".L.for.cond.355" {
-		dbg = true
-	}
 	var from, to *Instruction
 	var forward bool
 	if userInstr.index > symdef.instr.index {
@@ -172,9 +168,6 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 		from, to = userInstr.next, symdef.instr
 		forward = true
 	}
-	if dbg {
-	}
-
 	var hasVariableLength bool
 	var diff, min, max int
 	for instr := from; instr != to; instr = instr.next {
