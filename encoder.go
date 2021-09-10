@@ -347,7 +347,7 @@ func encode(s *Stmt) *Instruction {
 	case "movb":
 		switch src := srcOp.(type) {
 		case *register:
-			var opcode uint8 = 0x88
+			opcode := uint8(0x88)
 			switch trgt := trgtOp.(type) {
 			case *indirection:
 				// movb %al,0(%rsi)
@@ -367,7 +367,7 @@ func encode(s *Stmt) *Instruction {
 		switch src := srcOp.(type) {
 		case *register:
 			const PREFIX uint8 = 0x66
-			var opcode uint8 = 0x89
+			opcode := uint8(0x89)
 			switch trgt := trgtOp.(type) {
 			case *indirection:
 				// movw %ax,0(%rsi)
@@ -418,9 +418,8 @@ func encode(s *Stmt) *Instruction {
 			switch trgt := trgtOp.(type) {
 			case *register:
 				mod := ModRegi
-				reg := src.toBits() // src
-				op2Regi := trgtOp.(*register)
-				rm := op2Regi.toBits() // dst
+				reg := src.toBits()
+				rm := trgt.toBits() // dst
 				modRM := composeModRM(mod, reg, rm)
 				code = []byte{REX_W, opcode, modRM}
 			case *indirection:
@@ -677,16 +676,16 @@ func encode(s *Stmt) *Instruction {
 		modRM := composeModRM(ModRegi, slash_6, rm)
 		code = []byte{REX_W, opcode, modRM}
 	case "cmpq":
-		switch srcOp.(type) {
+		switch src := srcOp.(type) {
 		case *register:
 			opcode := uint8(0x39)
-			regi := srcOp.(*register).toBits()
+			regi := src.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = []byte{REX_W, opcode, modRM}
 		case *immediate:
 			opcode := uint8(0x83)
-			imValue, err := strconv.ParseInt(srcOp.(*immediate).expr.(*numberLit).val, 0, 8)
+			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
 			if err != nil {
 				panic(err)
 			}
