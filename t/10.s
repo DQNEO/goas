@@ -1,6 +1,11 @@
 # runtime.s
 .text
 
+# shortcut entrypoint to simplify linker invocation
+.global _start
+_start:
+  jmp _rt0_amd64_linux
+
 # Start of the program
 # (runtime/rt0_linux_amd64.s)
 .global _rt0_amd64_linux
@@ -42,7 +47,7 @@ runtime.rt0_go:
   syscall
   # End of program
 
-# func Write(fd int, p []byte) int
+// func Write(fd int, p []byte) int
 runtime.Write:
   movq  8(%rsp), %rax # arg0:fd
   movq 16(%rsp), %rdi # arg1:ptr
@@ -71,7 +76,7 @@ runtime.printstring:
   popq %rax # retval
   ret
 
-# func Syscall(trap, a1, a2, a3 uintptr) uintptr
+// func Syscall(trap, a1, a2, a3 uintptr) uintptr
 runtime.Syscall:
   movq   8(%rsp), %rax # syscall number
   movq  16(%rsp), %rdi # arg0
@@ -81,7 +86,7 @@ runtime.Syscall:
   movq %rax, 40(%rsp) # r0 uintptr
   ret
 
-# func Syscall(trap, a1, a2, a3 uintptr) uintptr
+// func Syscall(trap, a1, a2, a3 uintptr) uintptr
 syscall.Syscall:
   movq   8(%rsp), %rax # syscall number
   movq  16(%rsp), %rdi # arg0

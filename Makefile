@@ -57,13 +57,13 @@ t2/b.gnu.o: t2/babygo-runtime.s t2/babygo-main.s
 
 # Make binary executables (These are not essential)
 t2/t.gnu.bin: t2/t.gnu.o
-	ld -e _rt0_amd64_linux -o $@ $<
+	ld -o $@ $<
 
 t2/t.my.bin: t2/t.my.o
-	ld -e _rt0_amd64_linux -o $@ $<
+	ld -o $@ $<
 
 babygo: t2/b.my.o
-	ld -e _rt0_amd64_linux -o $@ $<
+	ld -o $@ $<
 	./$@ version
 
 clean:
