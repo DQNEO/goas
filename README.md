@@ -2,7 +2,7 @@
 
 `goas` is an assembler that behaves like `as`, GNU Assembler.
 
-This is just a toy program to illustrate how an assembler works. Acutally I learned how an assembler works by writing this program :).
+This is just a toy program to illustrate how an assembler works. Actually I learned how an assembler works by writing this program :).
 
 It does not mean to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
 However, for any input it supports, it behaves exactly the same as `as`,
