@@ -2,6 +2,8 @@
 
 `goas` is an assembler that behaves like `as`, GNU Assembler.
 
+![goas-min-demo](https://user-images.githubusercontent.com/188741/134793225-411c06e7-982d-44aa-8fec-34139d5d080b.gif)
+
 This is just a toy program to illustrate how an assembler works. Acutally I learned how an assembler works by writing this program :).
 
 It does not mean to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
@@ -10,7 +12,6 @@ However, for any input it supports, it behaves exactly the same as `as`,
 
 The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). ( `make babygo` proves it.)
 
-![Demo](https://user-images.githubusercontent.com/188741/132816324-b01f74b2-76b9-4f82-bc58-d094ca04bde0.gif)
 
 # Requirements
 
@@ -32,7 +33,6 @@ $ go build
 Prepare a small assembly file `test.s`
 
 ```asm
-# example code to exit with status 42
 .text
 .global _start
 _start:

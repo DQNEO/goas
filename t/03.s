@@ -1,4 +1,4 @@
-# sample code to exit with status 42
+# minimum code that exits with status 42
 .text
 .global _start
 _start:
