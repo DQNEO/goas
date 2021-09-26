@@ -10,7 +10,7 @@ It does not mean to support all syntax or instructions, but  Linux x86-64 AT&T s
 However, for any input it supports, it behaves exactly the same as `as`,
  which means it produces the very same binary files (*.o) as `as` does.
 
-The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). ( `make babygo` proves it.)
+The most interesting thing is that it can assemble my Go compiler [babygo](https://github.com/DQNEO/babygo). (You can see it by running `make babygo`.)
 
 
 # Requirements
