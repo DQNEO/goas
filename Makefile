@@ -21,6 +21,7 @@ test-single: objs
 	diff t/06.gnu.o t/06.my.o
 	diff t/07.gnu.o t/07.my.o
 	diff t/08.gnu.o t/08.my.o
+	diff t/09.gnu.o t/09.my.o
 	diff t/10.gnu.o t/10.my.o
 	@echo ok
 

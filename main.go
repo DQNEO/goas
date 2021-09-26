@@ -284,14 +284,35 @@ var definedSymbols = make(map[string]*symbolDefinition)
 
 const STT_SECTION = 0x03
 
-func buildSymbolTable(hasRelaData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
+func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers []*relaTextUser, relaDataUsers []*relaDataUser) bool {
+	for _, rel :=  range relaTextUsers {
+		symdef, ok := definedSymbols[rel.uses]
+		if ok {
+			if symdef.section == ".data" {
+				return true
+			}
+		}
+	}
+
+	for _, rel :=  range relaDataUsers {
+		symdef, ok := definedSymbols[rel.uses]
+		if ok {
+			if symdef.section == ".data" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
 	var symbolIndex = make(map[string]int)
 
 	var symbolTable = []*Elf64_Sym{
 		&Elf64_Sym{}, // NULL entry
 	}
 
-	if hasRelaData {
+	if addData {
 		symbolIndex[".data"] = len(symbolTable)
 		symbolTable = append(symbolTable, &Elf64_Sym{
 			st_name:  0,
@@ -592,6 +613,7 @@ func main() {
 		}
 	}
 
+
 	s_text.contents = encodeAllText(textStmts)
 	s_data.contents = encodeAllData(dataStmts)
 
@@ -615,9 +637,10 @@ func main() {
 	}
 
 	var symbolIndex map[string]int
+
 	if len(definedSymbols) > 0 {
-		debugf("[main] building symbol table ...\n")
-		s_symtab.header.sh_info , s_symtab.contents, symbolIndex = buildSymbolTable(hasRelaData, globalSymbols, symbolsInLexicalOrder)
+		dataSymbolUsed := isDataSymbolUsed(definedSymbols, relaTextUsers, relaDataUsers)
+		s_symtab.header.sh_info , s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder)
 	}
 
 	debugf("[main] building sections ...\n")
