@@ -62,11 +62,21 @@ $ make test
 
 # References
 
-* https://sourceware.org/binutils/docs-2.37/as.html Manual of GNU Assembler
+ELF
+
 * https://refspecs.linuxfoundation.org/elf/elf.pdf ELF Specification
 * https://man7.org/linux/man-pages/man5/elf.5.html ELF man
+* https://sourceware.org/git/?p=glibc.git;a=blob;f=elf/elf.h;h=4738dfa28f6549fc11654996a15659dc8007e686;hb=HEAD libc elf.h
+
+GNU Asssembler
+
+* https://sourceware.org/binutils/docs-2.37/as.html Manual of GNU Assembler
+
+X86-64 Instruction set and encoding
+
 * https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html Intel® 64 and IA-32 Architectures Software Developer Manuals
-*  https://sourceware.org/git/?p=glibc.git;a=blob;f=elf/elf.h;h=4738dfa28f6549fc11654996a15659dc8007e686;hb=HEAD libc elf.h
+* https://hikalium.github.io/opv86/ Opcode/Instruction finder for x86_64
+
 # License
 
 MIT
