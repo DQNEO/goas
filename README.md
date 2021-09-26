@@ -54,6 +54,33 @@ $ ./test; echo $?
 
 See test files under `/t` and `/t2` directory to know what syntax it can assemble.
 
+# Design
+
+`goas` is composed of 4 files.
+
+File|Role
+---|---
+parser.go | parser
+encoder.go | instruction encoder
+elf_writer.go | ELF format writer
+main.go | miscellaneous tasks
+
+### Parser
+
+`parser.go` is a simple recursive descent parser. The boundary between lexer nd parser are not clearly separated.
+
+Each line of source code is converted into a statement object.
+
+It produces a list of statements in the end.
+
+### Instruction encoder
+
+`encoder.go` translates an instruction with operands into a piece of x86-64 binary machine code.
+
+### ELF format Writer
+
+`elf_writer.go` composes an object which represents ELF file format and write it into a binary object file.
+
 # Test
 
 ```
