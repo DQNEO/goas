@@ -2,8 +2,6 @@
 
 `goas` is an assembler that behaves like `as`, GNU Assembler.
 
-![goas-min-demo](https://user-images.githubusercontent.com/188741/134793225-411c06e7-982d-44aa-8fec-34139d5d080b.gif)
-
 This is just a toy program to illustrate how an assembler works. Acutally I learned how an assembler works by writing this program :).
 
 It does not mean to support all syntax or instructions, but  Linux x86-64 AT&T syntax only.
@@ -49,6 +47,11 @@ $ ld -o test test.o
 $ ./test; echo $?
 42
 ```
+
+## Demo
+
+![goas-min-demo](https://user-images.githubusercontent.com/188741/134793225-411c06e7-982d-44aa-8fec-34139d5d080b.gif)
+
 
 # Supported Instructions
 
