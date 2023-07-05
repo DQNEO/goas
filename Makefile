@@ -1,7 +1,7 @@
 GOSOURCES = $(wildcard *.go)
-SOURCES = $(wildcard t/*.s)
-GNU_OBJS = $(SOURCES:t/%.s=t/%.gnu.o)
-MY_OBJS = $(SOURCES:t/%.s=t/%.my.o)
+SOURCES = $(wildcard t1/*.s)
+GNU_OBJS = $(SOURCES:t1/%.s=t1/%.gnu.o)
+MY_OBJS = $(SOURCES:t1/%.s=t1/%.my.o)
 
 .PHONY: test
 test: test-single test-multi
@@ -12,26 +12,26 @@ goas: $(GOSOURCES)
 # Test single-source program
 .PHONY: test-single
 test-single: objs
-	diff t/00.gnu.o t/00.my.o
-	diff t/01.gnu.o t/01.my.o
-	diff t/02.gnu.o t/02.my.o
-	diff t/03.gnu.o t/03.my.o
-	diff t/04.gnu.o t/04.my.o
-	diff t/05.gnu.o t/05.my.o
-	diff t/06.gnu.o t/06.my.o
-	diff t/07.gnu.o t/07.my.o
-	diff t/08.gnu.o t/08.my.o
-	diff t/09.gnu.o t/09.my.o
-	diff t/10.gnu.o t/10.my.o
+	diff t1/00.gnu.o t1/00.my.o
+	diff t1/01.gnu.o t1/01.my.o
+	diff t1/02.gnu.o t1/02.my.o
+	diff t1/03.gnu.o t1/03.my.o
+	diff t1/04.gnu.o t1/04.my.o
+	diff t1/05.gnu.o t1/05.my.o
+	diff t1/06.gnu.o t1/06.my.o
+	diff t1/07.gnu.o t1/07.my.o
+	diff t1/08.gnu.o t1/08.my.o
+	diff t1/09.gnu.o t1/09.my.o
+	diff t1/10.gnu.o t1/10.my.o
 	@echo ok
 
 .PHONY: objs
 objs: $(GNU_OBJS) $(MY_OBJS)
 
-t/%.gnu.o: t/%.s
+t1/%.gnu.o: t1/%.s
 	as -o $@ $<
 
-t/%.my.o: t/%.s goas
+t1/%.my.o: t1/%.s goas
 	./goas -o $@ $<
 
 # Test multi-source program
@@ -68,4 +68,4 @@ babygo: t2/b.my.o
 	./$@ version
 
 clean:
-	rm -f *.o goas t/*.o t/*.bin t2/*.o t2/*.bin babygo a.out
+	rm -f *.o goas t1/*.o t1/*.bin t2/*.o t2/*.bin babygo a.out
