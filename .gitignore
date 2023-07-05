@@ -1,5 +1,5 @@
 /goas
-/babygo
+babygo
 *.o
 *.bin
 *.xxd
@@ -9,3 +9,6 @@
 *.txt
 *.diff
 a.out
+/out1/*
+/out2/*
+/out3/*
