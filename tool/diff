@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eux
+set -eu
 basename=$1
 shift
 subcmd="$@"
@@ -7,4 +7,6 @@ subcmd="$@"
 my=${basename}.my.o
 gnu=${basename}.gnu.o
 
+echo -- ours
+echo ++ theirs
 diff -u --color --suppress-common-lines <($subcmd $my) <($subcmd $gnu)
