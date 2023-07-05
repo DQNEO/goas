@@ -1,1 +1,0 @@
-../t2/babygo-runtime.s
