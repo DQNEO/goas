@@ -209,7 +209,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 func encode(s *Stmt) *Instruction {
 	defer func() {
 		if x := recover(); x != nil {
-			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
+			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\n  ./tool/encode '%s'",
 				x,
 				s.source, *s.filePath, s.lineno, s.source))
 		}
@@ -772,7 +772,7 @@ func encode(s *Stmt) *Instruction {
 		imValue := evalNumExpr(srcOp.(*immediate).expr)
 		code = []byte{REX_W, opcode, modRM, uint8(imValue)}
 	default:
-		panic(fmt.Sprintf("[encoder] TBI: %s at line %d\n\necho '%s' |./encode as",
+		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
 			s.source, 0, s.source))
 	}
 
