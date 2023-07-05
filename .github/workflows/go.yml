@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   container:
     runs-on: ubuntu-latest
-    container: dqneo/ubuntu-build-essential:go
+    container: dqneo/ubuntu-compiler-go
     steps:
       - uses: actions/checkout@v3
 

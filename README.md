@@ -16,8 +16,8 @@ The most interesting thing is that it can assemble my Go compiler [babygo](https
 You need a linux with gcc installed.
 If you are using MacOS or Windows, you can use my docker image to run `goas`.
 
-```cgo
-docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-build-essential:go bash 
+```
+$ docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-compiler-go bash
 ```
 
 # How to build
