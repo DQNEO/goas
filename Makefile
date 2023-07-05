@@ -3,11 +3,11 @@ SOURCES = $(wildcard t1/*.s)
 GNU_OBJS = $(SOURCES:t1/%.s=t1/%.gnu.o)
 MY_OBJS = $(SOURCES:t1/%.s=t1/%.my.o)
 
+goas: $(GOSOURCES)
+	go build -o goas .
+
 .PHONY: test
 test: test-single test-multi
-
-goas: $(GOSOURCES)
-	go build
 
 # Test single-source program
 .PHONY: test-single
