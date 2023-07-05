@@ -148,8 +148,8 @@ var s_bss = &section{
 	},
 }
 
-//  ".symtab"
-//  SHT_SYMTAB (symbol table)
+// ".symtab"
+// SHT_SYMTAB (symbol table)
 var s_symtab = &section{
 	name: ".symtab",
 	header: &Elf64_Shdr{
@@ -178,10 +178,12 @@ var s_shstrtab = &section{
 // ".strtab"
 //
 // This section holds strings, most commonly the strings that
-//              represent the names associated with symbol table entries.
-//              If the file has a loadable segment that includes the
-//              symbol string table, the section's attributes will include
-//              the SHF_ALLOC bit.  Otherwise, the bit will be off.
+//
+//	represent the names associated with symbol table entries.
+//	If the file has a loadable segment that includes the
+//	symbol string table, the section's attributes will include
+//	the SHF_ALLOC bit.  Otherwise, the bit will be off.
+//
 // This section is of type SHT_STRTAB.
 var s_strtab = &section{
 	name: ".strtab",
@@ -285,7 +287,7 @@ var definedSymbols = make(map[string]*symbolDefinition)
 const STT_SECTION = 0x03
 
 func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers []*relaTextUser, relaDataUsers []*relaDataUser) bool {
-	for _, rel :=  range relaTextUsers {
+	for _, rel := range relaTextUsers {
 		symdef, ok := definedSymbols[rel.uses]
 		if ok {
 			if symdef.section == ".data" {
@@ -294,7 +296,7 @@ func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers
 		}
 	}
 
-	for _, rel :=  range relaDataUsers {
+	for _, rel := range relaDataUsers {
 		symdef, ok := definedSymbols[rel.uses]
 		if ok {
 			if symdef.section == ".data" {
@@ -382,7 +384,6 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 		} else {
 			isGlobal = true
 		}
-
 
 		name_offset := bytes.Index(s_strtab.contents, append([]byte(symname), 0x0))
 		if name_offset < 0 {
@@ -613,7 +614,6 @@ func main() {
 		}
 	}
 
-
 	s_text.contents = encodeAllText(textStmts)
 	s_data.contents = encodeAllData(dataStmts)
 
@@ -640,7 +640,7 @@ func main() {
 
 	if len(definedSymbols) > 0 {
 		dataSymbolUsed := isDataSymbolUsed(definedSymbols, relaTextUsers, relaDataUsers)
-		s_symtab.header.sh_info , s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder)
+		s_symtab.header.sh_info, s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder)
 	}
 
 	debugf("[main] building sections ...\n")

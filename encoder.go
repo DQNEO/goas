@@ -114,10 +114,11 @@ func regBits(reg string) uint8 {
 const SibIndexNone uint8 = 0b100
 const SibBaseRSP uint8 = 0b100
 
-//     7                           0
-//  +---+---+---+---+---+---+---+---+
-//  | scale |   index   |    base   |
-//  +---+---+---+---+---+---+---+---+
+//	7                           0
+//
+// +---+---+---+---+---+---+---+---+
+// | scale |   index   |    base   |
+// +---+---+---+---+---+---+---+---+
 func composeSIB(scale byte, index byte, base byte) byte {
 	return scale<<6 + index<<3 + base
 }
@@ -125,7 +126,7 @@ func composeSIB(scale byte, index byte, base byte) byte {
 var variableInstrs []*Instruction
 
 func isInInt8Range(n int) bool {
-	return -128 <= n && n<= 127
+	return -128 <= n && n <= 127
 }
 
 // 3.1.1.3 Instruction Column in the Opcode Summary Table
@@ -137,7 +138,6 @@ func isInInt8Range(n int) bool {
 // • rel16, rel32 — A relative address within the same code segment as the instruction assembled. The rel16
 // symbol applies to instructions with an operand-size attribute of 16 bits; the rel32 symbol applies to instructions
 // with an operand-size attribute of 32 bits.
-//
 type variableCode struct {
 	trgtSymbol  string
 	rel8Code    []byte

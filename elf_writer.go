@@ -15,42 +15,42 @@ type ElfFile struct {
 
 // Part1: ELF Header
 
-//  #define EI_NIDENT (16)
+// #define EI_NIDENT (16)
 const EI_NIDENT = 16
 
-//  typedef struct
-//  {
-//  	unsigned char	e_ident[EI_NIDENT];
-//  	Elf64_Half	e_type;
-//  	Elf64_Half	e_machine;
-//  	Elf64_Word	e_version;
-//  	Elf64_Addr	e_entry;
-//  	Elf64_Off	e_phoff;
-//  	Elf64_Off	e_shoff;
-//  	Elf64_Word	e_flags;
-//  	Elf64_Half	e_ehsize;
-//  	Elf64_Half	e_phentsize;
-//  	Elf64_Half	e_phnum;
-//  	Elf64_Half	e_shentsize;
-//  	Elf64_Half	e_shnum;
-//  	Elf64_Half	e_shstrndx;
-//  } Elf64_Ehdr;
+// typedef struct
 //
+//	{
+//		unsigned char	e_ident[EI_NIDENT];
+//		Elf64_Half	e_type;
+//		Elf64_Half	e_machine;
+//		Elf64_Word	e_version;
+//		Elf64_Addr	e_entry;
+//		Elf64_Off	e_phoff;
+//		Elf64_Off	e_shoff;
+//		Elf64_Word	e_flags;
+//		Elf64_Half	e_ehsize;
+//		Elf64_Half	e_phentsize;
+//		Elf64_Half	e_phnum;
+//		Elf64_Half	e_shentsize;
+//		Elf64_Half	e_shnum;
+//		Elf64_Half	e_shstrndx;
+//	} Elf64_Ehdr;
 type Elf64_Ehdr struct {
-	e_ident     [EI_NIDENT]uint8  /* Magic number and other info */
-	e_type      uint16		      /* Object file type */
-	e_machine   uint16	          /* Architecture */
-	e_version   uint32	          /* Object file version */
-	e_entry     uintptr	          /* Entry point virtual address */
-	e_phoff     uintptr	          /* Program header table file offset */
-	e_shoff     uintptr	          /* Section header table file offset */
-	e_flags     uint32	          /* Processor-specific flags */
-	e_ehsize    uint16	          /* ELF header size in bytes */
-	e_phentsize uint16	          /* Program header table entry size */
-	e_phnum     uint16	          /* Program header table entry count */
-	e_shentsize uint16	          /* Section header table entry size */
-	e_shnum     uint16	          /* Section header table entry count */
-	e_shstrndx  uint16	          /* Section header string table index */
+	e_ident     [EI_NIDENT]uint8 /* Magic number and other info */
+	e_type      uint16           /* Object file type */
+	e_machine   uint16           /* Architecture */
+	e_version   uint32           /* Object file version */
+	e_entry     uintptr          /* Entry point virtual address */
+	e_phoff     uintptr          /* Program header table file offset */
+	e_shoff     uintptr          /* Section header table file offset */
+	e_flags     uint32           /* Processor-specific flags */
+	e_ehsize    uint16           /* ELF header size in bytes */
+	e_phentsize uint16           /* Program header table entry size */
+	e_phnum     uint16           /* Program header table entry count */
+	e_shentsize uint16           /* Section header table entry size */
+	e_shnum     uint16           /* Section header table entry count */
+	e_shstrndx  uint16           /* Section header string table index */
 }
 
 // static data for ELF header.
@@ -92,12 +92,12 @@ type ElfSectionBodies struct {
 // are these data.
 //
 // Relocation structures that need an addend:
-//     typedef struct {
-//               Elf64_Addr r_offset;
-//               uint64_t   r_info;
-//               int64_t    r_addend;
-//           } Elf64_Rela;
 //
+//	typedef struct {
+//	          Elf64_Addr r_offset;
+//	          uint64_t   r_info;
+//	          int64_t    r_addend;
+//	      } Elf64_Rela;
 type Elf64_Rela struct {
 	//              This member gives the location at which to apply the
 	//              relocation action.  For a relocatable file, the value is
@@ -113,7 +113,7 @@ type Elf64_Rela struct {
 	//              relocation type or symbol table index, it means the result
 	//              of applying ELF[32|64]_R_TYPE or ELF[32|64]_R_SYM,
 	//              respectively, to the entry's r_info member.
-	r_info   uint64
+	r_info uint64
 	//              This member specifies a constant addend used to compute
 	//              the value to be stored into the relocatable field.
 	r_addend int64
@@ -122,20 +122,19 @@ type Elf64_Rela struct {
 const R_X86_64_PC32 = 2
 const R_X86_64_PLT32 = 4
 
-
-//  An object file's symbol table holds information needed to locate
-//       and relocate a program's symbolic definitions and references.  A
-//       symbol table index is a subscript into this array.
+// An object file's symbol table holds information needed to locate
 //
-//   typedef struct {
-//               uint32_t      st_name;
-//               unsigned char st_info;
-//               unsigned char st_other;
-//               uint16_t      st_shndx;
-//               Elf64_Addr    st_value;
-//               uint64_t      st_size;
-//           } Elf64_Sym;
+//	    and relocate a program's symbolic definitions and references.  A
+//	    symbol table index is a subscript into this array.
 //
+//	typedef struct {
+//	            uint32_t      st_name;
+//	            unsigned char st_info;
+//	            unsigned char st_other;
+//	            uint16_t      st_shndx;
+//	            Elf64_Addr    st_value;
+//	            uint64_t      st_size;
+//	        } Elf64_Sym;
 type Elf64_Sym struct {
 	// This member holds an index into the object file's symbol
 	//              string table, which holds character representations of the
@@ -171,21 +170,18 @@ type Elf64_Sym struct {
 
 // Part3: Section Header Table
 
-
-
-//   typedef struct {
-//               uint32_t   sh_name;
-//               uint32_t   sh_type;
-//               uint64_t   sh_flags;
-//               Elf64_Addr sh_addr;
-//               Elf64_Off  sh_offset;
-//               uint64_t   sh_size;
-//               uint32_t   sh_link;
-//               uint32_t   sh_info;
-//               uint64_t   sh_addralign;
-//               uint64_t   sh_entsize;
-//           } Elf64_Shdr;
-//
+//	typedef struct {
+//	            uint32_t   sh_name;
+//	            uint32_t   sh_type;
+//	            uint64_t   sh_flags;
+//	            Elf64_Addr sh_addr;
+//	            Elf64_Off  sh_offset;
+//	            uint64_t   sh_size;
+//	            uint32_t   sh_link;
+//	            uint32_t   sh_info;
+//	            uint64_t   sh_addralign;
+//	            uint64_t   sh_entsize;
+//	        } Elf64_Shdr;
 type Elf64_Shdr struct {
 	// This member specifies the name of the section.
 	// Its value is an index into the section header string table section,
@@ -214,6 +210,7 @@ type Elf64_Shdr struct {
 }
 
 type SHT uint32
+
 const SHT_PROGBITS SHT = 1 /* Program data */
 const SHT_SYMTAB SHT = 2   /* Symbol table */
 const SHT_STRTAB SHT = 3   /* String table */

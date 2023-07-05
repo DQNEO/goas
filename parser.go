@@ -21,7 +21,8 @@ func (p *parser) collectAppearedSymbols(symbol string) {
 // https://sourceware.org/binutils/docs-2.37/as.html#Symbol-Names
 // Symbol names begin with a letter or with one of ‘._’.
 // Symbol names do not start with a digit.
-//  An exception to this rule is made for Local Labels.
+//
+//	An exception to this rule is made for Local Labels.
 func isSymbolBeginning(ch byte) bool {
 	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '.' || ch == '_'
 }
@@ -141,7 +142,7 @@ func (p *parser) readStringLiteral() *strLit {
 		switch ch {
 		case '"':
 			p.idx++
-			return &strLit{val:string(buf)}
+			return &strLit{val: string(buf)}
 		case '\\':
 			p.expect('\\')
 			ch := p.peekCh()
@@ -350,7 +351,7 @@ type parser struct {
 	lineno int
 	source []byte
 	idx    int
-	sc *symbolCollection
+	sc     *symbolCollection
 }
 
 // indirection | symbolExpr | immediate | register | charLit | strLit
@@ -542,7 +543,7 @@ func ParseFile(path string, sc *symbolCollection) []*Stmt {
 		lineno: 1,
 		source: src,
 		idx:    0,
-		sc:sc,
+		sc:     sc,
 	}
 	stmts := p.parse()
 	return stmts
