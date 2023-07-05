@@ -87,7 +87,7 @@ It produces a list of statements in the end.
 # Test
 
 ```
-$ make test
+$ docker run --rm -it -v `pwd`:/mnt/goas -w /mnt/goas dqneo/ubuntu-compiler-go make test
 ```
 
 # References
