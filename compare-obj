@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -eux
+objdir=$1
+
+for m in $objdir/*.my.o; do
+  g=${m%.my.o}.gnu.o
+  diff $g $m
+done
