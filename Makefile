@@ -72,4 +72,4 @@ babygo: out3/my.o
 	ld -o $@ $<
 
 clean:
-	rm -f goas *.{o,bin,out} out{1,2}/* ./babygo
+	rm -rf goas *.o *.bin *.out out1 out2 out3 ./babygo
