@@ -286,17 +286,30 @@ func encode(s *Stmt) *Instruction {
 		}
 		instr.varcode = varcode
 	case "callq", "call":
-		trgtSymbol := trgtOp.(*symbolExpr).name
-		// call rel16
-		code = []byte{0xe8, 0, 0, 0, 0}
-		ru := &relaTextUser{
-			instr:  instr,
-			offset: 1,
-			uses:   trgtSymbol,
-			toJump: true,
+		switch trgt := trgtOp.(type) {
+		case *symbolExpr:
+			trgtSymbol := trgt.name
+			// call rel16
+			code = []byte{0xe8, 0, 0, 0, 0}
+			ru := &relaTextUser{
+				instr:  instr,
+				offset: 1,
+				uses:   trgtSymbol,
+				toJump: true,
+			}
+			relaTextUsers = append(relaTextUsers, ru)
+			registerCallTarget(instr, trgtSymbol, 1, 4)
+		case *indirectCallTarget:
+			// CALL m16:32
+			// FF /3
+			// In 64-bit mode: If selector points to a gate, then RIP = 64-bit displacement taken from gate;
+			// else RIP = zero extended 32-bit offset from far pointer referenced in the instruction.
+			opcode := uint8(0xff)
+			regi := trgt.regi.toBits()
+			// RIP relative addressing
+			modRM := composeModRM(ModRegi, 0b010, regi) // why regOp is 010 ??
+			code = []byte{opcode, modRM}
 		}
-		relaTextUsers = append(relaTextUsers, ru)
-		registerCallTarget(instr, trgtSymbol, 1, 4)
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi
@@ -397,7 +410,23 @@ func encode(s *Stmt) *Instruction {
 		default:
 			panic("TBI")
 		}
-	//case "movl":
+	case "movl":
+		switch src := srcOp.(type) {
+		case *immediate: // movl $56, %eax
+			intNum, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 32)
+			if err != nil {
+				panic(err)
+			}
+			num := int32(intNum)
+			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
+			regFieldN := trgtOp.(*register).toBits()
+			opcode := 0xb8 + regFieldN
+			code := []byte{opcode}
+			code = append(code, bytesNum[:]...)
+		default:
+			panic("TBI")
+		}
+
 	//	op1, op2 := s.operands[0], s.operands[1]
 	//	assert(op1.typ == "$number", "op1 type should be $number")
 	//	//op1Regi, IsOp1Regi := op1.(*register)
@@ -448,8 +477,6 @@ func encode(s *Stmt) *Instruction {
 						code = []byte{REX_W, opcode, modRM}
 
 						symbol := expr.left.(*symbolExpr).name
-						//if _, defined := definedSymbols[symbol]; !defined {
-						// @TODO shouud use expr.right.(*numberExpr).val as an offset
 						ru := &relaTextUser{
 							instr:  instr,
 							offset: uintptr(len(code)),
@@ -459,35 +486,62 @@ func encode(s *Stmt) *Instruction {
 						relaTextUsers = append(relaTextUsers, ru)
 						//}
 						code = append(code, 0, 0, 0, 0)
+					case *symbolExpr: // "movq %rax, runtime.main_main(%rip)"
+						mod := ModIndirectionWithNoDisplacement
+						reg := src.toBits() // src
+						modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
+						code = []byte{REX_W, opcode, modRM}
 
+						symbol := expr.name
+						ru := &relaTextUser{
+							instr:  instr,
+							offset: uintptr(len(code)),
+							uses:   symbol,
+							adjust: 0,
+						}
+						relaTextUsers = append(relaTextUsers, ru)
+						code = append(code, 0, 0, 0, 0)
 					default:
-						panic("TBI:" + string(s.source))
+						panic(fmt.Sprintf("TBI: trgt.expr:%T %+v", trgt.expr, trgt.expr))
 					}
 				} else {
 					// movq %rax, 32(%rsp)
-					reg := src.toBits()
-					rm := trgt.regi.toBits()
-					num := trgt.expr.(*numberLit).val
-					displacement, err := strconv.ParseInt(num, 0, 8)
-					if err != nil {
-						panic(err)
-					}
-					if rm == regBits("sp") {
-						// insert SIB byte
-						mod := ModIndirectionWithDisplacement8
+					switch trgtExpr := trgt.expr.(type) {
+					case nil:
+						// movq %rax, (%rcx)
+						// this is the same as "movq %rax, 0(%rcx)" case in blow "else" block
+						reg := src.toBits()
+						mod := ModIndirectionWithNoDisplacement
+						rm := trgt.regi.toBits()
 						modRM := composeModRM(mod, reg, rm)
-						sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-						code = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
-					} else {
-						if displacement == 0 {
-							mod := ModIndirectionWithNoDisplacement
-							modRM := composeModRM(mod, reg, rm)
-							code = []byte{REX_W, opcode, modRM}
-						} else {
+						code = []byte{REX_W, opcode, modRM}
+					case *numberLit:
+						reg := src.toBits()
+						rm := trgt.regi.toBits()
+						num := trgtExpr.val
+						displacement, err := strconv.ParseInt(num, 0, 8)
+						if err != nil {
+							panic(err)
+						}
+						if rm == regBits("sp") {
+							// insert SIB byte
 							mod := ModIndirectionWithDisplacement8
 							modRM := composeModRM(mod, reg, rm)
-							code = []byte{REX_W, opcode, modRM, uint8(displacement)}
+							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+							code = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+						} else {
+							if displacement == 0 {
+								mod := ModIndirectionWithNoDisplacement
+								modRM := composeModRM(mod, reg, rm)
+								code = []byte{REX_W, opcode, modRM}
+							} else {
+								mod := ModIndirectionWithDisplacement8
+								modRM := composeModRM(mod, reg, rm)
+								code = []byte{REX_W, opcode, modRM, uint8(displacement)}
+							}
 						}
+					default:
+						panic("unexpected target expr:" + fmt.Sprintf("%+v", trgtOp))
 					}
 				}
 			default:

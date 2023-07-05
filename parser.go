@@ -93,16 +93,17 @@ func (p *parser) expect(ch byte) {
 	p.idx++
 }
 
-func isAlphabet(ch byte) bool {
-	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z')
+func isAlphaNumeric(ch byte) bool {
+	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9')
 }
 
+// e.g. '%rax', '%r10'
 func (p *parser) readRegi() string {
 	p.expect('%')
 	var buf []byte
 	for {
 		ch := p.peekCh()
-		if isAlphabet(ch) {
+		if isAlphaNumeric(ch) {
 			p.idx++
 			buf = append(buf, ch)
 		} else {
@@ -314,8 +315,18 @@ func (p *parser) parseOperand() Operand {
 		return &register{
 			name: regName,
 		}
+	case ch == '*': // callq *%rax
+		p.expect('*')
+		op := p.parseOperand()
+		regi, isRegi := op.(*register)
+		if !isRegi {
+			panic("Expect register")
+		}
+		return &indirectCallTarget{
+			regi: regi,
+		}
 	default:
-		p.fail("default:buf=" + string(p.source[p.idx:p.idx+4]))
+		p.fail("Unknown char '" + string(ch) + "' buf=" + string(p.source[p.idx:p.idx+6]))
 	}
 	return nil
 }
@@ -365,12 +376,25 @@ func (reg *register) is64() bool {
 	return reg.name[0] == 'r'
 }
 
+func (reg *register) is32() bool {
+	return reg.name[0] == 'e'
+}
+
 func (reg *register) toBits() uint8 {
-	if reg.is64() {
+	if len(reg.name) <= 1 {
+		panic("Something wrong hpapended. reg.name is too short:" + reg.name)
+	}
+	if reg.is64() || reg.is32() {
 		return regBits(reg.name[1:])
 	} else {
 		return regBits(reg.name)
 	}
+}
+
+// e.g. *%rax
+type indirectCallTarget struct {
+	expr expr
+	regi *register
 }
 
 // e.g. (%reg), 24(%reg), -24(%reg), foo(%rip), foo+8(%rip)
