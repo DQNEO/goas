@@ -661,7 +661,8 @@ func main() {
 func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int) []byte {
 	var contents []byte
 
-	for _, ru := range relaTextUsers {
+	for i, ru := range relaTextUsers {
+		println("checking relaTextUsers", i, ru.uses)
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
@@ -691,6 +692,7 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 			r_info:   uint64(symIdx)<<32 + typ,
 			r_addend: addr + ru.adjust - 4,
 		}
+		println("appending relaTextUsers", i, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
