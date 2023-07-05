@@ -5,7 +5,7 @@ goas: $(GO_SOURCES)
 
 .PHONY: test
 # Check /etc/os-release to prevent non-linux from running this
-test:  /etc/os-release test-single test-babygo-test test-babygo-babygo
+test:  /etc/os-release test1 test-babygo-test test-babygo-babygo
 
 T1_SOURCES = $(wildcard t1/*.s)
 T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out1/%.gnu.o)
@@ -15,18 +15,9 @@ out1:
 	mkdir -p $@
 
 # Test single-source program
-.PHONY: test-single
-test-single: $(T1_GNU_OBJS) $(T1_MY_OBJS)
-	diff out1/00.gnu.o out1/00.my.o
-	diff out1/01.gnu.o out1/01.my.o
-	diff out1/02.gnu.o out1/02.my.o
-	diff out1/03.gnu.o out1/03.my.o
-	diff out1/04.gnu.o out1/04.my.o
-	diff out1/05.gnu.o out1/05.my.o
-	diff out1/06.gnu.o out1/06.my.o
-	diff out1/07.gnu.o out1/07.my.o
-	diff out1/08.gnu.o out1/08.my.o
-	diff out1/09.gnu.o out1/09.my.o
+.PHONY: test1
+test1: $(T1_GNU_OBJS) $(T1_MY_OBJS)
+	./compare-obj out1
 	@echo ok
 
 out1/%.gnu.o: t1/%.s out1
