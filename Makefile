@@ -68,4 +68,4 @@ babygo: t2/b.my.o
 	./$@ version
 
 clean:
-	rm -f goas t/*.o t/*.bin t2/*.o t2/*.bin babygo a.out
+	rm -f *.o goas t/*.o t/*.bin t2/*.o t2/*.bin babygo a.out
