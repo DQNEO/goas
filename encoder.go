@@ -50,14 +50,14 @@ const RM_RIP_RELATIVE = 0b101
 // or memory) operand. The reg field contains the digit that provides an extension to the instruction's opcode.
 
 // shlash_n represents /n value which may be passed as a regOpcode.
-const slash_0 = 0 // /0
-const slash_1 = 1 // /1
-const slash_2 = 2 // /2
-const slash_3 = 3 // /3
-const slash_4 = 4 // /4
-const slash_5 = 5 // /5
-const slash_6 = 6 // /6
-const slash_7 = 7 // /7
+const slash_0 = 0 // /0 0b000
+const slash_1 = 1 // /1 0b001
+const slash_2 = 2 // /2 0b010
+const slash_3 = 3 // /3 0b011
+const slash_4 = 4 // /4 0b010
+const slash_5 = 5 // /5 0b101
+const slash_6 = 6 // /6 0b110
+const slash_7 = 7 // /7 0b111
 
 // The registers are encoded using the 4-bit values in the X.Reg column of the following table.
 // X.Reg is in binary.
