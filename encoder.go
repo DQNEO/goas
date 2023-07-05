@@ -771,6 +771,18 @@ func encode(s *Stmt) *Instruction {
 		modRM := composeModRM(ModRegi, slash_6, rm)
 		imValue := evalNumExpr(srcOp.(*immediate).expr)
 		code = []byte{REX_W, opcode, modRM, uint8(imValue)}
+	case "andq":
+		// AND r/m64, r64
+		// REX.W 21
+		regi := srcOp.(*register).toBits()
+		rm := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, regi, rm)
+		code = []byte{REX_W, 0x21, modRM}
+	case "orq":
+		regi := srcOp.(*register).toBits()
+		rm := trgtOp.(*register).toBits()
+		modRM := composeModRM(ModRegi, regi, rm)
+		code = []byte{REX_W, 0x09, modRM}
 	default:
 		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
 			s.source, 0, s.source))
