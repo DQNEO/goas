@@ -59,6 +59,7 @@ const slash_5 = 5 // /5 0b101
 const slash_6 = 6 // /6 0b110
 const slash_7 = 7 // /7 0b111
 
+// https://wiki.osdev.org/X86-64_Instruction_Encoding
 // The registers are encoded using the 4-bit values in the X.Reg column of the following table.
 // X.Reg is in binary.
 func regBits(reg string) uint8 {
@@ -80,8 +81,24 @@ func regBits(reg string) uint8 {
 		x_reg = 0b0110
 	case "di", "bh":
 		x_reg = 0b0111
+	case "8":
+		x_reg = 0b1000
+	case "9":
+		x_reg = 0b1001
+	case "10":
+		x_reg = 0b1010
+	case "11":
+		x_reg = 0b1011
+	case "12":
+		x_reg = 0b1100
+	case "13":
+		x_reg = 0b1101
+	case "14":
+		x_reg = 0b1110
+	case "15":
+		x_reg = 0b1111
 	default:
-		panic("TBI: unexpected register " + reg)
+		panic(fmt.Sprintf("TBI: unexpected register \"%s\"", reg))
 	}
 	return x_reg
 }
