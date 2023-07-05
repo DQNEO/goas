@@ -1,20 +1,21 @@
-GOSOURCES = $(wildcard *.go)
-SOURCES = $(wildcard t1/*.s)
-GNU_OBJS = $(SOURCES:t1/%.s=out1/%.gnu.o)
-MY_OBJS = $(SOURCES:t1/%.s=out1/%.my.o)
+GO_SOURCES = $(wildcard *.go)
 
-goas: $(GOSOURCES)
+goas: $(GO_SOURCES)
 	go build -o goas .
 
 .PHONY: test
 test: test-single test-multi
+
+T1_SOURCES = $(wildcard t1/*.s)
+T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out1/%.gnu.o)
+T1_MY_OBJS = $(T1_SOURCES:t1/%.s=out1/%.my.o)
 
 out1:
 	mkdir -p $@
 
 # Test single-source program
 .PHONY: test-single
-test-single: $(GNU_OBJS) $(MY_OBJS)
+test-single: $(T1_GNU_OBJS) $(T1_MY_OBJS)
 	diff out1/00.gnu.o out1/00.my.o
 	diff out1/01.gnu.o out1/01.my.o
 	diff out1/02.gnu.o out1/02.my.o
