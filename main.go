@@ -648,7 +648,7 @@ func main() {
 	s_shstrtab.contents = makeShStrTab(sectionNames)
 	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
 
-	s_rela_text.contents = buildRelaTextBody(relaTextUsers, symbolIndex)
+	s_rela_text.contents = buildRelaTextBody(symbolIndex)
 	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
 
 	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
@@ -658,7 +658,7 @@ func main() {
 	elfFile.writeTo(w)
 }
 
-func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int) []byte {
+func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	var contents []byte
 
 	for i, ru := range relaTextUsers {
@@ -667,6 +667,7 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 		var addr int64
 		if defined {
 			// skip symbols that belong to the same section
+			// ^ why ???
 			if sym.section == ".text" {
 				continue
 			}
@@ -692,7 +693,7 @@ func buildRelaTextBody(relaTextUsers []*relaTextUser, symbolIndex map[string]int
 			r_info:   uint64(symIdx)<<32 + typ,
 			r_addend: addr + ru.adjust - 4,
 		}
-		println("appending relaTextUsers", i, ru.uses)
+		println("writing relaText", i, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}

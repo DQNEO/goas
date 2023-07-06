@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"unsafe"
 )
@@ -206,6 +207,11 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 	return diff, min, max, !hasVariableLength
 }
 
+func appendRelaTextUser(ru *relaTextUser, stmt *Stmt) {
+	fmt.Fprintf(os.Stderr, "appending RU: %s from '%s'\n", ru.uses, stmt.source)
+	relaTextUsers = append(relaTextUsers, ru)
+}
+
 func encode(s *Stmt) *Instruction {
 	defer func() {
 		if x := recover(); x != nil {
@@ -297,7 +303,7 @@ func encode(s *Stmt) *Instruction {
 				uses:   trgtSymbol,
 				toJump: true,
 			}
-			relaTextUsers = append(relaTextUsers, ru)
+			appendRelaTextUser(ru, s)
 			registerCallTarget(instr, trgtSymbol, 1, 4)
 		case *indirectCallTarget:
 			// CALL m16:32
@@ -330,7 +336,7 @@ func encode(s *Stmt) *Instruction {
 				}
 
 				code = append(code, 0, 0, 0, 0)
-				relaTextUsers = append(relaTextUsers, ru)
+				appendRelaTextUser(ru, s)
 			} else {
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 32)
@@ -483,7 +489,7 @@ func encode(s *Stmt) *Instruction {
 							uses:   symbol,
 							adjust: int64(evalNumExpr(expr.right)),
 						}
-						relaTextUsers = append(relaTextUsers, ru)
+						appendRelaTextUser(ru, s)
 						//}
 						code = append(code, 0, 0, 0, 0)
 					case *symbolExpr: // "movq %rax, runtime.main_main(%rip)"
@@ -499,7 +505,7 @@ func encode(s *Stmt) *Instruction {
 							uses:   symbol,
 							adjust: 0,
 						}
-						relaTextUsers = append(relaTextUsers, ru)
+						appendRelaTextUser(ru, s)
 						code = append(code, 0, 0, 0, 0)
 					default:
 						panic(fmt.Sprintf("TBI: trgt.expr:%T %+v", trgt.expr, trgt.expr))
@@ -566,8 +572,7 @@ func encode(s *Stmt) *Instruction {
 				}
 
 				code = append(code, 0, 0, 0, 0)
-
-				relaTextUsers = append(relaTextUsers, ru)
+				appendRelaTextUser(ru, s)
 			} else if srcRegi.name == "rsp" {
 				var opcode uint8 = 0x8b
 				val := evalNumExpr(src.expr)
