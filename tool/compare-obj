@@ -2,11 +2,13 @@
 # Usage:
 #  $0 out4
 ####
-set -ux
+set -u
 
 readonly objdir=$1
 
 for m in $objdir/*.my.o; do
   g=${m%.my.o}.gnu.o
+  set -x
   diff $g $m
+  set +x
 done

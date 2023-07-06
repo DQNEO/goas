@@ -513,6 +513,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		instr := encode(s)
 		if s.labelSymbol != "" {
 			instr.symbolDefinition = s.labelSymbol
+			definedSymbols[instr.symbolDefinition].instr = instr
 		}
 		insts = append(insts, instr)
 		instr.index = index
@@ -530,6 +531,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
 	}
 
+	var unresolvedCallTargets []*callTarget
 	var definedSymbolsStr = make(map[string]bool)
 	var allText []byte
 	var textAddr uintptr
@@ -550,6 +552,7 @@ func encodeAllText(ss []*Stmt) []byte {
 			_, ok := definedSymbolsStr[call.trgtSymbol]
 			if !ok {
 				debugf("UndefinedSymbol, keep call target zero %s\n", call.trgtSymbol)
+				unresolvedCallTargets = append(unresolvedCallTargets, call)
 			} else {
 				callee, ok := definedSymbols[call.trgtSymbol]
 				if ok {
@@ -569,6 +572,27 @@ func encodeAllText(ss []*Stmt) []byte {
 				}
 			}
 		}
+
+		for _, call := range unresolvedCallTargets {
+			if globalSymbols[call.trgtSymbol] {
+				continue // no neeed to resolve. keep zeros.
+			}
+			callee, ok := definedSymbols[call.trgtSymbol]
+			if ok {
+				debugf("resolvedCallTarget: %s => %+v\n", call.trgtSymbol, callee)
+
+				diff := callee.instr.addr - call.caller.next.addr
+				placeToEmbed := call.caller.addr + call.offset
+				debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+					call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
+				diffInt32 := int32(diff)
+				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+				allText[placeToEmbed] = buf[0]
+				allText[placeToEmbed+1] = buf[1]
+				allText[placeToEmbed+2] = buf[2]
+				allText[placeToEmbed+3] = buf[3]
+			}
+		}
 	}
 
 	return allText
@@ -584,6 +608,8 @@ func encodeAllData(ss []*Stmt) []byte {
 	}
 	return allData
 }
+
+var globalSymbols = make(map[string]bool)
 
 func main() {
 	flag.Parse()
@@ -608,7 +634,6 @@ func main() {
 	var textStmts []*Stmt
 	var dataStmts []*Stmt
 
-	var globalSymbols = make(map[string]bool)
 	var currentSection = ".text"
 	for _, s := range stmts {
 

@@ -27,7 +27,6 @@ _start:
   call myfunc2
   call myfunc3
   ret
-
 myfunc1:
   movq var1(%rip), %rcx
   movq $0x1a, %rcx
