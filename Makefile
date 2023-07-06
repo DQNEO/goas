@@ -5,7 +5,7 @@ goas: $(GO_SOURCES)
 
 .PHONY: test
 # Check /etc/os-release to prevent non-linux from running this
-test:  /etc/os-release test1 test2 test3
+test:  /etc/os-release test1 test2 test3 test4
 
 T1_SOURCES = $(wildcard t1/*.s)
 T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out1/%.gnu.o)
