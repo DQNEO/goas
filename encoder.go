@@ -158,6 +158,10 @@ type Instruction struct {
 	unresolvedCallTarget *callTarget
 }
 
+func (ins *Instruction) String() string {
+	return fmt.Sprintf("[%04x] %s", ins.addr, ins.s.source)
+}
+
 //var callTargets []*callTarget
 
 type callTarget struct {

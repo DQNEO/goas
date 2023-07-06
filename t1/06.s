@@ -39,7 +39,7 @@ myfunc2:
 myfunc3:
   ret
 start2:
-  callq myfunc2
+  callq myfunc2 # expect 31:  e8 e9 ff ff ff  call   1f <myfunc2>
   callq myfunc4
   callq myfunc5
 

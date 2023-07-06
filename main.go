@@ -308,7 +308,7 @@ func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers
 }
 
 func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
-	debugf("# Building symbol table ....\n")
+	//debugf("# Building symbol table ....\n")
 
 	var symbolIndex = make(map[string]int)
 
@@ -349,7 +349,7 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 		if !isGlobal {
 			localSymbols = append(localSymbols, sym)
 		} else {
-			debugf("  global symbol \"%s\"\n", sym)
+			//debugf("  global symbol \"%s\"\n", sym)
 			if isDefined {
 				gss = append(gss, sym)
 			} else {
@@ -458,8 +458,6 @@ func assert(bol bool, errorMsg string) {
 	}
 }
 
-var first *Instruction
-
 func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 	var todos []*Instruction
 	for _, vr := range instrs {
@@ -505,15 +503,17 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 func encodeAllText(ss []*Stmt) []byte {
 	var insts []*Instruction
 	var index int
+	var first *Instruction
 	var prev *Instruction
 	for _, s := range ss {
 		if s.labelSymbol == "" && s.keySymbol == "" {
+			// skip if the line is empty
 			continue
 		}
 		instr := encode(s)
 		if s.labelSymbol != "" {
 			instr.symbolDefinition = s.labelSymbol
-			definedSymbols[instr.symbolDefinition].instr = instr
+			definedSymbols[s.labelSymbol].instr = instr
 		}
 		insts = append(insts, instr)
 		instr.index = index
@@ -532,62 +532,66 @@ func encodeAllText(ss []*Stmt) []byte {
 	}
 
 	var unresolvedCallTargets []*callTarget
-	var definedSymbolsStr = make(map[string]bool)
+	var appearedSymbolDefs = make(map[string]bool)
 	var allText []byte
-	var textAddr uintptr
+	var textAddr uintptr = 0
+	// Allocate addr to each instruction
 	for instr := first; instr != nil; instr = instr.next {
-		// @TODO:
 		if instr.symbolDefinition != "" {
-			definedSymbolsStr[instr.symbolDefinition] = true
-			definedSymbols[instr.symbolDefinition].instr = instr
+			appearedSymbolDefs[instr.symbolDefinition] = true
 		}
 		// resolve call targets
-		instr.addr = textAddr
+		if instr.addr == 0 {
+			instr.addr = textAddr
+		}
 		allText = append(allText, instr.code...)
 		textAddr += uintptr(len(instr.code))
+		debugf("[%x] %s\n", instr.addr, instr.s.source)
+		if instr.next != nil {
+			instr.next.addr = textAddr
+		}
 
 		// Resolve call targets if needed
-		if instr.unresolvedCallTarget != nil {
-			call := instr.unresolvedCallTarget
-			_, ok := definedSymbolsStr[call.trgtSymbol]
-			if !ok {
-				debugf("UndefinedSymbol, keep call target zero %s\n", call.trgtSymbol)
-				unresolvedCallTargets = append(unresolvedCallTargets, call)
-			} else {
+		if call := instr.unresolvedCallTarget; call != nil {
+			_, hasTargetSymbolAppeared := appearedSymbolDefs[call.trgtSymbol]
+			if hasTargetSymbolAppeared {
+				debugf("@TODO: the target symbol '%s' has already appeared. Overwriting caller's args\n", call.trgtSymbol)
 				callee, ok := definedSymbols[call.trgtSymbol]
 				if ok {
 					diff := callee.instr.addr - call.caller.next.addr
 					placeToEmbed := call.caller.addr + call.offset
+					debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+						call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
 					diffInt32 := int32(diff)
-					debugf("Resolved call target: \"%s\" diff=0x %04x (callee.addr %d - caller.nextAddr=%d)\n",
-						call.trgtSymbol, diffInt32, callee.instr.addr, call.caller.next.addr)
 					var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 					allText[placeToEmbed] = buf[0]
 					allText[placeToEmbed+1] = buf[1]
 					allText[placeToEmbed+2] = buf[2]
 					allText[placeToEmbed+3] = buf[3]
-
 				}
+			} else {
+				debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
+				unresolvedCallTargets = append(unresolvedCallTargets, call)
 			}
 		}
+	}
 
-		for _, call := range unresolvedCallTargets {
-			if globalSymbols[call.trgtSymbol] {
-				continue // no neeed to resolve. keep zeros.
-			}
-			callee, ok := definedSymbols[call.trgtSymbol]
-			if ok {
-				diff := callee.instr.addr - call.caller.next.addr
-				placeToEmbed := call.caller.addr + call.offset
-				debugf("Resolved call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-					call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
-				diffInt32 := int32(diff)
-				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
-				allText[placeToEmbed] = buf[0]
-				allText[placeToEmbed+1] = buf[1]
-				allText[placeToEmbed+2] = buf[2]
-				allText[placeToEmbed+3] = buf[3]
-			}
+	for _, call := range unresolvedCallTargets {
+		if globalSymbols[call.trgtSymbol] {
+			continue // no neeed to resolve. keep zeros.
+		}
+		callee, ok := definedSymbols[call.trgtSymbol]
+		if ok {
+			diff := callee.instr.addr - call.caller.next.addr
+			placeToEmbed := call.caller.addr + call.offset
+			debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+				call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
+			diffInt32 := int32(diff)
+			var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+			allText[placeToEmbed] = buf[0]
+			allText[placeToEmbed+1] = buf[1]
+			allText[placeToEmbed+2] = buf[2]
+			allText[placeToEmbed+3] = buf[3]
 		}
 	}
 
@@ -689,7 +693,7 @@ func main() {
 		s_symtab.header.sh_info, s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder)
 	}
 
-	debugf("[main] building sections ...\n")
+	//debugf("[main] building sections ...\n")
 	sectionNames := makeSectionNames(hasRelaText, hasRelaData, hasSymbols)
 	s_shstrtab.contents = makeShStrTab(sectionNames)
 	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
@@ -699,7 +703,7 @@ func main() {
 
 	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
 	assert(len(sectionInBodyOrder) == len(sectionHeaders)-1, "sections len unmatch")
-	debugf("[main] writing ELF file ...\n")
+	//debugf("[main] writing ELF file ...\n")
 	elfFile := prepareElfFile(sectionInBodyOrder, sectionHeaders)
 	elfFile.writeTo(w)
 }
