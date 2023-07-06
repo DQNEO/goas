@@ -378,6 +378,9 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 			switch sym.section {
 			case ".text":
 				shndx = s_text.index
+				if sym.instr == nil {
+					panic("sym.instr is nil")
+				}
 				addr = sym.instr.addr
 			case ".data":
 				shndx = s_data.index
@@ -534,6 +537,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		// @TODO:
 		if instr.symbolDefinition != "" {
 			definedSymbolsStr[instr.symbolDefinition] = true
+			definedSymbols[instr.symbolDefinition].instr = instr
 		}
 		// resolve call targets
 		instr.addr = textAddr
@@ -543,22 +547,26 @@ func encodeAllText(ss []*Stmt) []byte {
 		// Resolve call targets if needed
 		if instr.unresolvedCallTarget != nil {
 			call := instr.unresolvedCallTarget
-			callee, ok := definedSymbols[call.trgtSymbol]
+			_, ok := definedSymbolsStr[call.trgtSymbol]
 			if !ok {
 				debugf("UndefinedSymbol, keep call target zero %s\n", call.trgtSymbol)
 			} else {
-				debugf("reresolvedCallTarget: %s => %s\n", instr.code, callee.instr)
+				callee, ok := definedSymbols[call.trgtSymbol]
+				if ok {
+					debugf("reresolvedCallTarget: %s => %s\n", instr.code, callee.instr)
 
-				diff := callee.instr.addr - call.caller.next.addr
-				placeToEmbed := call.caller.addr + call.offset
-				debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-					call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
-				diffInt32 := int32(diff)
-				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
-				allText[placeToEmbed] = buf[0]
-				allText[placeToEmbed+1] = buf[1]
-				allText[placeToEmbed+2] = buf[2]
-				allText[placeToEmbed+3] = buf[3]
+					diff := callee.instr.addr - call.caller.next.addr
+					placeToEmbed := call.caller.addr + call.offset
+					debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+						call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
+					diffInt32 := int32(diff)
+					var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+					allText[placeToEmbed] = buf[0]
+					allText[placeToEmbed+1] = buf[1]
+					allText[placeToEmbed+2] = buf[2]
+					allText[placeToEmbed+3] = buf[3]
+
+				}
 			}
 		}
 	}
@@ -587,9 +595,9 @@ func main() {
 	} else {
 		inFiles = []string{"/dev/stdin"}
 	}
-	debugf("[main] input files are: %s\n", inFiles)
+	//debugf("[main] input files are: %s\n", inFiles)
 	outputFile := *oFlag
-	debugf("[main] output file is: %s\n", outputFile)
+	//debugf("[main] output file is: %s\n", outputFile)
 	w, err := os.Create(outputFile)
 	if err != nil {
 		panic(err)
