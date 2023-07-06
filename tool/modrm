@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Usage:
 #    modrm 0xee => 11_101_110
 echo "mod reg  rm"
