@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+#  Do readelf in more readable format
+#
+#  Usage:
+#    $0 file.o
+#
+###
+set -eu
 
 file=$1
 

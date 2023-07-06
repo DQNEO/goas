@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
-# Usage:
-#    modrm 0xee => 11_101_110
+#
+#  Encode a ModRM byte into binary digit form
+#
+#  Usage:
+#    $0 0xee
+#
+###
+set -eu
+
 echo "mod reg  rm"
 perl -e '$x=eval(shift);$s=sprintf "%08b", $x;printf "%s  %s  %s\n", substr($s,0,2), substr($s,2
 ,3), substr($s,5,3) ' $1

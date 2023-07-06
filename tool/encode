@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 #
-# one-line encoder
+#  Encode One-line asm
 #
-set -e
-instr=$1
+#  Usage:
+#    $0 'movq %rax, (%rcx) # comment'
+#
+###
+set -eu
+
+readonly instr=$1
 rm -f ./a.out
 echo "$instr"
 echo "--- as ---"

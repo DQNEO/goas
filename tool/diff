@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
+#
+#  diff outputs of commands for any file
+#
+#  Usage:
+#   $0 out4/reflect readelf --all
+#   $0 <basename> <command>
+#
+###
 set -eu
-basename=$1
+
+readonly basename=$1
 shift
-subcmd="$@"
+readonly subcmd="$@"
 
 my=${basename}.my.o
 gnu=${basename}.gnu.o
