@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"unsafe"
 )
@@ -148,16 +147,18 @@ type variableCode struct {
 }
 
 type Instruction struct {
-	addr         uintptr
-	s            *Stmt
-	index        int
-	code         []byte // fixed length code
-	varcode      *variableCode
-	isLenDecided bool
-	next         *Instruction
+	addr                 uintptr
+	symbolDefinition     string
+	s                    *Stmt
+	index                int
+	code                 []byte // fixed length code
+	varcode              *variableCode
+	isLenDecided         bool
+	next                 *Instruction
+	unresolvedCallTarget *callTarget
 }
 
-var callTargets []*callTarget
+//var callTargets []*callTarget
 
 type callTarget struct {
 	trgtSymbol string
@@ -167,12 +168,14 @@ type callTarget struct {
 }
 
 func registerCallTarget(caller *Instruction, trgtSymbol string, offset uintptr, width int) {
-	callTargets = append(callTargets, &callTarget{
+	debugf("registering unresolved callTarget: %s\n", trgtSymbol)
+	ct := &callTarget{
 		trgtSymbol: trgtSymbol,
 		caller:     caller,
 		offset:     offset,
 		width:      width,
-	})
+	}
+	caller.unresolvedCallTarget = ct
 }
 
 func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, int, bool) {
@@ -208,7 +211,7 @@ func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, i
 }
 
 func appendRelaTextUser(ru *relaTextUser, stmt *Stmt) {
-	fmt.Fprintf(os.Stderr, "appending RU: %s from '%s'\n", ru.uses, stmt.source)
+	//fmt.Fprintf(os.Stderr, "appending RU: %s from '%s'\n", ru.uses, stmt.source)
 	relaTextUsers = append(relaTextUsers, ru)
 }
 

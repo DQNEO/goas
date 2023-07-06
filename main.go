@@ -308,6 +308,8 @@ func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers
 }
 
 func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
+	debugf("# Building symbol table ....\n")
+
 	var symbolIndex = make(map[string]int)
 
 	var symbolTable = []*Elf64_Sym{
@@ -327,8 +329,8 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 	}
 
 	var localSymbols []string
-	var globalDefinedSymbols []string
-	var globalUndefinedSymbols []string
+	var gss []string
+
 	for _, sym := range symbolsInLexicalOrder {
 		if strings.HasPrefix(sym, ".L") {
 			// https://sourceware.org/binutils/docs-2.37/as.html#Symbol-Names
@@ -347,17 +349,19 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 		if !isGlobal {
 			localSymbols = append(localSymbols, sym)
 		} else {
+			debugf("  global symbol \"%s\"\n", sym)
 			if isDefined {
-				globalDefinedSymbols = append(globalDefinedSymbols, sym)
+				gss = append(gss, sym)
 			} else {
-				globalUndefinedSymbols = append(globalUndefinedSymbols, sym)
+				gss = append(gss, sym)
 			}
 		}
 	}
 
 	// local => global defined => global undefined
-	allSymbolsForElf := append(localSymbols, globalDefinedSymbols...)
-	allSymbolsForElf = append(allSymbolsForElf, globalUndefinedSymbols...)
+	var allSymbolsForElf []string = localSymbols
+	allSymbolsForElf = append(allSymbolsForElf, gss...)
+	//	allSymbolsForElf = append(allSymbolsForElf, globalUndefinedSymbols...)
 
 	s_strtab.contents = makeStrTab(allSymbolsForElf)
 
@@ -505,7 +509,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		}
 		instr := encode(s)
 		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol].instr = instr
+			instr.symbolDefinition = s.labelSymbol
 		}
 		insts = append(insts, instr)
 		instr.index = index
@@ -523,29 +527,42 @@ func encodeAllText(ss []*Stmt) []byte {
 		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
 	}
 
+	var definedSymbolsStr = make(map[string]bool)
 	var allText []byte
 	var textAddr uintptr
 	for instr := first; instr != nil; instr = instr.next {
+		// @TODO:
+		if instr.symbolDefinition != "" {
+			definedSymbolsStr[instr.symbolDefinition] = true
+		}
+		// resolve call targets
 		instr.addr = textAddr
 		allText = append(allText, instr.code...)
 		textAddr += uintptr(len(instr.code))
+
+		// Resolve call targets if needed
+		if instr.unresolvedCallTarget != nil {
+			call := instr.unresolvedCallTarget
+			callee, ok := definedSymbols[call.trgtSymbol]
+			if !ok {
+				debugf("UndefinedSymbol, keep call target zero %s\n", call.trgtSymbol)
+			} else {
+				debugf("reresolvedCallTarget: %s => %s\n", instr.code, callee.instr)
+
+				diff := callee.instr.addr - call.caller.next.addr
+				placeToEmbed := call.caller.addr + call.offset
+				debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+					call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
+				diffInt32 := int32(diff)
+				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+				allText[placeToEmbed] = buf[0]
+				allText[placeToEmbed+1] = buf[1]
+				allText[placeToEmbed+2] = buf[2]
+				allText[placeToEmbed+3] = buf[3]
+			}
+		}
 	}
 
-	// Resolve call targets
-	for _, call := range callTargets {
-		callee, ok := definedSymbols[call.trgtSymbol]
-		if !ok {
-			continue
-		}
-		diff := callee.instr.addr - call.caller.next.addr
-		placeToEmbed := call.caller.addr + call.offset
-		diffInt32 := int32(diff)
-		var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
-		allText[placeToEmbed] = buf[0]
-		allText[placeToEmbed+1] = buf[1]
-		allText[placeToEmbed+2] = buf[2]
-		allText[placeToEmbed+3] = buf[3]
-	}
 	return allText
 }
 
@@ -666,9 +683,7 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
-			// skip symbols that belong to the same section
-			// ^ why ???
-			if sym.section == ".text" {
+			if false { // @TODO in some cases, it should be added int Rela
 				continue
 			}
 			addr = int64(sym.address)
@@ -693,7 +708,7 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 			r_info:   uint64(symIdx)<<32 + typ,
 			r_addend: addr + ru.adjust - 4,
 		}
-		println("writing relaText", i, ru.uses)
+		//debugf("--- writing relaText [%d] %s \n", i, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
