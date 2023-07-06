@@ -39,6 +39,7 @@ myfunc2:
 myfunc3:
   ret
 start2:
+  callq myfunc2
   callq myfunc4
   callq myfunc5
 

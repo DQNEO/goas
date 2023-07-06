@@ -556,13 +556,11 @@ func encodeAllText(ss []*Stmt) []byte {
 			} else {
 				callee, ok := definedSymbols[call.trgtSymbol]
 				if ok {
-					debugf("reresolvedCallTarget: %s => %s\n", instr.code, callee.instr)
-
 					diff := callee.instr.addr - call.caller.next.addr
 					placeToEmbed := call.caller.addr + call.offset
-					debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-						call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
 					diffInt32 := int32(diff)
+					debugf("Resolved call target: \"%s\" diff=0x %04x (callee.addr %d - caller.nextAddr=%d)\n",
+						call.trgtSymbol, diffInt32, callee.instr.addr, call.caller.next.addr)
 					var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 					allText[placeToEmbed] = buf[0]
 					allText[placeToEmbed+1] = buf[1]
@@ -579,11 +577,9 @@ func encodeAllText(ss []*Stmt) []byte {
 			}
 			callee, ok := definedSymbols[call.trgtSymbol]
 			if ok {
-				debugf("resolvedCallTarget: %s => %+v\n", call.trgtSymbol, callee)
-
 				diff := callee.instr.addr - call.caller.next.addr
 				placeToEmbed := call.caller.addr + call.offset
-				debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+				debugf("Resolved call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
 					call.trgtSymbol, diff, callee.instr.addr, call.caller.next.addr)
 				diffInt32 := int32(diff)
 				var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
@@ -716,7 +712,8 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
-			if false { // @TODO in some cases, it should be added int Rela
+			// local functions do not need rela text
+			if !globalSymbols[sym.name] && sym.section == ".text" {
 				continue
 			}
 			addr = int64(sym.address)
