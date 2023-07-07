@@ -554,7 +554,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		// Resolve call targets if needed
 		if call := instr.unresolvedCallTarget; call != nil {
 			_, hasTargetSymbolAppeared := appearedSymbolDefs[call.trgtSymbol]
-			if hasTargetSymbolAppeared {
+			if hasTargetSymbolAppeared && !globalSymbols[call.trgtSymbol] {
 				debugf("@TODO: the target symbol '%s' has already appeared. Overwriting caller's args\n", call.trgtSymbol)
 				callee, ok := definedSymbols[call.trgtSymbol]
 				if ok {
