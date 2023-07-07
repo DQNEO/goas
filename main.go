@@ -712,7 +712,7 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	var contents []byte
 
 	for i, ru := range relaTextUsers {
-		println("checking relaTextUsers", i, ru.uses)
+		debugf("checking relaTextUsers", i, ru.uses)
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
