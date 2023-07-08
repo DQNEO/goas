@@ -2,4 +2,4 @@
 #
 # wrapper for go run
 #
-go run *.go "$@"
+go run *.go "$@" -d

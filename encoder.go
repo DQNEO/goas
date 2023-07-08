@@ -82,21 +82,21 @@ func regBits(reg string) uint8 {
 	case "di", "bh":
 		x_reg = 0b0111
 	case "8":
-		x_reg = 0b1000
+		x_reg = 0b000
 	case "9":
-		x_reg = 0b1001
+		x_reg = 0b001
 	case "10":
-		x_reg = 0b1010
+		x_reg = 0b010
 	case "11":
-		x_reg = 0b1011
+		x_reg = 0b011
 	case "12":
-		x_reg = 0b1100
+		x_reg = 0b100
 	case "13":
-		x_reg = 0b1101
+		x_reg = 0b101
 	case "14":
-		x_reg = 0b1110
+		x_reg = 0b110
 	case "15":
-		x_reg = 0b1111
+		x_reg = 0b111
 	default:
 		panic(fmt.Sprintf("TBI: unexpected register \"%s\"", reg))
 	}
@@ -458,17 +458,27 @@ func encode(s *Stmt) *Instruction {
 	//	r = append(tmp, (bytesNum[:])...)
 	case "movq":
 		switch src := srcOp.(type) {
-		case *immediate: // movq $123, %regi
+		case *immediate: // movq $123, %REG
 			intNum, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 32)
 			if err != nil {
 				panic(err)
 			}
 			num := int32(intNum)
+			trgtRegi := trgtOp.(*register)
+			debugf("num=%d, trgtRegi=%s\n", num, trgtRegi.name)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
-			opcode := uint8(0xc7)
-			modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
-			code = []byte{REX_W, opcode, modRM}
-			code = append(code, bytesNum[:]...)
+			switch trgtRegi.name {
+			case "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15":
+				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits()) // c2 ==11  000  010
+
+				code = []byte{0x49, 0xc7, modRM}
+				code = append(code, bytesNum[:]...)
+			default:
+				opcode := uint8(0xc7)
+				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
+				code = []byte{REX_W, opcode, modRM}
+				code = append(code, bytesNum[:]...)
+			}
 		case *register: // movq %rax, EXPR
 			opcode := uint8(0x89)
 			switch trgt := trgtOp.(type) {
