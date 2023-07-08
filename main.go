@@ -729,7 +729,11 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 			if !globalSymbols[sym.name] && sym.section == ".text" {
 				continue
 			}
-			addr = int64(sym.address)
+			if globalSymbols[sym.name] {
+				addr = 0
+			} else {
+				addr = int64(sym.address)
+			}
 		}
 
 		var typ uint64
@@ -741,17 +745,23 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 
 		var symIdx int
 		if defined && sym.section == ".data" {
-			symIdx = symbolIndex[".data"]
+			if globalSymbols[sym.name] {
+				symIdx = symbolIndex[ru.uses]
+			} else {
+				symIdx = symbolIndex[".data"]
+			}
 		} else {
 			symIdx = symbolIndex[ru.uses]
 		}
 
+		addend := addr + ru.adjust - 4
 		rela := &Elf64_Rela{
 			r_offset: ru.instr.addr + ru.offset,
 			r_info:   uint64(symIdx)<<32 + typ,
-			r_addend: addr + ru.adjust - 4,
+			r_addend: addend,
 		}
-		//debugf("--- writing relaText [%d] %s \n", i, ru.uses)
+		debugf("RelaText info:%08x, addend:%08x (%08x + %08x - 4) [%s] \n",
+			rela.r_info, addend, addr, ru.adjust, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
