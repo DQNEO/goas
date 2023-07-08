@@ -219,8 +219,16 @@ func makeStrTab(symbols []string) []byte {
 	var nameOffset uint32
 	var data []byte = []byte{0x00}
 	nameOffset++
+OUTER:
 	for _, sym := range symbols {
 		//sym.nameOffset = nameOffset
+		for _, s := range symbols {
+			if s != sym && strings.HasSuffix(s, sym) {
+				// Reuse existing entry
+				debugf("\"%s\" is a suffix of %s. SKIP\n", sym, s)
+				continue OUTER
+			}
+		}
 		debugf("adding strtab entry ... %s\n", sym)
 		buf := append([]byte(sym), 0x00)
 		data = append(data, buf...)
