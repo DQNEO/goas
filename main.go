@@ -225,11 +225,11 @@ OUTER:
 		for _, s := range symbols {
 			if s != sym && strings.HasSuffix(s, sym) {
 				// Reuse existing entry
-				debugf("\"%s\" is a suffix of %s. SKIP\n", sym, s)
+				//debugf("\"%s\" is a suffix of %s. SKIP\n", sym, s)
 				continue OUTER
 			}
 		}
-		debugf("adding strtab entry ... %s\n", sym)
+		//debugf("adding strtab entry ... %s\n", sym)
 		buf := append([]byte(sym), 0x00)
 		data = append(data, buf...)
 		nameOffset += uint32(len(buf))
@@ -564,13 +564,13 @@ func encodeAllText(ss []*Stmt) []byte {
 		if call := instr.unresolvedCallTarget; call != nil {
 			_, hasTargetSymbolAppeared := appearedSymbolDefs[call.trgtSymbol]
 			if hasTargetSymbolAppeared && !globalSymbols[call.trgtSymbol] {
-				debugf("@TODO: the target symbol '%s' has already appeared. Overwriting caller's args\n", call.trgtSymbol)
+				//debugf("@TODO: the target symbol '%s' has already appeared. Overwriting caller's args\n", call.trgtSymbol)
 				callee, ok := definedSymbols[call.trgtSymbol]
 				if ok {
 					diff := callee.instr.addr - call.caller.next.addr
 					placeToEmbed := call.caller.addr + call.offset
-					debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-						call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
+					//debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+					//	call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
 					diffInt32 := int32(diff)
 					var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 					allText[placeToEmbed] = buf[0]
@@ -579,7 +579,7 @@ func encodeAllText(ss []*Stmt) []byte {
 					allText[placeToEmbed+3] = buf[3]
 				}
 			} else {
-				debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
+				//debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
 				unresolvedCallTargets = append(unresolvedCallTargets, call)
 			}
 		}
@@ -593,8 +593,8 @@ func encodeAllText(ss []*Stmt) []byte {
 		if ok {
 			diff := callee.instr.addr - call.caller.next.addr
 			placeToEmbed := call.caller.addr + call.offset
-			debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-				call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
+			//debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+			//	call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
 			diffInt32 := int32(diff)
 			var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
 			allText[placeToEmbed] = buf[0]
@@ -760,8 +760,8 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 			r_info:   uint64(symIdx)<<32 + typ,
 			r_addend: addend,
 		}
-		debugf("RelaText info:%08x, addend:%08x (%08x + %08x - 4) [%s] \n",
-			rela.r_info, addend, addr, ru.adjust, ru.uses)
+		//debugf("RelaText info:%08x, addend:%08x (%08x + %08x - 4) [%s] \n",
+		//	rela.r_info, addend, addr, ru.adjust, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}
