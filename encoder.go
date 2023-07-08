@@ -12,6 +12,16 @@ import (
 // CHAPTER 2 INSTRUCTION FORMAT
 //
 
+// REX prefix
+// https://wiki.osdev.org/X86-64_Instruction_Encoding#REX_prefix
+// Encoding
+// The layout is as follows:
+//
+//	7                           0
+//
+// +---+---+---+---+---+---+---+---+
+// | 0   1   0   0 | W | R | X | B |
+// +---+---+---+---+---+---+---+---+
 const REX_W byte = 0x48
 
 //  2.1.3 ModR/M and SIB Bytes
