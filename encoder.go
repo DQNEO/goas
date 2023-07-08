@@ -469,9 +469,10 @@ func encode(s *Stmt) *Instruction {
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
 			switch trgtRegi.name {
 			case "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15":
-				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits()) // c2 ==11  000  010
-
-				code = []byte{0x49, 0xc7, modRM}
+				// Actually I don't understand the logic here.
+				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
+				opcode := uint8(0xc7)
+				code = []byte{0x49, opcode, modRM}
 				code = append(code, bytesNum[:]...)
 			default:
 				opcode := uint8(0xc7)
