@@ -221,6 +221,7 @@ func makeStrTab(symbols []string) []byte {
 	nameOffset++
 	for _, sym := range symbols {
 		//sym.nameOffset = nameOffset
+		debugf("adding strtab entry ... %s\n", sym)
 		buf := append([]byte(sym), 0x00)
 		data = append(data, buf...)
 		nameOffset += uint32(len(buf))
@@ -711,8 +712,8 @@ func main() {
 func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	var contents []byte
 
-	for i, ru := range relaTextUsers {
-		debugf("checking relaTextUsers", i, ru.uses)
+	for _, ru := range relaTextUsers {
+		//debugf("checking relaTextUsers", i, ru.uses)
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
