@@ -48,11 +48,11 @@ test3: out3/test.my.o out3/test.gnu.o
 out3:
 	mkdir -p $@
 
-out3/test.my.o: goas out3 t3/babygo-runtime.s t3/babygo-main.s
-	./goas -o $@ t3/babygo-runtime.s t3/babygo-main.s
+out3/test.my.o: goas out3 t3/runtime.s t3/main.s
+	./goas -o $@ t3/runtime.s t3/main.s
 
-out3/test.gnu.o: out3 t3/babygo-runtime.s t3/babygo-main.s
-	as -o $@ t3/babygo-runtime.s t3/babygo-main.s
+out3/test.gnu.o: out3 t3/runtime.s t3/main.s
+	as -o $@ t3/runtime.s t3/main.s
 
 # Make and run babygo
 run-babygo-3: babygo-3
