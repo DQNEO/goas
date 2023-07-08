@@ -81,10 +81,10 @@ out4/%.my.o: t4/%.s goas out4
 
 # Make and run babygo
 run-babygo-test: out4/babygo-test out4/t/text.txt
-	$<
+	cd out4 ; ./babygo-test
 
-out4/t/text.txt:  out4 t4/t/text.txt
-	cp -ar t4/t out4/
+out4/t/text.txt:  out4 t2/t/text.txt
+	cp -ar t2/t out4/
 
 out4/babygo-test: out4/*.my.o
 	ld -o $@ $^
