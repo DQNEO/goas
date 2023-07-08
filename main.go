@@ -708,7 +708,7 @@ func main() {
 	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
 
 	s_rela_text.contents = buildRelaTextBody(symbolIndex)
-	s_rela_data.contents = buildRelaDataBody(relaDataUsers)
+	s_rela_data.contents = buildRelaDataBody(symbolIndex, relaDataUsers)
 
 	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
 	assert(len(sectionInBodyOrder) == len(sectionHeaders)-1, "sections len unmatch")
@@ -721,7 +721,7 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	var contents []byte
 
 	for _, ru := range relaTextUsers {
-		//debugf("checking relaTextUsers", i, ru.uses)
+		//debugf("checking relaTextUsers %s\n" , ru.uses)
 		sym, defined := definedSymbols[ru.uses]
 		var addr int64
 		if defined {
@@ -768,26 +768,36 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	return contents
 }
 
-func buildRelaDataBody(relaDataUsers []*relaDataUser) []byte {
+func buildRelaDataBody(symbolIndex map[string]int, relaDataUsers []*relaDataUser) []byte {
 	var contents []byte
 	for _, ru := range relaDataUsers {
-		sym, ok := definedSymbols[ru.uses]
-		if !ok {
+		debugf("checking relaDataUsers %s\n", ru.uses)
+		sym, defined := definedSymbols[ru.uses]
+		if !defined {
 			panic("label not found")
 		}
 
-		var addr uintptr
+		var addend uintptr
 		if sym.section == ".text" {
-			addr = sym.instr.addr
+			addend = sym.instr.addr
 		} else {
-			addr = sym.address
+			addend = sym.address
 		}
-
+		var symIdx int = 1
+		if defined {
+			if globalSymbols[sym.name] {
+				symIdx = symbolIndex[ru.uses]
+				addend = 0
+			}
+		}
+		var typ uint64 = 1
 		rela := &Elf64_Rela{
 			r_offset: ru.addr,
-			r_info:   0x0100000001,
-			r_addend: int64(addr),
+			r_info:   uint64(symIdx)<<32 + typ,
+			r_addend: int64(addend),
 		}
+		debugf("RelaData info:%08x, addend:%08x  [%s] \n",
+			rela.r_info, addend, ru.uses)
 		p := (*[unsafe.Sizeof(Elf64_Rela{})]byte)(unsafe.Pointer(rela))[:]
 		contents = append(contents, p...)
 	}

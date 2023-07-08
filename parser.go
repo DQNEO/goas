@@ -372,6 +372,14 @@ type register struct {
 	name string // e.g. "rax"
 }
 
+func (reg *register) isExt() bool {
+	switch reg.name {
+	case "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15":
+		return true
+	default:
+		return false
+	}
+}
 func (reg *register) is64() bool {
 	return reg.name[0] == 'r'
 }

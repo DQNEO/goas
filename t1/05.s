@@ -20,6 +20,7 @@ movq %rax, (%rsp)
 movq $0, %r10
 movq $0, %r8
 movq $0, %r9
+movq 0x18(%rsp),%r12
 
 leaq 8(%rsp),%rsi
 leaq 8(%rsp),%rax

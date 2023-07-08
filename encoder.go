@@ -22,7 +22,18 @@ import (
 // +---+---+---+---+---+---+---+---+
 // | 0   1   0   0 | W | R | X | B |
 // +---+---+---+---+---+---+---+---+
-const REX_W byte = 0x48
+
+// Intel SDM
+// 2.2.1.2 More on REX Prefix Fields
+//
+// W : 1 = 64 Bit Operand Size
+// R: Extension of the ModR/M reg field. REX.R modifies the ModR/M reg field when that field encodes a GPR, SSE, control or debug register.
+// B: Extension of the ModR/M r/m field, SIB base field, or Opcode reg field.
+
+const REX_B byte = 0x41  // 0b0100001
+const REX_W byte = 0x48  // 0b01001000
+const REX_WB byte = 0x49 // 0b01001001
+const REX_WR byte = 0x4c // 0b01001100
 
 //  2.1.3 ModR/M and SIB Bytes
 //
@@ -331,7 +342,11 @@ func encode(s *Stmt) *Instruction {
 			regi := trgt.regi.toBits()
 			// RIP relative addressing
 			modRM := composeModRM(ModRegi, 0b010, regi) // why regOp is 010 ??
-			code = []byte{opcode, modRM}
+			if trgt.regi.isExt() {
+				code = []byte{REX_B, opcode, modRM}
+			} else {
+				code = []byte{opcode, modRM}
+			}
 		}
 	case "leaq":
 		switch src := srcOp.(type) {
@@ -444,8 +459,7 @@ func encode(s *Stmt) *Instruction {
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
 			regFieldN := trgtOp.(*register).toBits()
 			opcode := 0xb8 + regFieldN
-			code := []byte{opcode}
-			code = append(code, bytesNum[:]...)
+			code = append([]byte{opcode}, bytesNum[:]...)
 		default:
 			panic("TBI")
 		}
@@ -482,7 +496,7 @@ func encode(s *Stmt) *Instruction {
 				// Actually I don't understand the logic here.
 				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 				opcode := uint8(0xc7)
-				code = []byte{0x49, opcode, modRM}
+				code = []byte{REX_WB, opcode, modRM}
 				code = append(code, bytesNum[:]...)
 			default:
 				opcode := uint8(0xc7)
@@ -616,6 +630,12 @@ func encode(s *Stmt) *Instruction {
 				code = append(code, 0, 0, 0, 0)
 				appendRelaTextUser(ru, s)
 			} else if srcRegi.name == "rsp" {
+				var rexprefix uint8
+				if trgtRegi.isExt() {
+					rexprefix = REX_WR
+				} else {
+					rexprefix = REX_W
+				}
 				var opcode uint8 = 0x8b
 				val := evalNumExpr(src.expr)
 				if val == 0 {
@@ -624,7 +644,7 @@ func encode(s *Stmt) *Instruction {
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-					code = []byte{REX_W, opcode, modRM, sib}
+					code = []byte{rexprefix, opcode, modRM, sib}
 				} else {
 					var mod = ModIndirectionWithDisplacement8
 					var rm = regBits("sp")
@@ -634,9 +654,15 @@ func encode(s *Stmt) *Instruction {
 					if val > 256 {
 						panic("TBI")
 					}
-					code = []byte{REX_W, opcode, modRM, sib, uint8(val)}
+					code = []byte{rexprefix, opcode, modRM, sib, uint8(val)}
 				}
 			} else {
+				var rexprefix uint8
+				if trgtRegi.isExt() {
+					rexprefix = REX_WR
+				} else {
+					rexprefix = REX_W
+				}
 				var opcode uint8 = 0x8b
 				reg := trgtRegi.toBits()
 				var ival int
@@ -650,12 +676,12 @@ func encode(s *Stmt) *Instruction {
 					if ival > 256 {
 						panic("TBI")
 					}
-					code = []byte{REX_W, opcode, modRM, uint8(ival)}
+					code = []byte{rexprefix, opcode, modRM, uint8(ival)}
 				} else {
 					mod := ModIndirectionWithNoDisplacement
 					rm := srcRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
-					code = []byte{REX_W, opcode, modRM}
+					code = []byte{rexprefix, opcode, modRM}
 				}
 			}
 		default:
