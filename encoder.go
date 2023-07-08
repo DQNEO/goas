@@ -469,7 +469,7 @@ func encode(s *Stmt) *Instruction {
 			modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 			code = []byte{REX_W, opcode, modRM}
 			code = append(code, bytesNum[:]...)
-		case *register:
+		case *register: // movq %rax, EXPR
 			opcode := uint8(0x89)
 			switch trgt := trgtOp.(type) {
 			case *register:
@@ -478,7 +478,7 @@ func encode(s *Stmt) *Instruction {
 				rm := trgt.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				code = []byte{REX_W, opcode, modRM}
-			case *indirection:
+			case *indirection: // movq %rax, N(EXPR)
 				if trgt.isRipRelative() {
 					switch expr := trgt.expr.(type) {
 					case *binaryExpr:
