@@ -14,6 +14,8 @@ movw %ax, 0(%rsi)
 movzbq 0(%rax), %rax
 movzbq (%rsp), %rax
 movzwq 0(%rax), %rax
+movq %rax, 0(%rsp)
+movq %rax, (%rsp)
 
 leaq 8(%rsp),%rsi
 leaq 8(%rsp),%rax
@@ -33,4 +35,3 @@ setl %al
 setle %al
 setg %al
 setge %al
-

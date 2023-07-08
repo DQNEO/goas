@@ -521,13 +521,20 @@ func encode(s *Stmt) *Instruction {
 					// movq %rax, 32(%rsp)
 					switch trgtExpr := trgt.expr.(type) {
 					case nil:
-						// movq %rax, (%rcx)
-						// this is the same as "movq %rax, 0(%rcx)" case in blow "else" block
-						reg := src.toBits()
-						mod := ModIndirectionWithNoDisplacement
 						rm := trgt.regi.toBits()
-						modRM := composeModRM(mod, reg, rm)
-						code = []byte{REX_W, opcode, modRM}
+						reg := src.toBits()
+						if rm == regBits("sp") { // movq %rax, (%rsp)
+							mod := ModIndirectionWithNoDisplacement
+							modRM := composeModRM(mod, reg, rm)
+							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+							code = []byte{REX_W, opcode, modRM, sib}
+						} else {
+							// movq %rax, (%rcx)
+							// this is the same as "movq %rax, 0(%rcx)" case in blow "else" block
+							mod := ModIndirectionWithNoDisplacement
+							modRM := composeModRM(mod, reg, rm)
+							code = []byte{REX_W, opcode, modRM}
+						}
 					case *numberLit:
 						reg := src.toBits()
 						rm := trgt.regi.toBits()
@@ -537,11 +544,18 @@ func encode(s *Stmt) *Instruction {
 							panic(err)
 						}
 						if rm == regBits("sp") {
-							// insert SIB byte
-							mod := ModIndirectionWithDisplacement8
-							modRM := composeModRM(mod, reg, rm)
-							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-							code = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+							if displacement == 0 { // movq %rax, 0(%rsp) => movq %rax, (%rsp)
+								mod := ModIndirectionWithNoDisplacement
+								modRM := composeModRM(mod, reg, rm)
+								sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+								code = []byte{REX_W, opcode, modRM, sib}
+							} else {
+								// insert SIB byte
+								mod := ModIndirectionWithDisplacement8
+								modRM := composeModRM(mod, reg, rm)
+								sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
+								code = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+							}
 						} else {
 							if displacement == 0 {
 								mod := ModIndirectionWithNoDisplacement
