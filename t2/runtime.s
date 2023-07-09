@@ -10,20 +10,18 @@
 .string_0:
   .string "Not supported key type"
 .string_1:
-  .string "hello, I am a cloned thread in mstart1\n"
-.string_2:
   .string ""
+.string_2:
+  .string "panic: "
 .string_3:
-  .string "panic: "
+  .string "\n\n"
 .string_4:
-  .string "\n\n"
-.string_5:
   .string "panic: "
-.string_6:
+.string_5:
   .string "Unknown type"
-.string_7:
+.string_6:
   .string "\n\n"
-.string_8:
+.string_7:
   .string "malloc exceeded heap max"
 #--- global vars (static values)
 .global runtime.heapHead
@@ -2019,34 +2017,6 @@ runtime.futexsleep: # args 32, locals 0
 runtime.mstart1: # args 16, locals 0
   pushq %rbp
   movq %rsp, %rbp
-  subq $8, %rsp # alloc return vars area
-  subq $32, %rsp # alloc parameters area
-  pushq $2 # number literal
-  popq %rax # result of T_INT
-  leaq 0(%rsp), %rsi # place to save
-  pushq %rsi # place to save
-  popq %rsi # place to save
-  movq %rax, 0(%rsi) # assign quad
-  pushq $39 # str len
-  leaq .string_1(%rip), %rax # str ptr
-  pushq %rax # str ptr
-  popq %rax # string.ptr
-  popq %rcx # string.len
-  pushq %rcx # cap
-  pushq %rcx # len
-  pushq %rax # ptr
-  popq %rax # slice.ptr
-  popq %rcx # slice.len
-  popq %rdx # slice.cap
-  leaq 8(%rsp), %rsi # place to save
-  pushq %rsi # place to save
-  popq %rsi # place to save
-  movq %rax, 0(%rsi) # ptr to ptr
-  movq %rcx, 8(%rsi) # len to len
-  movq %rdx, 16(%rsi) # cap to cap
-  callq runtime.Write
-  addq $32, %rsp # free parameters area
-  #  totalReturnSize=8
   subq $16, %rsp # alloc parameters area
   leaq runtime.futexp(%rip), %rax # global variable "futexp"
   pushq %rax # variable address
@@ -3500,7 +3470,7 @@ runtime.panic: # args 32, locals -64
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .string_3(%rip), %rax # str ptr
+  leaq .string_2(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3534,7 +3504,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $2 # str len
-  leaq .string_4(%rip), %rax # str ptr
+  leaq .string_3(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3671,7 +3641,7 @@ runtime.panic: # args 32, locals -64
   subq $16, %rsp # alloc return vars area
   subq $32, %rsp # alloc parameters area
   pushq $7 # str len
-  leaq .string_5(%rip), %rax # str ptr
+  leaq .string_4(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3681,7 +3651,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $12 # str len
-  leaq .string_6(%rip), %rax # str ptr
+  leaq .string_5(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -3701,7 +3671,7 @@ runtime.panic: # args 32, locals -64
   movq %rax, 0(%rsi) # ptr to ptr
   movq %rcx, 8(%rsi) # len to len
   pushq $2 # str len
-  leaq .string_7(%rip), %rax # str ptr
+  leaq .string_6(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
@@ -4103,7 +4073,7 @@ runtime.malloc: # args 32, locals -8
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign quad
   pushq $24 # str len
-  leaq .string_8(%rip), %rax # str ptr
+  leaq .string_7(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
   popq %rcx # string.len
