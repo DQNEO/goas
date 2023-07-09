@@ -296,8 +296,6 @@ type symbolDefinition struct {
 	instr   *Instruction
 }
 
-var definedSymbols = make(map[string]*symbolDefinition)
-
 const STT_SECTION = 0x03
 
 func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers []*relaTextUser, relaDataUsers []*relaDataUser) bool {
@@ -321,7 +319,7 @@ func isDataSymbolUsed(definedSymbols map[string]*symbolDefinition, relaTextUsers
 	return false
 }
 
-func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string) (uint32, []uint8, map[string]int) {
+func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexicalOrder []string, labeledSymbols map[string]*symbolDefinition) (uint32, []uint8, map[string]int) {
 	//debugf("# Building symbol table ....\n")
 
 	var symbolIndex = make(map[string]int)
@@ -355,7 +353,7 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 			continue
 		}
 		isGlobal := globalSymbols[sym]
-		_, isDefined := definedSymbols[sym]
+		_, isDefined := labeledSymbols[sym]
 		if !isDefined {
 			isGlobal = true
 		}
@@ -385,7 +383,7 @@ func buildSymbolTable(addData bool, globalSymbols map[string]bool, symbolsInLexi
 
 	for _, symname := range allSymbolsForElf {
 		isGlobal := globalSymbols[symname]
-		sym, isDefined := definedSymbols[symname]
+		sym, isDefined := labeledSymbols[symname]
 		var addr uintptr
 		var shndx uint16
 		if isDefined {
@@ -472,10 +470,10 @@ func assert(bol bool, errorMsg string) {
 	}
 }
 
-func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
+func resolveVariableLengthInstrs(instrs []*Instruction, labeledSymbols map[string]*symbolDefinition) []*Instruction {
 	var todos []*Instruction
 	for _, vr := range instrs {
-		sym, ok := definedSymbols[vr.varcode.trgtSymbol]
+		sym, ok := labeledSymbols[vr.varcode.trgtSymbol]
 		if !ok {
 			continue
 		}
@@ -514,7 +512,7 @@ func resolveVariableLengthInstrs(instrs []*Instruction) []*Instruction {
 	return todos
 }
 
-func encodeAllText(ss []*Stmt) []byte {
+func encodeAllText(ss []*Stmt, labeledSymbols map[string]*symbolDefinition) []byte {
 	var insts []*Instruction
 	var index int
 	var first *Instruction
@@ -527,7 +525,7 @@ func encodeAllText(ss []*Stmt) []byte {
 		instr := encode(s)
 		if s.labelSymbol != "" {
 			instr.symbolDefinition = s.labelSymbol
-			definedSymbols[s.labelSymbol].instr = instr
+			labeledSymbols[s.labelSymbol].instr = instr
 		}
 		insts = append(insts, instr)
 		instr.index = index
@@ -542,7 +540,7 @@ func encodeAllText(ss []*Stmt) []byte {
 
 	// Optimize instructions length
 	for len(variableInstrs) > 0 {
-		variableInstrs = resolveVariableLengthInstrs(variableInstrs)
+		variableInstrs = resolveVariableLengthInstrs(variableInstrs, labeledSymbols)
 	}
 
 	var unresolvedCallTargets []*callTarget
@@ -571,7 +569,7 @@ func encodeAllText(ss []*Stmt) []byte {
 				// no neeed to resolve. keep zeros.
 			} else {
 				if appearedSymbolDefs[call.trgtSymbol] {
-					tryToSetAddrToCallTarget(call, allText)
+					tryToSetAddrToCallTarget(call, allText, labeledSymbols)
 				} else {
 					//debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
 					unresolvedCallTargets = append(unresolvedCallTargets, call)
@@ -581,14 +579,14 @@ func encodeAllText(ss []*Stmt) []byte {
 	}
 
 	for _, call := range unresolvedCallTargets {
-		tryToSetAddrToCallTarget(call, allText)
+		tryToSetAddrToCallTarget(call, allText, labeledSymbols)
 	}
 
 	return allText
 }
 
-func tryToSetAddrToCallTarget(call *callTarget, allText []byte) {
-	callee, ok := definedSymbols[call.trgtSymbol]
+func tryToSetAddrToCallTarget(call *callTarget, allText []byte, labeledSymbols map[string]*symbolDefinition) {
+	callee, ok := labeledSymbols[call.trgtSymbol]
 	if ok {
 		diff := callee.instr.addr - call.caller.next.addr
 		placeToEmbed := call.caller.addr + call.offset
@@ -604,11 +602,11 @@ func tryToSetAddrToCallTarget(call *callTarget, allText []byte) {
 
 }
 
-func encodeAllData(ss []*Stmt) []byte {
+func encodeAllData(ss []*Stmt, labeledSymbols map[string]*symbolDefinition) []byte {
 	var dataAddr uintptr
 	var allData []byte
 	for _, s := range ss {
-		buf := encodeData(s, dataAddr)
+		buf := encodeData(s, dataAddr, labeledSymbols)
 		dataAddr += uintptr(len(buf))
 		allData = append(allData, buf...)
 	}
@@ -643,13 +641,13 @@ func main() {
 	}
 
 	stmts, symbolsInLexicalOrder := ParseFiles(inFiles)
-	textStmts, dataStmts := analyzeStatements(stmts)
-	s_text.contents = encodeAllText(textStmts)
-	s_data.contents = encodeAllData(dataStmts)
+	textStmts, dataStmts, labeledSymbols := analyzeStatements(stmts)
+	s_text.contents = encodeAllText(textStmts, labeledSymbols)
+	s_data.contents = encodeAllData(dataStmts, labeledSymbols)
 
 	hasRelaText := len(relaTextUsers) > 0
 	hasRelaData := len(relaDataUsers) > 0
-	hasSymbols := len(definedSymbols) > 0
+	hasSymbols := len(labeledSymbols) > 0
 
 	sectionHeaders := buildSectionHeaders(hasRelaText, hasRelaData, hasSymbols)
 
@@ -668,9 +666,9 @@ func main() {
 
 	var symbolIndex map[string]int
 
-	if len(definedSymbols) > 0 {
-		dataSymbolUsed := isDataSymbolUsed(definedSymbols, relaTextUsers, relaDataUsers)
-		s_symtab.header.sh_info, s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder)
+	if len(labeledSymbols) > 0 {
+		dataSymbolUsed := isDataSymbolUsed(labeledSymbols, relaTextUsers, relaDataUsers)
+		s_symtab.header.sh_info, s_symtab.contents, symbolIndex = buildSymbolTable(dataSymbolUsed, globalSymbols, symbolsInLexicalOrder, labeledSymbols)
 	}
 
 	//debugf("[main] building sections ...\n")
@@ -678,8 +676,8 @@ func main() {
 	s_shstrtab.contents = makeShStrTab(sectionNames)
 	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
 
-	s_rela_text.contents = buildRelaTextBody(symbolIndex)
-	s_rela_data.contents = buildRelaDataBody(symbolIndex)
+	s_rela_text.contents = buildRelaTextBody(symbolIndex, labeledSymbols)
+	s_rela_data.contents = buildRelaDataBody(symbolIndex, labeledSymbols)
 
 	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
 	assert(len(sectionInBodyOrder) == len(sectionHeaders)-1, "sections len unmatch")
@@ -688,16 +686,15 @@ func main() {
 	elfFile.writeTo(w)
 }
 
-func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt) {
-
+func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt, map[string]*symbolDefinition) {
+	var labeledSymbols = make(map[string]*symbolDefinition)
 	var textStmts []*Stmt
 	var dataStmts []*Stmt
 
 	var currentSection = ".text"
 	for _, s := range stmts {
-
 		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol] = &symbolDefinition{
+			labeledSymbols[s.labelSymbol] = &symbolDefinition{
 				name:    s.labelSymbol,
 				section: currentSection,
 			}
@@ -722,15 +719,15 @@ func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt) {
 			textStmts = append(textStmts, s)
 		}
 	}
-	return textStmts, dataStmts
+	return textStmts, dataStmts, labeledSymbols
 }
 
-func buildRelaTextBody(symbolIndex map[string]int) []byte {
+func buildRelaTextBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition) []byte {
 	var contents []byte
 
 	for _, ru := range relaTextUsers {
 		//debugf("checking relaTextUsers %s\n" , ru.uses)
-		sym, defined := definedSymbols[ru.uses]
+		sym, defined := labeledSymbols[ru.uses]
 		var addr int64
 		if defined {
 			// local functions do not need rela text
@@ -772,11 +769,11 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 	return contents
 }
 
-func buildRelaDataBody(symbolIndex map[string]int) []byte {
+func buildRelaDataBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition) []byte {
 	var contents []byte
 	for _, ru := range relaDataUsers {
 		//debugf("checking relaDataUsers %s\n", ru.uses)
-		sym, defined := definedSymbols[ru.uses]
+		sym, defined := labeledSymbols[ru.uses]
 		if !defined {
 			panic("label not found")
 		}

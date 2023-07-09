@@ -925,7 +925,7 @@ func encode(s *Stmt) *Instruction {
 	return instr
 }
 
-func encodeData(s *Stmt, dataAddr uintptr) []byte {
+func encodeData(s *Stmt, dataAddr uintptr, labeledSymbols map[string]*symbolDefinition) []byte {
 	defer func() {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\necho '%s' |./encode as",
@@ -935,7 +935,7 @@ func encodeData(s *Stmt, dataAddr uintptr) []byte {
 	}()
 
 	if s.labelSymbol != "" {
-		definedSymbols[s.labelSymbol].address = dataAddr
+		labeledSymbols[s.labelSymbol].address = dataAddr
 	}
 	if s.keySymbol == "" {
 		return nil
