@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Usage:
-#  $0 out/1
+#  $0 1
 ####
-set -ue
+set -eu
 
-readonly myobjdir=$1/m
-readonly gnuobjdir=$1/g
+readonly num=$1
+readonly myobjdir=out/m/$num
+readonly gnuobjdir=out/g/$num
+
 for m in $myobjdir/*.o; do
   basename=${m##*/}
   g=$gnuobjdir/$basename
