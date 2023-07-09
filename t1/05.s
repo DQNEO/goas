@@ -3,7 +3,7 @@ nop
 syscall
 leave
 ret
-
+movq $1, %rax
 movq %rcx,0x8(%rsi)
 movq %rax, 0(%rsi)
 movq 8(%rax), %rdx

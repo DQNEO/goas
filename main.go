@@ -619,6 +619,19 @@ func showVersion() {
 	fmt.Println("goas assembler version " + Version)
 }
 
+// For unit tests
+func EncodeString(source string) ([]byte, []byte) {
+	sc := &symbolCollection{
+		symbolsAppeared: make(map[string]bool),
+	}
+	stmts, symbolsInLexicalOrder := ParseString(source, sc)
+	textStmts, dataStmts, labeledSymbols := analyzeStatements(stmts)
+	allText := encodeAllText(textStmts, labeledSymbols)
+	allData := encodeAllData(dataStmts, labeledSymbols)
+	_ = symbolsInLexicalOrder
+	return allText, allData
+}
+
 func main() {
 	flag.Parse()
 

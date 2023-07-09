@@ -54,7 +54,7 @@ func (p *parser) readCh() byte {
 
 func (p *parser) peekCh() byte {
 	if p.idx == len(p.source) {
-		panic("Sudden EOF")
+		panic(fmt.Sprintf("Sudden EOF at idx=%d", p.idx))
 	}
 	return p.source[p.idx]
 }
@@ -579,4 +579,18 @@ func ParseFile(path string, sc *symbolCollection) []*Stmt {
 	}
 	stmts := p.parse()
 	return stmts
+}
+
+// For unit tests
+func ParseString(src string, sc *symbolCollection) ([]*Stmt, []string) {
+	p := &parser{
+		path:   "string",
+		lineno: 1,
+		source: []byte(src + "\n"),
+		idx:    0,
+		sc:     sc,
+	}
+	stmts := p.parse()
+	return stmts, sc.symbolsInLexicalOrder
+
 }
