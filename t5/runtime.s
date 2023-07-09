@@ -10,7 +10,7 @@
 .string_0:
   .string "Not supported key type"
 .string_1:
-  .string "hello, I am a cloned thread in mstart1\n"
+  .string ""
 .string_2:
   .string ""
 .string_3:
@@ -2027,7 +2027,7 @@ runtime.mstart1: # args 16, locals 0
   pushq %rsi # place to save
   popq %rsi # place to save
   movq %rax, 0(%rsi) # assign quad
-  pushq $39 # str len
+  pushq $0 # str len
   leaq .string_1(%rip), %rax # str ptr
   pushq %rax # str ptr
   popq %rax # string.ptr
