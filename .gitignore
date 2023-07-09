@@ -9,8 +9,6 @@ babygo
 *.txt
 *.diff
 a.out
-/out1/*
-/out4/*
-/out5/*
+/out/*
 
 
