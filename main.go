@@ -643,40 +643,7 @@ func main() {
 	}
 
 	stmts, symbolsInLexicalOrder := ParseFiles(inFiles)
-
-	var textStmts []*Stmt
-	var dataStmts []*Stmt
-
-	var currentSection = ".text"
-	for _, s := range stmts {
-
-		if s.labelSymbol != "" {
-			definedSymbols[s.labelSymbol] = &symbolDefinition{
-				name:    s.labelSymbol,
-				section: currentSection,
-			}
-		}
-
-		switch s.keySymbol {
-		case ".data":
-			currentSection = ".data"
-			continue
-		case ".text":
-			currentSection = ".text"
-			continue
-		case ".global":
-			globalSymbols[s.operands[0].(*symbolExpr).name] = true
-			continue
-		}
-
-		switch currentSection {
-		case ".data":
-			dataStmts = append(dataStmts, s)
-		case ".text":
-			textStmts = append(textStmts, s)
-		}
-	}
-
+	textStmts, dataStmts := analyzeStatements(stmts)
 	s_text.contents = encodeAllText(textStmts)
 	s_data.contents = encodeAllData(dataStmts)
 
@@ -719,6 +686,43 @@ func main() {
 	//debugf("[main] writing ELF file ...\n")
 	elfFile := prepareElfFile(sectionInBodyOrder, sectionHeaders)
 	elfFile.writeTo(w)
+}
+
+func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt) {
+
+	var textStmts []*Stmt
+	var dataStmts []*Stmt
+
+	var currentSection = ".text"
+	for _, s := range stmts {
+
+		if s.labelSymbol != "" {
+			definedSymbols[s.labelSymbol] = &symbolDefinition{
+				name:    s.labelSymbol,
+				section: currentSection,
+			}
+		}
+
+		switch s.keySymbol {
+		case ".data":
+			currentSection = ".data"
+			continue
+		case ".text":
+			currentSection = ".text"
+			continue
+		case ".global":
+			globalSymbols[s.operands[0].(*symbolExpr).name] = true
+			continue
+		}
+
+		switch currentSection {
+		case ".data":
+			dataStmts = append(dataStmts, s)
+		case ".text":
+			textStmts = append(textStmts, s)
+		}
+	}
+	return textStmts, dataStmts
 }
 
 func buildRelaTextBody(symbolIndex map[string]int) []byte {
