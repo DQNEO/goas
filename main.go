@@ -9,9 +9,14 @@ import (
 	"unsafe"
 )
 
+const Version = "0.0.7"
+
 var oFlag = flag.String("o", "a.out", "output file")
 
 var debug = flag.Bool("d", false, "show debug message")
+
+var oVersion = flag.Bool("version", false, "show version")
+var oV = flag.Bool("v", false, "show version")
 
 func debugf(s string, a ...interface{}) {
 	if !*debug {
@@ -612,11 +617,18 @@ func encodeAllData(ss []*Stmt) []byte {
 
 var globalSymbols = make(map[string]bool)
 
+func showVersion() {
+	fmt.Println("goas assembler version " + Version)
+}
+
 func main() {
 	flag.Parse()
 
 	var inFiles []string
-
+	if *oVersion || *oV {
+		showVersion()
+		return
+	}
 	if flag.NArg() > 0 {
 		inFiles = flag.Args()
 	} else {
