@@ -562,49 +562,41 @@ func encodeAllText(ss []*Stmt) []byte {
 
 		// Resolve call targets if needed
 		if call := instr.unresolvedCallTarget; call != nil {
-			_, hasTargetSymbolAppeared := appearedSymbolDefs[call.trgtSymbol]
-			if hasTargetSymbolAppeared && !globalSymbols[call.trgtSymbol] {
-				//debugf("@TODO: the target symbol '%s' has already appeared. Overwriting caller's args\n", call.trgtSymbol)
-				callee, ok := definedSymbols[call.trgtSymbol]
-				if ok {
-					diff := callee.instr.addr - call.caller.next.addr
-					placeToEmbed := call.caller.addr + call.offset
-					//debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-					//	call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
-					diffInt32 := int32(diff)
-					var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
-					allText[placeToEmbed] = buf[0]
-					allText[placeToEmbed+1] = buf[1]
-					allText[placeToEmbed+2] = buf[2]
-					allText[placeToEmbed+3] = buf[3]
-				}
+			if globalSymbols[call.trgtSymbol] {
+				// no neeed to resolve. keep zeros.
 			} else {
-				//debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
-				unresolvedCallTargets = append(unresolvedCallTargets, call)
+				if appearedSymbolDefs[call.trgtSymbol] {
+					tryToSetAddrToCallTarget(call, allText)
+				} else {
+					//debugf("the target symbol '%s' has not appeared. Keep call target zero\n", call.trgtSymbol)
+					unresolvedCallTargets = append(unresolvedCallTargets, call)
+				}
 			}
 		}
 	}
 
 	for _, call := range unresolvedCallTargets {
-		if globalSymbols[call.trgtSymbol] {
-			continue // no neeed to resolve. keep zeros.
-		}
-		callee, ok := definedSymbols[call.trgtSymbol]
-		if ok {
-			diff := callee.instr.addr - call.caller.next.addr
-			placeToEmbed := call.caller.addr + call.offset
-			//debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
-			//	call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
-			diffInt32 := int32(diff)
-			var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
-			allText[placeToEmbed] = buf[0]
-			allText[placeToEmbed+1] = buf[1]
-			allText[placeToEmbed+2] = buf[2]
-			allText[placeToEmbed+3] = buf[3]
-		}
+		tryToSetAddrToCallTarget(call, allText)
 	}
 
 	return allText
+}
+
+func tryToSetAddrToCallTarget(call *callTarget, allText []byte) {
+	callee, ok := definedSymbols[call.trgtSymbol]
+	if ok {
+		diff := callee.instr.addr - call.caller.next.addr
+		placeToEmbed := call.caller.addr + call.offset
+		//debugf("Resolving call target: \"%s\" diff=%04x (callee.addr %d - caller.nextAddr=%d)\n",
+		//	call.caller.String(), diff, callee.instr.addr, call.caller.next.addr)
+		diffInt32 := int32(diff)
+		var buf *[4]byte = (*[4]byte)(unsafe.Pointer(&diffInt32))
+		allText[placeToEmbed] = buf[0]
+		allText[placeToEmbed+1] = buf[1]
+		allText[placeToEmbed+2] = buf[2]
+		allText[placeToEmbed+3] = buf[3]
+	}
+
 }
 
 func encodeAllData(ss []*Stmt) []byte {
