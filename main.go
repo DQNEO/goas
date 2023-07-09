@@ -512,7 +512,7 @@ func resolveVariableLengthInstrs(instrs []*Instruction, labeledSymbols map[strin
 	return todos
 }
 
-func encodeAllText(ss []*Stmt, labeledSymbols map[string]*symbolDefinition) []byte {
+func encodeAllText(ss []*Stmt, labeledSymbols map[string]*symbolDefinition, globalSymbols map[string]bool) []byte {
 	var insts []*Instruction
 	var index int
 	var first *Instruction
@@ -613,8 +613,6 @@ func encodeAllData(ss []*Stmt, labeledSymbols map[string]*symbolDefinition) []by
 	return allData
 }
 
-var globalSymbols = make(map[string]bool)
-
 func showVersion() {
 	fmt.Println("goas assembler version " + Version)
 }
@@ -625,10 +623,11 @@ func EncodeString(source string) ([]byte, []byte) {
 		symbolsAppeared: make(map[string]bool),
 	}
 	stmts, symbolsInLexicalOrder := ParseString(source, sc)
-	textStmts, dataStmts, labeledSymbols := analyzeStatements(stmts)
-	allText := encodeAllText(textStmts, labeledSymbols)
+	textStmts, dataStmts, labeledSymbols, globalSymbols := analyzeStatements(stmts)
+	allText := encodeAllText(textStmts, labeledSymbols, globalSymbols)
 	allData := encodeAllData(dataStmts, labeledSymbols)
 	_ = symbolsInLexicalOrder
+	_ = globalSymbols
 	return allText, allData
 }
 
@@ -654,8 +653,8 @@ func main() {
 	}
 
 	stmts, symbolsInLexicalOrder := ParseFiles(inFiles)
-	textStmts, dataStmts, labeledSymbols := analyzeStatements(stmts)
-	s_text.contents = encodeAllText(textStmts, labeledSymbols)
+	textStmts, dataStmts, labeledSymbols, globalSymbols := analyzeStatements(stmts)
+	s_text.contents = encodeAllText(textStmts, labeledSymbols, globalSymbols)
 	s_data.contents = encodeAllData(dataStmts, labeledSymbols)
 
 	hasRelaText := len(relaTextUsers) > 0
@@ -689,8 +688,8 @@ func main() {
 	s_shstrtab.contents = makeShStrTab(sectionNames)
 	resolveShNames(s_shstrtab.contents, sectionHeaders[1:])
 
-	s_rela_text.contents = buildRelaTextBody(symbolIndex, labeledSymbols)
-	s_rela_data.contents = buildRelaDataBody(symbolIndex, labeledSymbols)
+	s_rela_text.contents = buildRelaTextBody(symbolIndex, labeledSymbols, globalSymbols)
+	s_rela_data.contents = buildRelaDataBody(symbolIndex, labeledSymbols, globalSymbols)
 
 	sectionInBodyOrder := sortSectionsForBody(hasRelaText, hasRelaData, hasSymbols)
 	assert(len(sectionInBodyOrder) == len(sectionHeaders)-1, "sections len unmatch")
@@ -699,8 +698,9 @@ func main() {
 	elfFile.writeTo(w)
 }
 
-func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt, map[string]*symbolDefinition) {
+func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt, map[string]*symbolDefinition, map[string]bool) {
 	var labeledSymbols = make(map[string]*symbolDefinition)
+	var globalSymbols = make(map[string]bool)
 	var textStmts []*Stmt
 	var dataStmts []*Stmt
 
@@ -732,10 +732,10 @@ func analyzeStatements(stmts []*Stmt) ([]*Stmt, []*Stmt, map[string]*symbolDefin
 			textStmts = append(textStmts, s)
 		}
 	}
-	return textStmts, dataStmts, labeledSymbols
+	return textStmts, dataStmts, labeledSymbols, globalSymbols
 }
 
-func buildRelaTextBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition) []byte {
+func buildRelaTextBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition, globalSymbols map[string]bool) []byte {
 	var contents []byte
 
 	for _, ru := range relaTextUsers {
@@ -782,7 +782,7 @@ func buildRelaTextBody(symbolIndex map[string]int, labeledSymbols map[string]*sy
 	return contents
 }
 
-func buildRelaDataBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition) []byte {
+func buildRelaDataBody(symbolIndex map[string]int, labeledSymbols map[string]*symbolDefinition, globalSymbols map[string]bool) []byte {
 	var contents []byte
 	for _, ru := range relaDataUsers {
 		//debugf("checking relaDataUsers %s\n", ru.uses)
