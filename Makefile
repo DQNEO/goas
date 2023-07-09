@@ -5,7 +5,7 @@ goas: $(GO_SOURCES)
 
 .PHONY: test
 # Check /etc/os-release to prevent non-linux from running this
-test:  /etc/os-release test1 test2 test3 test4
+test:  /etc/os-release test1 test2 test3 test4 test5
 
 T1_SOURCES = $(wildcard t1/*.s)
 T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out1/%.gnu.o)
@@ -115,4 +115,4 @@ out5/babygo: out5/*.my.o
 	ld -o $@ $^
 
 clean:
-	rm -rf goas *.o *.bin *.out out1 out2 out3 out4 ./babygo
+	rm -rf goas *.o *.bin *.out out1 out2 out3 out4 out5 ./babygo
