@@ -744,12 +744,8 @@ func buildRelaTextBody(symbolIndex map[string]int) []byte {
 		}
 
 		var symIdx int
-		if defined && sym.section == ".data" {
-			if globalSymbols[sym.name] {
-				symIdx = symbolIndex[ru.uses]
-			} else {
-				symIdx = symbolIndex[".data"]
-			}
+		if defined && sym.section == ".data" && !globalSymbols[sym.name] {
+			symIdx = symbolIndex[".data"]
 		} else {
 			symIdx = symbolIndex[ru.uses]
 		}
