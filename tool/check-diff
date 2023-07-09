@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Usage:
+#  $0 out/1
+####
+set -ue
+
+readonly myobjdir=$1/m
+readonly gnuobjdir=$1/g
+for m in $myobjdir/*.o; do
+  basename=${m##*/}
+  g=$gnuobjdir/$basename
+  echo diff $g $m
+  diff $g $m
+done

@@ -8,22 +8,27 @@ goas: $(GO_SOURCES)
 test:  /etc/os-release test1 test4 test5
 
 T1_SOURCES = $(wildcard t1/*.s)
-T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out1/%.gnu.o)
-T1_MY_OBJS = $(T1_SOURCES:t1/%.s=out1/%.my.o)
+T1_GNU_OBJS = $(T1_SOURCES:t1/%.s=out/1/g/%.o)
+T1_MY_OBJS = $(T1_SOURCES:t1/%.s=out/1/m/%.o)
 
-out1:
+# dir to save GNU output
+out/1/g:
+	mkdir -p $@
+
+# dir to save my output
+out/1/m:
 	mkdir -p $@
 
 # Test single-source program
 .PHONY: test1
 test1: $(T1_GNU_OBJS) $(T1_MY_OBJS)
-	./tool/compare-obj out1
+	./tool/check-diff out/1
 	@echo ok
 
-out1/%.gnu.o: t1/%.s out1
+out/1/g/%.o: t1/%.s out/1/g
 	as -o $@ $<
 
-out1/%.my.o: t1/%.s goas out1
+out/1/m/%.o: t1/%.s goas out/1/m
 	./goas -o $@ $<
 
 
