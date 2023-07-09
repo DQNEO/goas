@@ -66,7 +66,7 @@ out/m/2/t/text.txt:  out/m/2 t2/t/text.txt
 	cp -ar t2/t out/m/2/
 
 out/m/2/babygo-test: out/m/2/*.o
-	ld -o $@ $^
+	mold -o $@ $^
 
 T3_SOURCES = $(wildcard t3/*.s)
 T3_GNU_OBJS = $(T3_SOURCES:t3/%.s=out/g/3/%.o)
@@ -94,7 +94,7 @@ run-babygo: out/m/3/babygo
 	cd out/m/3 ; ./babygo version
 
 out/m/3/babygo: out/m/3/*.o
-	ld -o $@ $^
+	mold -o $@ $^
 
 clean:
 	rm -rf goas *.o *.bin *.out out
