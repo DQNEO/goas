@@ -25,6 +25,11 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"movq 64", "movq $3, %rax", []byte{0x48, 0xc7, 0xc0, 0x03, 0x00, 0x00, 0x00}},
 		{"callq myfunc", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
+		{"sete", "sete %rcx", []byte{0x0f, 0x94, 0b11001000}},
+		{"pushq REGI", "pushq %rcx", []byte{0x51}},
+		{"pushq IMM8", "pushq $3", []byte{0x6a, 0x03}},
+		{"pushq IMM16", "pushq $4096", []byte{0x68, 0, 0x10, 0, 0}},
+		{"popq", "popq %rcx", []byte{0x59}},
 		{"xorq regi", "xorq %rax, %rcx", []byte{0x48, 0x31, 0xc1}},
 		{"xorq imm", "xorq $1, %rax", []byte{0x48, 0x83, 0xf0, 0x01}},
 		{"andq regi", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},
