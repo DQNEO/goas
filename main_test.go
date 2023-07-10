@@ -19,7 +19,10 @@ func TestEncodeStringAsText(t *testing.T) {
 
 		{"multi statements", "nop;ret;leave;", []byte{0x90, 0xc3, 0xc9}},
 
-		{"movq 64", "movq $1, %rax", []byte{0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00}},
+		{"movb", "movb %al, 0(%rsi)", []byte{0x88, 0x06}},
+		{"movw", "movw %ax,0(%rsi)", []byte{0x66, 0x89, 0x06}},
+		{"movl", "movl $3, %eax", []byte{0xb8, 0x03, 0, 0, 0}},
+		{"movq 64", "movq $3, %rax", []byte{0x48, 0xc7, 0xc0, 0x03, 0x00, 0x00, 0x00}},
 		{"callq myfunc", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
 		{"andq", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},

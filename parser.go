@@ -464,10 +464,16 @@ func (p *parser) assert(bol bool, errorMsg string) {
 func (p *parser) consumeEOL() {
 	if p.source[p.idx] == '#' {
 		p.expect('#')
+		// In a comment, ';' has no role. Just skip till the first '\n'
+		for ; p.source[p.idx] != '\n'; p.idx++ {
+		}
 	} else if p.source[p.idx] == '/' {
 		// expect "//" comment
 		p.expect('/')
 		p.expect('/')
+		// In a comment, ';' has no role. Just skip till the first '\n'
+		for ; p.source[p.idx] != '\n'; p.idx++ {
+		}
 	}
 
 	for ; !isStatementTerminator(p.source[p.idx]); p.idx++ {
