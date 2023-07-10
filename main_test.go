@@ -25,8 +25,10 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"movq 64", "movq $3, %rax", []byte{0x48, 0xc7, 0xc0, 0x03, 0x00, 0x00, 0x00}},
 		{"callq myfunc", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
-		{"andq", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},
-		{"orq", "orq %rax, %rcx", []byte{0x48, 0x09, 0xc1}},
+		{"xorq regi", "xorq %rax, %rcx", []byte{0x48, 0x31, 0xc1}},
+		{"xorq imm", "xorq $1, %rax", []byte{0x48, 0x83, 0xf0, 0x01}},
+		{"andq regi", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},
+		{"orq regi", "orq %rax, %rcx", []byte{0x48, 0x09, 0xc1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

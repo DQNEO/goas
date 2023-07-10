@@ -890,14 +890,25 @@ func encode(s *Stmt) *Instruction {
 		default:
 			panic("[encoder] TBI:" + s.source)
 		}
-	case "xor":
+	case "xor", "xorq":
 		// XOR r/m64, imm8
 		// REX.W 83 /6 ib
 		opcode := uint8(0x83)
-		rm := trgtOp.(*register).toBits()
-		modRM := composeModRM(ModRegi, slash_6, rm)
-		imValue := evalNumExpr(srcOp.(*immediate).expr)
-		code = []byte{REX_W, opcode, modRM, uint8(imValue)}
+		switch src := srcOp.(type) {
+		case *immediate:
+			rm := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, slash_6, rm)
+			imValue := evalNumExpr(src.expr)
+			code = []byte{REX_W, opcode, modRM, uint8(imValue)}
+		case *register:
+			regi := src.toBits()
+			rm := trgtOp.(*register).toBits()
+			modRM := composeModRM(ModRegi, regi, rm)
+			code = []byte{REX_W, 0x31, modRM}
+		default:
+			panic("TBI")
+
+		}
 	case "andq":
 		// AND r/m64, r64
 		// REX.W 21
