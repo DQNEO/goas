@@ -64,7 +64,7 @@ func (p *parser) peekCh() byte {
 // Whitespace is used to separate symbols, and to make programs neater for people to read.
 // Unless within character constants (see Character Constants), any whitespace means the same as exactly one space.
 func (p *parser) skipWhitespaces() {
-	for p.idx < len(p.source) && p.source[p.idx] != '\n' {
+	for p.idx < len(p.source) && !isStatementTerminator(p.source[p.idx]) {
 		ch := p.peekCh()
 		if ch == ' ' || ch == '\t' {
 			p.idx++
@@ -242,7 +242,7 @@ func (p *parser) readNumberLiteral() *numberLit {
 func (p *parser) parseOperand() Operand {
 	p.skipWhitespaces()
 	ch := p.peekCh()
-	p.assert(ch != '\n', "")
+	p.assert(!isStatementTerminator(ch), "")
 
 	switch {
 	case isSymbolBeginning(ch):
@@ -442,9 +442,13 @@ type Stmt struct {
 	operands    []Operand
 }
 
+func isStatementTerminator(char byte) bool {
+	return char == '\n' || char == ';'
+}
+
 func (p *parser) atEOL() bool {
 	char := p.source[p.idx]
-	return char == '\n' || char == '#' || char == '/'
+	return isStatementTerminator(char) || char == '#' || char == '/'
 }
 
 func (p *parser) fail(msg string) {
@@ -466,7 +470,7 @@ func (p *parser) consumeEOL() {
 		p.expect('/')
 	}
 
-	for ; p.source[p.idx] != '\n'; p.idx++ {
+	for ; !isStatementTerminator(p.source[p.idx]); p.idx++ {
 	}
 
 	p.idx++
