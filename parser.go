@@ -443,7 +443,8 @@ type Stmt struct {
 }
 
 func (p *parser) atEOL() bool {
-	return p.source[p.idx] == '\n' || p.source[p.idx] == '#' || p.source[p.idx] == '/'
+	char := p.source[p.idx]
+	return char == '\n' || char == '#' || char == '/'
 }
 
 func (p *parser) fail(msg string) {
