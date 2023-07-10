@@ -18,6 +18,8 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"leave", "leave", []byte{0xc9}},
 		{"movq 64", "movq $1, %rax", []byte{0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00}},
 		{"callq myfunc", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
+
+		{"andq", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},
 		{"orq", "orq %rax, %rcx", []byte{0x48, 0x09, 0xc1}},
 	}
 	for _, tt := range tests {
