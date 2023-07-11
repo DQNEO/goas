@@ -23,10 +23,10 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"callq SYMBOL", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
 		{"movb REG, IND", "movb %bl, 0(%rdi)", []byte{0x88, 0b00_011_111}},
-		{"movw REG, IND", "movw %bx,0(%rdi)", []byte{0x66, 0x89, 0b00_011_111}},
-		{"movl IMM, REG", "movl $127, %ebx", []byte{0xb8 + 0b011, 0x7f, 0, 0, 0}},
+		{"movw REG, IND", "movw %bx, 0(%rdi)", []byte{0x66, 0x89, 0b00_011_111}},
+		{"movl IMM32, REG", "movl $2147483647, %ebx", []byte{0xb8 + 0b011, 0xff, 0xff, 0xff, 0x7f}},
 
-		{"movq IMM, REG", "movq $127, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0x7f, 0x00, 0x00, 0x00}},
+		{"movq IMM32, REG", "movq $2147483647, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0xff, 0xff, 0xff, 0x7f}},
 
 		{"movzwq IND, REG", "movzwq 0(%rbp), %rdi", []byte{0x48, 0x0f, 0xb7, 0b00_101_111}},
 		{"addq REG, REG", "addq %rbp, %rdi", []byte{0x48, 0x01, 0b11_101_111}},
