@@ -12,6 +12,7 @@ func TestEncodeStringAsText(t *testing.T) {
 		encoded []byte
 	}{
 		// Simple instructions
+		// Note: rdi:111, rbp:101, rbx:011
 		{"nop", "nop", []byte{0x90}},
 		{"ret", "ret", []byte{0xc3}},
 		{"syscall", "syscall", []byte{0x0f, 0x05}},
@@ -19,25 +20,25 @@ func TestEncodeStringAsText(t *testing.T) {
 
 		{"multi statements", "nop;ret;leave;", []byte{0x90, 0xc3, 0xc9}},
 
-		{"callq myfunc", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
+		{"callq SYMBOL", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
-		{"movb", "movb %al, 0(%rsi)", []byte{0x88, 0x06}},
-		{"movw", "movw %ax,0(%rsi)", []byte{0x66, 0x89, 0x06}},
-		{"movl", "movl $3, %eax", []byte{0xb8, 0x03, 0, 0, 0}},
+		{"movb REG, IND", "movb %bl, 0(%rdi)", []byte{0x88, 0b00_011_111}},
+		{"movw REG, IND", "movw %bx,0(%rdi)", []byte{0x66, 0x89, 0b00_011_111}},
+		{"movl IMM, REG", "movl $127, %ebx", []byte{0xb8 + 0b011, 0x7f, 0, 0, 0}},
 
-		{"movq 64", "movq $3, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0x03, 0x00, 0x00, 0x00}},
+		{"movq IMM, REG", "movq $127, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0x7f, 0x00, 0x00, 0x00}},
 
-		{"movzwq", "movzwq 0(%rax), %rax", []byte{0x48, 0x0f, 0xb7, 0b00000000}},
-		{"addq", "addq %rax, %rcx", []byte{0x48, 0x01, 0b11000001}},
-		{"sete", "sete %rcx", []byte{0x0f, 0x94, 0b11001000}},
-		{"pushq REGI", "pushq %rcx", []byte{0x51}},
-		{"pushq IMM8", "pushq $3", []byte{0x6a, 0x03}},
-		{"pushq IMM16", "pushq $4096", []byte{0x68, 0, 0x10, 0, 0}},
-		{"popq", "popq %rcx", []byte{0x59}},
-		{"xorq regi", "xorq %rax, %rcx", []byte{0x48, 0x31, 0xc1}},
-		{"xorq imm", "xorq $1, %rax", []byte{0x48, 0x83, 0xf0, 0x01}},
-		{"andq regi", "andq %rax, %rcx", []byte{0x48, 0x21, 0xc1}},
-		{"orq regi", "orq %rax, %rcx", []byte{0x48, 0x09, 0xc1}},
+		{"movzwq IND, REG", "movzwq 0(%rbp), %rdi", []byte{0x48, 0x0f, 0xb7, 0b00_101_111}},
+		{"addq REG, REG", "addq %rbp, %rdi", []byte{0x48, 0x01, 0b11_101_111}},
+		{"sete REG", "sete %rdi", []byte{0x0f, 0x94, 0b11_111_000}},
+		{"pushq REG", "pushq %rdi", []byte{0x50 + 0b111}},
+		{"pushq IMM8", "pushq $127", []byte{0x6a, 0x7f}},
+		{"pushq IMM32", "pushq $2147483647", []byte{0x68, 0xff, 0xff, 0xff, 0x7f}},
+		{"popq REG", "popq %rdi", []byte{0x58 + 0b111}},
+		{"xorq IMM8", "xorq $127, %rdi", []byte{0x48, 0x83, 0b11_110_111, 0x7f}},
+		{"xorq REG", "xorq %rbp, %rdi", []byte{0x48, 0x31, 0b11_101_111}},
+		{"andq REG", "andq %rbp, %rdi", []byte{0x48, 0x21, 0b11_101_111}},
+		{"orq REG", "orq %rbp, %rdi", []byte{0x48, 0x09, 0b11_101_111}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

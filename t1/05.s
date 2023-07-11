@@ -9,8 +9,13 @@ movq %rax, 0(%rsi)
 movq 8(%rax), %rdx
 movq 0(%rax), %rax
 movq 8+8(%rsp), %rcx
+
 movb %al, 0(%rsi)
-movw %ax, 0(%rsi)
+movb %bl, 0(%rsi)
+
+movw %ax, 0(%rdi)
+movw %bx, 0(%rdi)
+
 movzbq 0(%rax), %rax
 movzbq (%rsp), %rax
 movzwq 0(%rax), %rax
