@@ -25,7 +25,7 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"movw", "movw %ax,0(%rsi)", []byte{0x66, 0x89, 0x06}},
 		{"movl", "movl $3, %eax", []byte{0xb8, 0x03, 0, 0, 0}},
 
-		{"movq 64", "movq $7, %rcx", []byte{0x48, 0xc7, 0b11000001, 0x07, 0x00, 0x00, 0x00}},
+		{"movq 64", "movq $3, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0x03, 0x00, 0x00, 0x00}},
 
 		{"movzwq", "movzwq 0(%rax), %rax", []byte{0x48, 0x0f, 0xb7, 0b00000000}},
 		{"addq", "addq %rax, %rcx", []byte{0x48, 0x01, 0b11000001}},
