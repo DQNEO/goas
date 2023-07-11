@@ -891,11 +891,11 @@ func encode(s *Stmt) *Instruction {
 			panic("[encoder] TBI:" + s.source)
 		}
 	case "xor", "xorq":
-		// XOR r/m64, imm8
-		// REX.W 83 /6 ib
-		opcode := uint8(0x83)
 		switch src := srcOp.(type) {
 		case *immediate:
+			// XOR r/m64, imm8
+			// REX.W 83 /6 ib
+			opcode := uint8(0x83)
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, slash_6, rm)
 			imValue := evalNumExpr(src.expr)
