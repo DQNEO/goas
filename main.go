@@ -522,7 +522,7 @@ func encodeAllText(ss []*Stmt, labeledSymbols map[string]*symbolDefinition, glob
 			// skip if the line is empty
 			continue
 		}
-		instr := encode(s)
+		instr := Encode(s)
 		if s.labelSymbol != "" {
 			instr.symbolDefinition = s.labelSymbol
 			labeledSymbols[s.labelSymbol].instr = instr

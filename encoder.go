@@ -237,7 +237,7 @@ func Bytes(b ...byte) []byte {
 	return b
 }
 
-func encode(s *Stmt) *Instruction {
+func Encode(s *Stmt) *Instruction {
 	defer func() {
 		if x := recover(); x != nil {
 			panic(fmt.Sprintf("%s\n[encoder] %s at %s:%d\n\n  ./tool/encode '%s'",
@@ -266,7 +266,7 @@ func encode(s *Stmt) *Instruction {
 		panic("too many operands")
 	}
 	keySymbol := s.keySymbol
-	cd, vr, rela, cltrgt := _encode(s, keySymbol, srcOp, trgtOp)
+	cd, vr, rela, cltrgt := encode(s, keySymbol, srcOp, trgtOp)
 
 	var instr = &Instruction{
 		stmt:                 s,
@@ -292,7 +292,7 @@ func encode(s *Stmt) *Instruction {
 	return instr
 }
 
-func _encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code []byte, vrCode *variableCode, ru *relaTextUser, ct *callTarget) {
+func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code []byte, vrCode *variableCode, ru *relaTextUser, ct *callTarget) {
 	switch keySymbol {
 	case ".text":
 	case ".global":
