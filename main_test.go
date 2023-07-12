@@ -48,7 +48,7 @@ func TestEncodeStringAsText(t *testing.T) {
 			encoded, data := EncodeString(tt.source)
 			_ = data
 			if !reflect.DeepEqual(encoded, tt.encoded) {
-				t.Errorf("EncodeString() got = 0x%x, want 0x%x", encoded, tt.encoded)
+				t.Errorf("EncodeString() %s got = 0x%x, want 0x%x", tt.source, encoded, tt.encoded)
 			}
 		})
 	}
