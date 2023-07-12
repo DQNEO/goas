@@ -246,14 +246,12 @@ func encode(s *Stmt) *Instruction {
 		}
 	}()
 
-	var instr = &Instruction{
-		stmt: s,
-	}
-
 	if s.keySymbol == "" {
 		// No instruction
-		instr.isLenDecided = true
-		return instr
+		return &Instruction{
+			stmt:         s,
+			isLenDecided: true,
+		}
 	}
 
 	var srcOp, trgtOp Operand
@@ -268,25 +266,33 @@ func encode(s *Stmt) *Instruction {
 		panic("too many operands")
 	}
 	keySymbol := s.keySymbol
-	cd, vr, rela, cltrgt := _encode(instr, keySymbol, srcOp, trgtOp)
+	cd, vr, rela, cltrgt := _encode(s, keySymbol, srcOp, trgtOp)
+
+	var instr = &Instruction{
+		stmt:                 s,
+		code:                 cd,
+		unresolvedCallTarget: cltrgt,
+		varcode:              vr,
+	}
+
 	if rela != nil {
-		appendRelaTextUser(rela, instr.stmt)
+		rela.instr = instr
+		appendRelaTextUser(rela, s)
 	}
 	if cltrgt != nil {
-		instr.unresolvedCallTarget = cltrgt
+		cltrgt.caller = instr
 	}
 
 	if vr != nil {
-		instr.varcode = vr
 		variableInstrs = append(variableInstrs, instr)
 	} else {
 		instr.isLenDecided = true
 	}
-	instr.code = cd
+
 	return instr
 }
 
-func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) (code []byte, vrCode *variableCode, ru *relaTextUser, ct *callTarget) {
+func _encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code []byte, vrCode *variableCode, ru *relaTextUser, ct *callTarget) {
 	switch keySymbol {
 	case ".text":
 	case ".global":
@@ -345,7 +351,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			// call rel16
 			code = Bytes(0xe8, 0, 0, 0, 0)
 			ru = &relaTextUser{
-				instr:  instr,
 				offset: 1,
 				uses:   trgtSymbol,
 				toJump: true,
@@ -353,7 +358,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			debugf("registering unresolved callTarget: %s\n", trgtSymbol)
 			ct = &callTarget{
 				trgtSymbol: trgtSymbol,
-				caller:     instr,
 				offset:     1,
 				width:      4,
 			}
@@ -388,7 +392,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 
 				symbol := src.expr.(*symbolExpr).name
 				ru = &relaTextUser{
-					instr:  instr,
 					offset: uintptr(len(code)),
 					uses:   symbol,
 				}
@@ -434,7 +437,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				return
 			}
 		default:
-			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, instr.stmt.source))
+			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, stmt.source))
 		}
 	case "movb":
 		switch src := srcOp.(type) {
@@ -559,7 +562,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 
 						symbol := expr.left.(*symbolExpr).name
 						ru = &relaTextUser{
-							instr:  instr,
 							offset: uintptr(len(code)),
 							uses:   symbol,
 							adjust: int64(evalNumExpr(expr.right)),
@@ -574,7 +576,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 
 						symbol := expr.name
 						ru = &relaTextUser{
-							instr:  instr,
 							offset: uintptr(len(code)),
 							uses:   symbol,
 							adjust: 0,
@@ -656,7 +657,6 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 
 				symbol := src.expr.(*symbolExpr).name
 				ru = &relaTextUser{
-					instr:  instr,
 					offset: uintptr(len(code)),
 					uses:   symbol,
 				}
@@ -887,7 +887,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
 			return
 		default:
-			panic("TBI:" + instr.stmt.source)
+			panic("TBI:" + stmt.source)
 		}
 	case "setl":
 		reg := trgtOp.(*register).toBits()
@@ -941,7 +941,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				panic("TBI")
 			}
 		default:
-			panic("[encoder] TBI:" + instr.stmt.source)
+			panic("[encoder] TBI:" + stmt.source)
 		}
 	case "popq":
 		switch trgt := trgtOp.(type) {
@@ -950,7 +950,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			code = Bytes(0x58 + trgt.toBits())
 			return
 		default:
-			panic("[encoder] TBI:" + instr.stmt.source)
+			panic("[encoder] TBI:" + stmt.source)
 		}
 	case "xor", "xorq":
 		switch src := srcOp.(type) {
@@ -989,7 +989,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		return
 	default:
 		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
-			instr.stmt.source, 0, instr.stmt.source))
+			stmt.source, 0, stmt.source))
 	}
 
 	return code, vrCode, ru, ct
