@@ -5,7 +5,7 @@ goas: $(GO_SOURCES)
 
 .PHONY: test
 # Check /etc/os-release to prevent non-linux from running this
-test: gotest test1 test2 test3
+test: test1 test2 test3 gotest
 
 .PHONY: gotest
 gotest:
