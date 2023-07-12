@@ -558,7 +558,7 @@ func encodeAllText(ss []*Stmt, labeledSymbols map[string]*symbolDefinition, glob
 		}
 		allText = append(allText, instr.code...)
 		textAddr += uintptr(len(instr.code))
-		debugf("[%x] %s\n", instr.addr, instr.s.source)
+		debugf("[%x] %s\n", instr.addr, instr.stmt.source)
 		if instr.next != nil {
 			instr.next.addr = textAddr
 		}

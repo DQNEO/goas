@@ -170,7 +170,7 @@ type variableCode struct {
 type Instruction struct {
 	addr                 uintptr
 	symbolDefinition     string
-	s                    *Stmt
+	stmt                 *Stmt
 	index                int
 	code                 []byte // fixed length code
 	varcode              *variableCode
@@ -180,7 +180,7 @@ type Instruction struct {
 }
 
 func (ins *Instruction) String() string {
-	return fmt.Sprintf("[%04x] %s", ins.addr, ins.s.source)
+	return fmt.Sprintf("[%04x] %s", ins.addr, ins.stmt.source)
 }
 
 //var callTargets []*callTarget
@@ -253,9 +253,8 @@ func encode(s *Stmt) *Instruction {
 		}
 	}()
 
-	var code []byte
 	var instr = &Instruction{
-		s: s,
+		stmt: s,
 	}
 
 	if s.keySymbol == "" {
@@ -275,8 +274,17 @@ func encode(s *Stmt) *Instruction {
 	default:
 		panic("too many operands")
 	}
+	keySymbol := s.keySymbol
+	_encode(instr, keySymbol, srcOp, trgtOp)
 
-	switch s.keySymbol {
+	return instr
+}
+
+func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) {
+	var code []byte
+	var vrCode *variableCode
+
+	switch keySymbol {
 	case ".text":
 	case ".global":
 	case "nop":
@@ -289,7 +297,7 @@ func encode(s *Stmt) *Instruction {
 		code = Bytes(0xc9)
 	case "jmp": // JMP rel8 or rel32s
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		varcode := &variableCode{
+		vrCode = &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JMP rel8: EB cb
 			rel8Code:   Bytes(0xeb, 0),
@@ -298,10 +306,9 @@ func encode(s *Stmt) *Instruction {
 			rel32Code:   Bytes(0xe9, 0, 0, 0, 0),
 			rel32Offset: 1,
 		}
-		instr.varcode = varcode
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		varcode := &variableCode{
+		vrCode = &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JE rel8: 74 cb
 			rel8Code:   Bytes(0x74, 0),
@@ -310,10 +317,9 @@ func encode(s *Stmt) *Instruction {
 			rel32Code:   Bytes(0x0f, 0x84, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
-		instr.varcode = varcode
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
-		varcode := &variableCode{
+		vrCode = &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JNE rel8: 75 cb
 			rel8Code:   Bytes(0x75, 0),
@@ -322,7 +328,6 @@ func encode(s *Stmt) *Instruction {
 			rel32Code:   Bytes(0x0f, 0x85, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
-		instr.varcode = varcode
 	case "callq", "call":
 		switch trgt := trgtOp.(type) {
 		case *symbolExpr:
@@ -335,7 +340,7 @@ func encode(s *Stmt) *Instruction {
 				uses:   trgtSymbol,
 				toJump: true,
 			}
-			appendRelaTextUser(ru, s)
+			appendRelaTextUser(ru, instr.stmt)
 			registerCallTarget(instr, trgtSymbol, 1, 4)
 		case *indirectCallTarget:
 			// CALL m16:32
@@ -372,7 +377,7 @@ func encode(s *Stmt) *Instruction {
 				}
 
 				code = append(code, 0, 0, 0, 0)
-				appendRelaTextUser(ru, s)
+				appendRelaTextUser(ru, instr.stmt)
 			} else {
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 32)
@@ -411,7 +416,7 @@ func encode(s *Stmt) *Instruction {
 				code = append(code, displacementBytes...)
 			}
 		default:
-			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, s.source))
+			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, instr.stmt.source))
 		}
 	case "movb":
 		switch src := srcOp.(type) {
@@ -535,7 +540,7 @@ func encode(s *Stmt) *Instruction {
 							uses:   symbol,
 							adjust: int64(evalNumExpr(expr.right)),
 						}
-						appendRelaTextUser(ru, s)
+						appendRelaTextUser(ru, instr.stmt)
 						//}
 						code = append(code, 0, 0, 0, 0)
 					case *symbolExpr: // "movq %rax, runtime.main_main(%rip)"
@@ -551,7 +556,7 @@ func encode(s *Stmt) *Instruction {
 							uses:   symbol,
 							adjust: 0,
 						}
-						appendRelaTextUser(ru, s)
+						appendRelaTextUser(ru, instr.stmt)
 						code = append(code, 0, 0, 0, 0)
 					default:
 						panic(fmt.Sprintf("TBI: trgt.expr:%T %+v", trgt.expr, trgt.expr))
@@ -632,7 +637,7 @@ func encode(s *Stmt) *Instruction {
 				}
 
 				code = append(code, 0, 0, 0, 0)
-				appendRelaTextUser(ru, s)
+				appendRelaTextUser(ru, instr.stmt)
 			} else if srcRegi.name == "rsp" {
 				var rexprefix uint8
 				if trgtRegi.isExt() {
@@ -838,7 +843,7 @@ func encode(s *Stmt) *Instruction {
 			modRM := composeModRM(ModRegi, 7, rm)
 			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
 		default:
-			panic("TBI:" + s.source)
+			panic("TBI:" + instr.stmt.source)
 		}
 	case "setl":
 		reg := trgtOp.(*register).toBits()
@@ -884,7 +889,7 @@ func encode(s *Stmt) *Instruction {
 				panic("TBI")
 			}
 		default:
-			panic("[encoder] TBI:" + s.source)
+			panic("[encoder] TBI:" + instr.stmt.source)
 		}
 	case "popq":
 		switch trgt := trgtOp.(type) {
@@ -892,7 +897,7 @@ func encode(s *Stmt) *Instruction {
 			// 58 +rd. POP r64.
 			code = Bytes(0x58 + trgt.toBits())
 		default:
-			panic("[encoder] TBI:" + s.source)
+			panic("[encoder] TBI:" + instr.stmt.source)
 		}
 	case "xor", "xorq":
 		switch src := srcOp.(type) {
@@ -927,17 +932,17 @@ func encode(s *Stmt) *Instruction {
 		code = Bytes(REX_W, 0x09, modRM)
 	default:
 		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
-			s.source, 0, s.source))
+			instr.stmt.source, 0, instr.stmt.source))
 	}
 
 	instr.code = code
 
-	if instr.varcode != nil {
+	if vrCode != nil {
+		instr.varcode = vrCode
 		variableInstrs = append(variableInstrs, instr)
 	} else {
 		instr.isLenDecided = true
 	}
-	return instr
 }
 
 func encodeData(s *Stmt, dataAddr uintptr, labeledSymbols map[string]*symbolDefinition) []byte {
