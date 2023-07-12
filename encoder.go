@@ -408,10 +408,19 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				var modRM, rm, reg byte
 				var displacementBytes []byte
 				if displacement == 0 {
-					mod := ModIndirectionWithNoDisplacement
-					reg = trgtRegi.toBits()
 					rm = srcRegi.toBits()
-					modRM = composeModRM(mod, reg, rm)
+					if rm == regBits("sp") {
+						mod := ModIndirectionWithNoDisplacement
+						reg = trgtRegi.toBits()
+						modRM = composeModRM(mod, reg, rm)
+						// There is no displacementBytes. For optimization ?
+					} else {
+						// same as isInInt8Range case below
+						mod := ModIndirectionWithDisplacement8
+						reg = trgtRegi.toBits()
+						modRM = composeModRM(mod, reg, rm)
+						displacementBytes = Bytes(0)
+					}
 				} else if isInInt8Range(int(displacement)) {
 					mod := ModIndirectionWithDisplacement8
 					reg = trgtRegi.toBits()
