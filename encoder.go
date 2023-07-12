@@ -265,8 +265,8 @@ func Encode(s *Stmt) *Instruction {
 	default:
 		panic("too many operands")
 	}
-	keySymbol := s.keySymbol
-	cd, vr, rela, cltrgt := encode(s, keySymbol, srcOp, trgtOp)
+
+	cd, vr, rela, cltrgt := encode(s, s.keySymbol, srcOp, trgtOp)
 
 	var instr = &Instruction{
 		stmt:                 s,
