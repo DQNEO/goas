@@ -268,12 +268,25 @@ func encode(s *Stmt) *Instruction {
 		panic("too many operands")
 	}
 	keySymbol := s.keySymbol
-	_encode(instr, keySymbol, srcOp, trgtOp)
+	cd, vr, rela, cltrgt := _encode(instr, keySymbol, srcOp, trgtOp)
+	if rela != nil {
+		appendRelaTextUser(rela, instr.stmt)
+	}
+	if cltrgt != nil {
+		instr.unresolvedCallTarget = cltrgt
+	}
 
+	if vr != nil {
+		instr.varcode = vr
+		variableInstrs = append(variableInstrs, instr)
+	} else {
+		instr.isLenDecided = true
+	}
+	instr.code = cd
 	return instr
 }
 
-func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) {
+func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) ([]byte, *variableCode, *relaTextUser, *callTarget) {
 	var code []byte
 	var vrCode *variableCode
 	var ru *relaTextUser
@@ -930,20 +943,8 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			instr.stmt.source, 0, instr.stmt.source))
 	}
 
-	instr.code = code
-	if ru != nil {
-		appendRelaTextUser(ru, instr.stmt)
-	}
-	if ct != nil {
-		instr.unresolvedCallTarget = ct
-	}
+	return code, vrCode, ru, ct
 
-	if vrCode != nil {
-		instr.varcode = vrCode
-		variableInstrs = append(variableInstrs, instr)
-	} else {
-		instr.isLenDecided = true
-	}
 }
 
 func encodeData(s *Stmt, dataAddr uintptr, labeledSymbols map[string]*symbolDefinition) []byte {
