@@ -286,23 +286,22 @@ func encode(s *Stmt) *Instruction {
 	return instr
 }
 
-func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) ([]byte, *variableCode, *relaTextUser, *callTarget) {
-	var code []byte
-	var vrCode *variableCode
-	var ru *relaTextUser
-	var ct *callTarget
-
+func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) (code []byte, vrCode *variableCode, ru *relaTextUser, ct *callTarget) {
 	switch keySymbol {
 	case ".text":
 	case ".global":
 	case "nop":
 		code = Bytes(0x90)
+		return
 	case "ret", "retq":
 		code = Bytes(0xc3)
+		return
 	case "syscall":
 		code = Bytes(0x0f, 0x05)
+		return
 	case "leave":
 		code = Bytes(0xc9)
+		return
 	case "jmp": // JMP rel8 or rel32s
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		vrCode = &variableCode{
@@ -314,6 +313,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rel32Code:   Bytes(0xe9, 0, 0, 0, 0),
 			rel32Offset: 1,
 		}
+		return
 	case "je": // JE rel8 or rel32
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		vrCode = &variableCode{
@@ -325,6 +325,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rel32Code:   Bytes(0x0f, 0x84, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
+		return
 	case "jne":
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		vrCode = &variableCode{
@@ -336,6 +337,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rel32Code:   Bytes(0x0f, 0x85, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
+		return
 	case "callq", "call":
 		switch trgt := trgtOp.(type) {
 		case *symbolExpr:
@@ -355,6 +357,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				offset:     1,
 				width:      4,
 			}
+			return
 		case *indirectCallTarget:
 			// CALL m16:32
 			// FF /3
@@ -369,6 +372,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			} else {
 				code = Bytes(opcode, modRM)
 			}
+			return
 		}
 	case "leaq":
 		switch src := srcOp.(type) {
@@ -390,6 +394,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				}
 
 				code = append(code, 0, 0, 0, 0)
+				return
 			} else {
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 32)
@@ -426,6 +431,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				}
 
 				code = append(code, displacementBytes...)
+				return
 			}
 		default:
 			panic(fmt.Sprintf("TBI: %T (%s)", srcOp, instr.stmt.source))
@@ -443,6 +449,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				rm := trgt.regi.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				code = Bytes(opcode, modRM)
+				return
 			default:
 				panic("TBI")
 			}
@@ -463,6 +470,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				rm := trgt.regi.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				code = Bytes(PREFIX, opcode, modRM)
+				return
 			default:
 				panic("TBI")
 			}
@@ -481,6 +489,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			regFieldN := trgtOp.(*register).toBits()
 			opcode := 0xb8 + regFieldN
 			code = append(Bytes(opcode), bytesNum[:]...)
+			return
 		default:
 			panic("TBI")
 		}
@@ -519,11 +528,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				opcode := uint8(0xc7)
 				code = Bytes(REX_WB, opcode, modRM)
 				code = append(code, bytesNum[:]...)
+				return
 			default:
 				opcode := uint8(0xc7)
 				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 				code = Bytes(REX_W, opcode, modRM)
 				code = append(code, bytesNum[:]...)
+				return
 			}
 		case *register: // movq %rax, EXPR
 			opcode := uint8(0x89)
@@ -534,6 +545,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				rm := trgt.toBits()
 				modRM := composeModRM(mod, reg, rm)
 				code = Bytes(REX_W, opcode, modRM)
+				return
 			case *indirection: // movq %rax, N(EXPR)
 				if trgt.isRipRelative() {
 					switch expr := trgt.expr.(type) {
@@ -553,6 +565,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 							adjust: int64(evalNumExpr(expr.right)),
 						}
 						code = append(code, 0, 0, 0, 0)
+						return
 					case *symbolExpr: // "movq %rax, runtime.main_main(%rip)"
 						mod := ModIndirectionWithNoDisplacement
 						reg := src.toBits() // src
@@ -567,6 +580,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 							adjust: 0,
 						}
 						code = append(code, 0, 0, 0, 0)
+						return
 					default:
 						panic(fmt.Sprintf("TBI: trgt.expr:%T %+v", trgt.expr, trgt.expr))
 					}
@@ -581,12 +595,14 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 							modRM := composeModRM(mod, reg, rm)
 							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 							code = Bytes(REX_W, opcode, modRM, sib)
+							return
 						} else {
 							// movq %rax, (%rcx)
 							// this is the same as "movq %rax, 0(%rcx)" case in blow "else" block
 							mod := ModIndirectionWithNoDisplacement
 							modRM := composeModRM(mod, reg, rm)
 							code = Bytes(REX_W, opcode, modRM)
+							return
 						}
 					case *numberLit:
 						reg := src.toBits()
@@ -646,6 +662,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				}
 
 				code = append(code, 0, 0, 0, 0)
+				return
 			} else if srcRegi.name == "rsp" {
 				var rexprefix uint8
 				if trgtRegi.isExt() {
@@ -662,6 +679,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 					code = Bytes(rexprefix, opcode, modRM, sib)
+					return
 				} else {
 					var mod = ModIndirectionWithDisplacement8
 					var rm = regBits("sp")
@@ -672,6 +690,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 						panic("TBI")
 					}
 					code = Bytes(rexprefix, opcode, modRM, sib, uint8(val))
+					return
 				}
 			} else {
 				var rexprefix uint8
@@ -694,11 +713,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 						panic("TBI")
 					}
 					code = Bytes(rexprefix, opcode, modRM, uint8(ival))
+					return
 				} else {
 					mod := ModIndirectionWithNoDisplacement
 					rm := srcRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					code = Bytes(rexprefix, opcode, modRM)
+					return
 				}
 			}
 		default:
@@ -713,6 +734,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
 			code = Bytes(REX_W, 0x0f, 0xb6, modRM)
+			return
 		case *indirection:
 			mod := ModIndirectionWithNoDisplacement
 			rm := src.regi.toBits()
@@ -725,6 +747,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			} else {
 				code = Bytes(REX_W, 0x0f, 0xb6, modRM)
 			}
+			return
 		default:
 			panic("TBI")
 		}
@@ -737,6 +760,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
 			code = Bytes(REX_W, 0x0f, 0xb7, modRM)
+			return
 		default:
 			panic("TBI")
 		}
@@ -745,6 +769,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		regFieldN := trgtOp.(*register).toBits()
 		var modRM uint8 = 0b11000000 + regFieldN
 		code = Bytes(opcode, modRM)
+		return
 	case "addq":
 		switch src := srcOp.(type) {
 		case *register:
@@ -753,6 +778,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = Bytes(REX_W, opcode, modRM)
+			return
 		case *immediate: // "addq $32, %regi"
 			{
 				rm := trgtOp.(*register).toBits()
@@ -761,13 +787,16 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				switch {
 				case isInInt8Range(imValue):
 					code = Bytes(REX_W, 0x83, modRM, uint8(imValue))
+					return
 				case imValue < 1<<31:
 					i32 := int32(imValue)
 					hex := (*[4]uint8)(unsafe.Pointer(&i32))
 					if trgtOp.(*register).name == "rax" {
 						code = Bytes(REX_W, 0x05, hex[0], hex[1], hex[2], hex[3])
+						return
 					} else {
 						code = Bytes(REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3])
+						return
 					}
 				default:
 					panic("TBI")
@@ -784,6 +813,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = Bytes(REX_W, opcode, modRM)
+			return
 		case *immediate:
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, slash_5, rm)
@@ -794,10 +824,12 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			switch {
 			case imValue < 1<<7:
 				code = Bytes(REX_W, 0x83, modRM, uint8(imValue))
+				return
 			case imValue < 1<<31:
 				i32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&i32))
 				code = Bytes(REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3])
+				return
 			default:
 				panic("TBI")
 			}
@@ -813,6 +845,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			regi := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = Bytes(REX_W, opcodes[0], opcodes[1], modRM)
+			return
 		case *immediate:
 			opcode := uint8(0x6b)
 			// IMUL r64, r/m64, imm8
@@ -824,7 +857,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				panic(err)
 			}
 			code = Bytes(REX_W, opcode, modRM, uint8(imValue)) // REX.W, IMULQ, ModR/M, ib
-
+			return
 		default:
 			panic("TBI")
 		}
@@ -833,6 +866,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, slash_6, rm)
 		code = Bytes(REX_W, opcode, modRM)
+		return
 	case "cmpq":
 		switch src := srcOp.(type) {
 		case *register:
@@ -841,6 +875,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = Bytes(REX_W, opcode, modRM)
+			return
 		case *immediate:
 			opcode := uint8(0x83)
 			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
@@ -850,6 +885,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, 7, rm)
 			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
+			return
 		default:
 			panic("TBI:" + instr.stmt.source)
 		}
@@ -857,26 +893,32 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x9c, modRM)
+		return
 	case "setle":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x9e, modRM)
+		return
 	case "setg":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x9f, modRM)
+		return
 	case "setge":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x9d, modRM)
+		return
 	case "sete":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x94, modRM)
+		return
 	case "pushq":
 		switch trgt := trgtOp.(type) {
 		case *register:
 			code = Bytes(0x50 + trgt.toBits())
+			return
 		case *immediate:
 			imValue, err := strconv.ParseInt(trgt.expr.(*numberLit).val, 0, 32)
 			if err != nil {
@@ -885,6 +927,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			switch {
 			case imValue < 1<<7: //PUSH imm8 : 6a ib
 				code = Bytes(0x6a, uint8(imValue))
+				return
 			//case imValue < 1<<14 : //PUSH imm16: 	68 iw
 			//	ui16 := int16(imValue)
 			//	hex := (*[2]uint8)(unsafe.Pointer(&ui16))
@@ -893,6 +936,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				ui32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
 				code = Bytes(0x68, hex[0], hex[1], hex[2], hex[3])
+				return
 			default:
 				panic("TBI")
 			}
@@ -904,6 +948,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		case *register:
 			// 58 +rd. POP r64.
 			code = Bytes(0x58 + trgt.toBits())
+			return
 		default:
 			panic("[encoder] TBI:" + instr.stmt.source)
 		}
@@ -917,11 +962,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			modRM := composeModRM(ModRegi, slash_6, rm)
 			imValue := evalNumExpr(src.expr)
 			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
+			return
 		case *register:
 			regi := src.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
 			code = Bytes(REX_W, 0x31, modRM)
+			return
 		default:
 			panic("TBI")
 
@@ -933,18 +980,19 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, regi, rm)
 		code = Bytes(REX_W, 0x21, modRM)
+		return
 	case "orq":
 		regi := srcOp.(*register).toBits()
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, regi, rm)
 		code = Bytes(REX_W, 0x09, modRM)
+		return
 	default:
 		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
 			instr.stmt.source, 0, instr.stmt.source))
 	}
 
 	return code, vrCode, ru, ct
-
 }
 
 func encodeData(s *Stmt, dataAddr uintptr, labeledSymbols map[string]*symbolDefinition) []byte {
