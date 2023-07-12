@@ -381,10 +381,10 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 	case "leaq":
 		switch src := srcOp.(type) {
 		case *indirection: // leaq foo(%regi), %regi
-			regi := src.regi
+			srcRegi := src.regi
 			trgtRegi := trgtOp.(*register)
 			var opcode uint8 = 0x8d
-			if regi.name == "rip" {
+			if srcRegi.name == "rip" {
 				// RIP relative addressing
 				mod := ModIndirectionWithNoDisplacement
 				modRM := composeModRM(mod, trgtRegi.toBits(), RM_RIP_RELATIVE)
@@ -398,7 +398,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 
 				code = append(code, 0, 0, 0, 0)
 				return
-			} else {
+			} else { // leaq NUM(%regi), %regi
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 32)
 				if err != nil {
@@ -409,19 +409,19 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				var displacementBytes []byte
 				if displacement == 0 {
 					mod := ModIndirectionWithNoDisplacement
-					rm = regi.toBits()
 					reg = trgtRegi.toBits()
+					rm = srcRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
 				} else if isInInt8Range(int(displacement)) {
 					mod := ModIndirectionWithDisplacement8
-					rm = regi.toBits()
 					reg = trgtRegi.toBits()
+					rm = srcRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
 					displacementBytes = Bytes(uint8(displacement))
 				} else {
 					mod := ModIndirectionWithDisplacement32
-					rm = regi.toBits()
 					reg = trgtRegi.toBits()
+					rm = srcRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
 					var disp32 int32 = int32(displacement)
 					displacementBytes = (*[4]byte)(unsafe.Pointer(&disp32))[:]
@@ -429,11 +429,12 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				if rm == regBits("sp") {
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 					code = Bytes(REX_W, opcode, modRM, sib)
+					code = append(code, displacementBytes...)
 				} else {
 					code = Bytes(REX_W, opcode, modRM)
+					code = append(code, displacementBytes...)
 				}
 
-				code = append(code, displacementBytes...)
 				return
 			}
 		default:
