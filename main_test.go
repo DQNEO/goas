@@ -22,6 +22,7 @@ func TestEncodeStringAsText(t *testing.T) {
 
 		{"callq SYMBOL", "callq myfunc", []byte{0xe8, 0, 0, 0, 0}},
 
+		{"leaq IND, REG", "leaq 127(%rbp), %rdi", []byte{0x48, 0x8d, 0b01_111_101, 0x7f}},
 		{"movb REG, IND", "movb %bl, 0(%rdi)", []byte{0x88, 0b00_011_111}},
 		{"movw REG, IND", "movw %bx, 0(%rdi)", []byte{0x66, 0x89, 0b00_011_111}},
 		{"movl IMM32, REG", "movl $2147483647, %ebx", []byte{0xb8 + 0b011, 0xff, 0xff, 0xff, 0x7f}},
