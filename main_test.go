@@ -41,7 +41,9 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"orq REG", "orq %rbp, %rdi", []byte{0x48, 0x09, 0b11_101_111}},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			encoded, data := EncodeString(tt.source)
 			_ = data
 			if !reflect.DeepEqual(encoded, tt.encoded) {
