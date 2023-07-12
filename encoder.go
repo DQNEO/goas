@@ -192,15 +192,8 @@ type callTarget struct {
 	width      int // 1 or 4 or 8
 }
 
-func registerCallTarget(caller *Instruction, trgtSymbol string, offset uintptr, width int) {
-	debugf("registering unresolved callTarget: %s\n", trgtSymbol)
-	ct := &callTarget{
-		trgtSymbol: trgtSymbol,
-		caller:     caller,
-		offset:     offset,
-		width:      width,
-	}
-	caller.unresolvedCallTarget = ct
+func registerCallTarget(instr *Instruction, trgtSymbol string) {
+
 }
 
 func calcDistance(userInstr *Instruction, symdef *symbolDefinition) (int, int, int, bool) {
@@ -284,6 +277,7 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 	var code []byte
 	var vrCode *variableCode
 	var ru *relaTextUser
+	var ct *callTarget
 
 	switch keySymbol {
 	case ".text":
@@ -341,7 +335,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				uses:   trgtSymbol,
 				toJump: true,
 			}
-			registerCallTarget(instr, trgtSymbol, 1, 4)
+			debugf("registering unresolved callTarget: %s\n", trgtSymbol)
+			ct = &callTarget{
+				trgtSymbol: trgtSymbol,
+				caller:     instr,
+				offset:     1,
+				width:      4,
+			}
 		case *indirectCallTarget:
 			// CALL m16:32
 			// FF /3
@@ -934,6 +934,10 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 	if ru != nil {
 		appendRelaTextUser(ru, instr.stmt)
 	}
+	if ct != nil {
+		instr.unresolvedCallTarget = ct
+	}
+
 	if vrCode != nil {
 		instr.varcode = vrCode
 		variableInstrs = append(variableInstrs, instr)
