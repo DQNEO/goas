@@ -283,6 +283,7 @@ func encode(s *Stmt) *Instruction {
 func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand) {
 	var code []byte
 	var vrCode *variableCode
+	var ru *relaTextUser
 
 	switch keySymbol {
 	case ".text":
@@ -334,13 +335,12 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 			trgtSymbol := trgt.name
 			// call rel16
 			code = Bytes(0xe8, 0, 0, 0, 0)
-			ru := &relaTextUser{
+			ru = &relaTextUser{
 				instr:  instr,
 				offset: 1,
 				uses:   trgtSymbol,
 				toJump: true,
 			}
-			appendRelaTextUser(ru, instr.stmt)
 			registerCallTarget(instr, trgtSymbol, 1, 4)
 		case *indirectCallTarget:
 			// CALL m16:32
@@ -370,14 +370,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				code = Bytes(REX_W, opcode, modRM)
 
 				symbol := src.expr.(*symbolExpr).name
-				ru := &relaTextUser{
+				ru = &relaTextUser{
 					instr:  instr,
 					offset: uintptr(len(code)),
 					uses:   symbol,
 				}
 
 				code = append(code, 0, 0, 0, 0)
-				appendRelaTextUser(ru, instr.stmt)
 			} else {
 				num := src.expr.(*numberLit).val
 				displacement, err := strconv.ParseInt(num, 0, 32)
@@ -534,14 +533,12 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 						code = Bytes(REX_W, opcode, modRM)
 
 						symbol := expr.left.(*symbolExpr).name
-						ru := &relaTextUser{
+						ru = &relaTextUser{
 							instr:  instr,
 							offset: uintptr(len(code)),
 							uses:   symbol,
 							adjust: int64(evalNumExpr(expr.right)),
 						}
-						appendRelaTextUser(ru, instr.stmt)
-						//}
 						code = append(code, 0, 0, 0, 0)
 					case *symbolExpr: // "movq %rax, runtime.main_main(%rip)"
 						mod := ModIndirectionWithNoDisplacement
@@ -550,13 +547,12 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 						code = Bytes(REX_W, opcode, modRM)
 
 						symbol := expr.name
-						ru := &relaTextUser{
+						ru = &relaTextUser{
 							instr:  instr,
 							offset: uintptr(len(code)),
 							uses:   symbol,
 							adjust: 0,
 						}
-						appendRelaTextUser(ru, instr.stmt)
 						code = append(code, 0, 0, 0, 0)
 					default:
 						panic(fmt.Sprintf("TBI: trgt.expr:%T %+v", trgt.expr, trgt.expr))
@@ -630,14 +626,13 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 				code = Bytes(REX_W, opcode, modRM)
 
 				symbol := src.expr.(*symbolExpr).name
-				ru := &relaTextUser{
+				ru = &relaTextUser{
 					instr:  instr,
 					offset: uintptr(len(code)),
 					uses:   symbol,
 				}
 
 				code = append(code, 0, 0, 0, 0)
-				appendRelaTextUser(ru, instr.stmt)
 			} else if srcRegi.name == "rsp" {
 				var rexprefix uint8
 				if trgtRegi.isExt() {
@@ -936,7 +931,9 @@ func _encode(instr *Instruction, keySymbol string, srcOp Operand, trgtOp Operand
 	}
 
 	instr.code = code
-
+	if ru != nil {
+		appendRelaTextUser(ru, instr.stmt)
+	}
 	if vrCode != nil {
 		instr.varcode = vrCode
 		variableInstrs = append(variableInstrs, instr)
