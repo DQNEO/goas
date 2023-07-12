@@ -240,6 +240,10 @@ func appendRelaTextUser(ru *relaTextUser, stmt *Stmt) {
 	relaTextUsers = append(relaTextUsers, ru)
 }
 
+func Bytes(b ...byte) []byte {
+	return b
+}
+
 func encode(s *Stmt) *Instruction {
 	defer func() {
 		if x := recover(); x != nil {
@@ -276,22 +280,22 @@ func encode(s *Stmt) *Instruction {
 	case ".text":
 	case ".global":
 	case "nop":
-		code = []byte{0x90}
+		code = Bytes(0x90)
 	case "ret", "retq":
-		code = []byte{0xc3}
+		code = Bytes(0xc3)
 	case "syscall":
-		code = []byte{0x0f, 0x05}
+		code = Bytes(0x0f, 0x05)
 	case "leave":
-		code = []byte{0xc9}
+		code = Bytes(0xc9)
 	case "jmp": // JMP rel8 or rel32s
 		trgtSymbol := trgtOp.(*symbolExpr).name
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JMP rel8: EB cb
-			rel8Code:   []byte{0xeb, 0},
+			rel8Code:   Bytes(0xeb, 0),
 			rel8Offset: 1,
 			// JMP rel32: E9 cd
-			rel32Code:   []byte{0xe9, 0, 0, 0, 0},
+			rel32Code:   Bytes(0xe9, 0, 0, 0, 0),
 			rel32Offset: 1,
 		}
 		instr.varcode = varcode
@@ -300,10 +304,10 @@ func encode(s *Stmt) *Instruction {
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JE rel8: 74 cb
-			rel8Code:   []byte{0x74, 0},
+			rel8Code:   Bytes(0x74, 0),
 			rel8Offset: 1,
 			// JE rel32: 0F 84 cd
-			rel32Code:   []byte{0x0f, 0x84, 0, 0, 0, 0},
+			rel32Code:   Bytes(0x0f, 0x84, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
@@ -312,10 +316,10 @@ func encode(s *Stmt) *Instruction {
 		varcode := &variableCode{
 			trgtSymbol: trgtSymbol,
 			// JNE rel8: 75 cb
-			rel8Code:   []byte{0x75, 0},
+			rel8Code:   Bytes(0x75, 0),
 			rel8Offset: 1,
 			// JE rel32: 0F 85 cd
-			rel32Code:   []byte{0x0f, 0x85, 0, 0, 0, 0},
+			rel32Code:   Bytes(0x0f, 0x85, 0, 0, 0, 0),
 			rel32Offset: 2,
 		}
 		instr.varcode = varcode
@@ -324,7 +328,7 @@ func encode(s *Stmt) *Instruction {
 		case *symbolExpr:
 			trgtSymbol := trgt.name
 			// call rel16
-			code = []byte{0xe8, 0, 0, 0, 0}
+			code = Bytes(0xe8, 0, 0, 0, 0)
 			ru := &relaTextUser{
 				instr:  instr,
 				offset: 1,
@@ -343,9 +347,9 @@ func encode(s *Stmt) *Instruction {
 			// RIP relative addressing
 			modRM := composeModRM(ModRegi, 0b010, regi) // why regOp is 010 ??
 			if trgt.regi.isExt() {
-				code = []byte{REX_B, opcode, modRM}
+				code = Bytes(REX_B, opcode, modRM)
 			} else {
-				code = []byte{opcode, modRM}
+				code = Bytes(opcode, modRM)
 			}
 		}
 	case "leaq":
@@ -358,7 +362,7 @@ func encode(s *Stmt) *Instruction {
 				// RIP relative addressing
 				mod := ModIndirectionWithNoDisplacement
 				modRM := composeModRM(mod, trgtRegi.toBits(), RM_RIP_RELATIVE)
-				code = []byte{REX_W, opcode, modRM}
+				code = Bytes(REX_W, opcode, modRM)
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
@@ -388,7 +392,7 @@ func encode(s *Stmt) *Instruction {
 					rm = regi.toBits()
 					reg = trgtRegi.toBits()
 					modRM = composeModRM(mod, reg, rm)
-					displacementBytes = []byte{uint8(displacement)}
+					displacementBytes = Bytes(uint8(displacement))
 				} else {
 					mod := ModIndirectionWithDisplacement32
 					rm = regi.toBits()
@@ -399,9 +403,9 @@ func encode(s *Stmt) *Instruction {
 				}
 				if rm == regBits("sp") {
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-					code = []byte{REX_W, opcode, modRM, sib}
+					code = Bytes(REX_W, opcode, modRM, sib)
 				} else {
-					code = []byte{REX_W, opcode, modRM}
+					code = Bytes(REX_W, opcode, modRM)
 				}
 
 				code = append(code, displacementBytes...)
@@ -421,7 +425,7 @@ func encode(s *Stmt) *Instruction {
 				reg := src.toBits()
 				rm := trgt.regi.toBits()
 				modRM := composeModRM(mod, reg, rm)
-				code = []byte{opcode, modRM}
+				code = Bytes(opcode, modRM)
 			default:
 				panic("TBI")
 			}
@@ -441,7 +445,7 @@ func encode(s *Stmt) *Instruction {
 				reg := src.toBits()
 				rm := trgt.regi.toBits()
 				modRM := composeModRM(mod, reg, rm)
-				code = []byte{PREFIX, opcode, modRM}
+				code = Bytes(PREFIX, opcode, modRM)
 			default:
 				panic("TBI")
 			}
@@ -459,7 +463,7 @@ func encode(s *Stmt) *Instruction {
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
 			regFieldN := trgtOp.(*register).toBits()
 			opcode := 0xb8 + regFieldN
-			code = append([]byte{opcode}, bytesNum[:]...)
+			code = append(Bytes(opcode), bytesNum[:]...)
 		default:
 			panic("TBI")
 		}
@@ -478,7 +482,7 @@ func encode(s *Stmt) *Instruction {
 	//	var opcode byte
 	//	regFieldN := op2Regi.toBits()
 	//	opcode = 0xb8 + regFieldN
-	//	tmp := []byte{opcode}
+	//	tmp := Bytes(opcode)
 	//	r = append(tmp, (bytesNum[:])...)
 	case "movq":
 		switch src := srcOp.(type) {
@@ -496,12 +500,12 @@ func encode(s *Stmt) *Instruction {
 				// Actually I don't understand the logic here.
 				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
 				opcode := uint8(0xc7)
-				code = []byte{REX_WB, opcode, modRM}
+				code = Bytes(REX_WB, opcode, modRM)
 				code = append(code, bytesNum[:]...)
 			default:
 				opcode := uint8(0xc7)
 				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
-				code = []byte{REX_W, opcode, modRM}
+				code = Bytes(REX_W, opcode, modRM)
 				code = append(code, bytesNum[:]...)
 			}
 		case *register: // movq %rax, EXPR
@@ -512,7 +516,7 @@ func encode(s *Stmt) *Instruction {
 				reg := src.toBits()
 				rm := trgt.toBits()
 				modRM := composeModRM(mod, reg, rm)
-				code = []byte{REX_W, opcode, modRM}
+				code = Bytes(REX_W, opcode, modRM)
 			case *indirection: // movq %rax, N(EXPR)
 				if trgt.isRipRelative() {
 					switch expr := trgt.expr.(type) {
@@ -522,7 +526,7 @@ func encode(s *Stmt) *Instruction {
 						mod := ModIndirectionWithNoDisplacement
 						reg := src.toBits() // src
 						modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
-						code = []byte{REX_W, opcode, modRM}
+						code = Bytes(REX_W, opcode, modRM)
 
 						symbol := expr.left.(*symbolExpr).name
 						ru := &relaTextUser{
@@ -538,7 +542,7 @@ func encode(s *Stmt) *Instruction {
 						mod := ModIndirectionWithNoDisplacement
 						reg := src.toBits() // src
 						modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
-						code = []byte{REX_W, opcode, modRM}
+						code = Bytes(REX_W, opcode, modRM)
 
 						symbol := expr.name
 						ru := &relaTextUser{
@@ -562,13 +566,13 @@ func encode(s *Stmt) *Instruction {
 							mod := ModIndirectionWithNoDisplacement
 							modRM := composeModRM(mod, reg, rm)
 							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-							code = []byte{REX_W, opcode, modRM, sib}
+							code = Bytes(REX_W, opcode, modRM, sib)
 						} else {
 							// movq %rax, (%rcx)
 							// this is the same as "movq %rax, 0(%rcx)" case in blow "else" block
 							mod := ModIndirectionWithNoDisplacement
 							modRM := composeModRM(mod, reg, rm)
-							code = []byte{REX_W, opcode, modRM}
+							code = Bytes(REX_W, opcode, modRM)
 						}
 					case *numberLit:
 						reg := src.toBits()
@@ -583,23 +587,23 @@ func encode(s *Stmt) *Instruction {
 								mod := ModIndirectionWithNoDisplacement
 								modRM := composeModRM(mod, reg, rm)
 								sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-								code = []byte{REX_W, opcode, modRM, sib}
+								code = Bytes(REX_W, opcode, modRM, sib)
 							} else {
 								// insert SIB byte
 								mod := ModIndirectionWithDisplacement8
 								modRM := composeModRM(mod, reg, rm)
 								sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-								code = []byte{REX_W, opcode, modRM, sib, uint8(displacement)}
+								code = Bytes(REX_W, opcode, modRM, sib, uint8(displacement))
 							}
 						} else {
 							if displacement == 0 {
 								mod := ModIndirectionWithNoDisplacement
 								modRM := composeModRM(mod, reg, rm)
-								code = []byte{REX_W, opcode, modRM}
+								code = Bytes(REX_W, opcode, modRM)
 							} else {
 								mod := ModIndirectionWithDisplacement8
 								modRM := composeModRM(mod, reg, rm)
-								code = []byte{REX_W, opcode, modRM, uint8(displacement)}
+								code = Bytes(REX_W, opcode, modRM, uint8(displacement))
 							}
 						}
 					default:
@@ -618,7 +622,7 @@ func encode(s *Stmt) *Instruction {
 				reg := trgtRegi.toBits()
 				mod := ModIndirectionWithNoDisplacement
 				modRM := composeModRM(mod, reg, RM_RIP_RELATIVE)
-				code = []byte{REX_W, opcode, modRM}
+				code = Bytes(REX_W, opcode, modRM)
 
 				symbol := src.expr.(*symbolExpr).name
 				ru := &relaTextUser{
@@ -644,7 +648,7 @@ func encode(s *Stmt) *Instruction {
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-					code = []byte{rexprefix, opcode, modRM, sib}
+					code = Bytes(rexprefix, opcode, modRM, sib)
 				} else {
 					var mod = ModIndirectionWithDisplacement8
 					var rm = regBits("sp")
@@ -654,7 +658,7 @@ func encode(s *Stmt) *Instruction {
 					if val > 256 {
 						panic("TBI")
 					}
-					code = []byte{rexprefix, opcode, modRM, sib, uint8(val)}
+					code = Bytes(rexprefix, opcode, modRM, sib, uint8(val))
 				}
 			} else {
 				var rexprefix uint8
@@ -676,12 +680,12 @@ func encode(s *Stmt) *Instruction {
 					if ival > 256 {
 						panic("TBI")
 					}
-					code = []byte{rexprefix, opcode, modRM, uint8(ival)}
+					code = Bytes(rexprefix, opcode, modRM, uint8(ival))
 				} else {
 					mod := ModIndirectionWithNoDisplacement
 					rm := srcRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
-					code = []byte{rexprefix, opcode, modRM}
+					code = Bytes(rexprefix, opcode, modRM)
 				}
 			}
 		default:
@@ -695,7 +699,7 @@ func encode(s *Stmt) *Instruction {
 			reg := src.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
-			code = []byte{REX_W, 0x0f, 0xb6, modRM}
+			code = Bytes(REX_W, 0x0f, 0xb6, modRM)
 		case *indirection:
 			mod := ModIndirectionWithNoDisplacement
 			rm := src.regi.toBits()
@@ -704,9 +708,9 @@ func encode(s *Stmt) *Instruction {
 			if rm == regBits("sp") {
 				// use SIB
 				sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
-				code = []byte{REX_W, 0x0f, 0xb6, modRM, sib}
+				code = Bytes(REX_W, 0x0f, 0xb6, modRM, sib)
 			} else {
-				code = []byte{REX_W, 0x0f, 0xb6, modRM}
+				code = Bytes(REX_W, 0x0f, 0xb6, modRM)
 			}
 		default:
 			panic("TBI")
@@ -719,7 +723,7 @@ func encode(s *Stmt) *Instruction {
 			reg := src.regi.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
-			code = []byte{REX_W, 0x0f, 0xb7, modRM}
+			code = Bytes(REX_W, 0x0f, 0xb7, modRM)
 		default:
 			panic("TBI")
 		}
@@ -727,7 +731,7 @@ func encode(s *Stmt) *Instruction {
 		var opcode uint8 = 0x01
 		regFieldN := trgtOp.(*register).toBits()
 		var modRM uint8 = 0b11000000 + regFieldN
-		code = []byte{opcode, modRM}
+		code = Bytes(opcode, modRM)
 	case "addq":
 		switch src := srcOp.(type) {
 		case *register:
@@ -735,7 +739,7 @@ func encode(s *Stmt) *Instruction {
 			regi := srcOp.(*register).toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			code = []byte{REX_W, opcode, modRM}
+			code = Bytes(REX_W, opcode, modRM)
 		case *immediate: // "addq $32, %regi"
 			{
 				rm := trgtOp.(*register).toBits()
@@ -743,14 +747,14 @@ func encode(s *Stmt) *Instruction {
 				imValue := evalNumExpr(src.expr)
 				switch {
 				case isInInt8Range(imValue):
-					code = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+					code = Bytes(REX_W, 0x83, modRM, uint8(imValue))
 				case imValue < 1<<31:
 					i32 := int32(imValue)
 					hex := (*[4]uint8)(unsafe.Pointer(&i32))
 					if trgtOp.(*register).name == "rax" {
-						code = []byte{REX_W, 0x05, hex[0], hex[1], hex[2], hex[3]}
+						code = Bytes(REX_W, 0x05, hex[0], hex[1], hex[2], hex[3])
 					} else {
-						code = []byte{REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3]}
+						code = Bytes(REX_W, 0x05, modRM, hex[0], hex[1], hex[2], hex[3])
 					}
 				default:
 					panic("TBI")
@@ -766,7 +770,7 @@ func encode(s *Stmt) *Instruction {
 			regi := srcOp.(*register).toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			code = []byte{REX_W, opcode, modRM}
+			code = Bytes(REX_W, opcode, modRM)
 		case *immediate:
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, slash_5, rm)
@@ -776,11 +780,11 @@ func encode(s *Stmt) *Instruction {
 			}
 			switch {
 			case imValue < 1<<7:
-				code = []byte{REX_W, 0x83, modRM, uint8(imValue)}
+				code = Bytes(REX_W, 0x83, modRM, uint8(imValue))
 			case imValue < 1<<31:
 				i32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&i32))
-				code = []byte{REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3]}
+				code = Bytes(REX_W, 0x81, modRM, hex[0], hex[1], hex[2], hex[3])
 			default:
 				panic("TBI")
 			}
@@ -795,7 +799,7 @@ func encode(s *Stmt) *Instruction {
 			rm := srcOp.(*register).toBits()
 			regi := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			code = []byte{REX_W, opcodes[0], opcodes[1], modRM}
+			code = Bytes(REX_W, opcodes[0], opcodes[1], modRM)
 		case *immediate:
 			opcode := uint8(0x6b)
 			// IMUL r64, r/m64, imm8
@@ -806,7 +810,7 @@ func encode(s *Stmt) *Instruction {
 			if err != nil {
 				panic(err)
 			}
-			code = []byte{REX_W, opcode, modRM, uint8(imValue)} // REX.W, IMULQ, ModR/M, ib
+			code = Bytes(REX_W, opcode, modRM, uint8(imValue)) // REX.W, IMULQ, ModR/M, ib
 
 		default:
 			panic("TBI")
@@ -815,7 +819,7 @@ func encode(s *Stmt) *Instruction {
 		opcode := uint8(0xf7)
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, slash_6, rm)
-		code = []byte{REX_W, opcode, modRM}
+		code = Bytes(REX_W, opcode, modRM)
 	case "cmpq":
 		switch src := srcOp.(type) {
 		case *register:
@@ -823,7 +827,7 @@ func encode(s *Stmt) *Instruction {
 			regi := src.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			code = []byte{REX_W, opcode, modRM}
+			code = Bytes(REX_W, opcode, modRM)
 		case *immediate:
 			opcode := uint8(0x83)
 			imValue, err := strconv.ParseInt(src.expr.(*numberLit).val, 0, 8)
@@ -832,34 +836,34 @@ func encode(s *Stmt) *Instruction {
 			}
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, 7, rm)
-			code = []byte{REX_W, opcode, modRM, uint8(imValue)}
+			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
 		default:
 			panic("TBI:" + s.source)
 		}
 	case "setl":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{0x0f, 0x9c, modRM}
+		code = Bytes(0x0f, 0x9c, modRM)
 	case "setle":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{0x0f, 0x9e, modRM}
+		code = Bytes(0x0f, 0x9e, modRM)
 	case "setg":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{0x0f, 0x9f, modRM}
+		code = Bytes(0x0f, 0x9f, modRM)
 	case "setge":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{0x0f, 0x9d, modRM}
+		code = Bytes(0x0f, 0x9d, modRM)
 	case "sete":
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
-		code = []byte{0x0f, 0x94, modRM}
+		code = Bytes(0x0f, 0x94, modRM)
 	case "pushq":
 		switch trgt := trgtOp.(type) {
 		case *register:
-			code = []byte{0x50 + trgt.toBits()}
+			code = Bytes(0x50 + trgt.toBits())
 		case *immediate:
 			imValue, err := strconv.ParseInt(trgt.expr.(*numberLit).val, 0, 32)
 			if err != nil {
@@ -867,15 +871,15 @@ func encode(s *Stmt) *Instruction {
 			}
 			switch {
 			case imValue < 1<<7: //PUSH imm8 : 6a ib
-				code = []byte{0x6a, uint8(imValue)}
+				code = Bytes(0x6a, uint8(imValue))
 			//case imValue < 1<<14 : //PUSH imm16: 	68 iw
 			//	ui16 := int16(imValue)
 			//	hex := (*[2]uint8)(unsafe.Pointer(&ui16))
-			//	r = []byte{0x68, hex[0], hex[1]}
+			//	r = Bytes(0x68, hex[0], hex[1])
 			case imValue < 1<<31: // PUSH imm32 68 id
 				ui32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
-				code = []byte{0x68, hex[0], hex[1], hex[2], hex[3]}
+				code = Bytes(0x68, hex[0], hex[1], hex[2], hex[3])
 			default:
 				panic("TBI")
 			}
@@ -886,7 +890,7 @@ func encode(s *Stmt) *Instruction {
 		switch trgt := trgtOp.(type) {
 		case *register:
 			// 58 +rd. POP r64.
-			code = []byte{0x58 + trgt.toBits()}
+			code = Bytes(0x58 + trgt.toBits())
 		default:
 			panic("[encoder] TBI:" + s.source)
 		}
@@ -899,12 +903,12 @@ func encode(s *Stmt) *Instruction {
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, slash_6, rm)
 			imValue := evalNumExpr(src.expr)
-			code = []byte{REX_W, opcode, modRM, uint8(imValue)}
+			code = Bytes(REX_W, opcode, modRM, uint8(imValue))
 		case *register:
 			regi := src.toBits()
 			rm := trgtOp.(*register).toBits()
 			modRM := composeModRM(ModRegi, regi, rm)
-			code = []byte{REX_W, 0x31, modRM}
+			code = Bytes(REX_W, 0x31, modRM)
 		default:
 			panic("TBI")
 
@@ -915,12 +919,12 @@ func encode(s *Stmt) *Instruction {
 		regi := srcOp.(*register).toBits()
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, regi, rm)
-		code = []byte{REX_W, 0x21, modRM}
+		code = Bytes(REX_W, 0x21, modRM)
 	case "orq":
 		regi := srcOp.(*register).toBits()
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, regi, rm)
-		code = []byte{REX_W, 0x09, modRM}
+		code = Bytes(REX_W, 0x09, modRM)
 	default:
 		panic(fmt.Sprintf("[encoder] Unknown instruction: %s at line %d\n\n /tool/encode '%s'",
 			s.source, 0, s.source))
