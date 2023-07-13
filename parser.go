@@ -388,15 +388,63 @@ func (reg *register) is32() bool {
 	return reg.name[0] == 'e'
 }
 
+func (reg *register) isStackPointer() bool {
+	return reg.name == "rsp" || reg.name == "sp"
+}
+
 func (reg *register) toBits() uint8 {
 	if len(reg.name) <= 1 {
 		panic("Something wrong hpapended. reg.name is too short:" + reg.name)
 	}
+
+	var regShortName string
 	if reg.is64() || reg.is32() {
-		return regBits(reg.name[1:])
+		regShortName = reg.name[1:]
 	} else {
-		return regBits(reg.name)
+		regShortName = reg.name
 	}
+
+	// https://wiki.osdev.org/X86-64_Instruction_Encoding
+	// The registers are encoded using the 4-bit values in the X.Reg column of the following table.
+	// X.Reg is in binary.
+	var r uint8
+	switch regShortName {
+	case "ax", "al":
+		r = 0b_000
+	case "cx", "cl":
+		r = 0b_001
+	case "dx", "dl":
+		r = 0b_010
+	case "bx", "bl":
+		r = 0b_011
+	case "sp", "ah":
+		r = 0b_100
+	case "bp", "ch":
+		r = 0b_101
+	case "si", "dh":
+		r = 0b_110
+	case "di", "bh":
+		r = 0b_111
+	case "8":
+		r = 0b_000
+	case "9":
+		r = 0b_001
+	case "10":
+		r = 0b_010
+	case "11":
+		r = 0b_011
+	case "12":
+		r = 0b_100
+	case "13":
+		r = 0b_101
+	case "14":
+		r = 0b_110
+	case "15":
+		r = 0b_111
+	default:
+		panic(fmt.Sprintf("TBI: unexpected register \"%s\"", regShortName))
+	}
+	return r
 }
 
 // e.g. *%rax

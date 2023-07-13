@@ -80,50 +80,6 @@ const slash_5 = 5 // /5 0b101
 const slash_6 = 6 // /6 0b110
 const slash_7 = 7 // /7 0b111
 
-// https://wiki.osdev.org/X86-64_Instruction_Encoding
-// The registers are encoded using the 4-bit values in the X.Reg column of the following table.
-// X.Reg is in binary.
-func regBits(reg string) uint8 {
-	var x_reg uint8
-	switch reg {
-	case "ax", "al":
-		x_reg = 0b_000
-	case "cx", "cl":
-		x_reg = 0b_001
-	case "dx", "dl":
-		x_reg = 0b_010
-	case "bx", "bl":
-		x_reg = 0b_011
-	case "sp", "ah":
-		x_reg = 0b_100
-	case "bp", "ch":
-		x_reg = 0b_101
-	case "si", "dh":
-		x_reg = 0b_110
-	case "di", "bh":
-		x_reg = 0b_111
-	case "8":
-		x_reg = 0b_000
-	case "9":
-		x_reg = 0b_001
-	case "10":
-		x_reg = 0b_010
-	case "11":
-		x_reg = 0b_011
-	case "12":
-		x_reg = 0b_100
-	case "13":
-		x_reg = 0b_101
-	case "14":
-		x_reg = 0b_110
-	case "15":
-		x_reg = 0b_111
-	default:
-		panic(fmt.Sprintf("TBI: unexpected register \"%s\"", reg))
-	}
-	return x_reg
-}
-
 // SIB
 //  Certain encodings of the ModR/M byte require a second addressing byte (the SIB byte). The base-plus-index and
 //  scale-plus-index forms of 32-bit addressing require the SIB byte.
@@ -409,7 +365,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				var displacementBytes []byte
 				if displacement == 0 {
 					rm = srcRegi.toBits()
-					if rm == regBits("sp") {
+					if srcRegi.isStackPointer() {
 						mod := ModIndirectionWithNoDisplacement
 						reg = trgtRegi.toBits()
 						modRM = composeModRM(mod, reg, rm)
@@ -435,7 +391,8 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 					var disp32 int32 = int32(displacement)
 					displacementBytes = (*[4]byte)(unsafe.Pointer(&disp32))[:]
 				}
-				if rm == regBits("sp") {
+
+				if srcRegi.isStackPointer() {
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 					code = Bytes(REX_W, opcode, modRM, sib)
 					code = append(code, displacementBytes...)
@@ -582,7 +539,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 					case nil:
 						rm := trgt.regi.toBits()
 						reg := src.toBits()
-						if rm == regBits("sp") { // movq %rax, (%rsp)
+						if trgt.regi.isStackPointer() { // movq %rax, (%rsp)
 							mod := ModIndirectionWithNoDisplacement
 							modRM := composeModRM(mod, reg, rm)
 							sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
@@ -604,7 +561,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 						if err != nil {
 							panic(err)
 						}
-						if rm == regBits("sp") {
+						if trgt.regi.isStackPointer() {
 							if displacement == 0 { // movq %rax, 0(%rsp) => movq %rax, (%rsp)
 								mod := ModIndirectionWithNoDisplacement
 								modRM := composeModRM(mod, reg, rm)
@@ -662,10 +619,10 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 					rexprefix = REX_W
 				}
 				var opcode uint8 = 0x8b
+				var rm = srcRegi.toBits()
 				val := evalNumExpr(src.expr)
 				if val == 0 {
 					var mod = ModIndirectionWithNoDisplacement // indirection
-					var rm = regBits("sp")
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
@@ -673,7 +630,6 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 					return
 				} else {
 					var mod = ModIndirectionWithDisplacement8
-					var rm = regBits("sp")
 					reg := trgtRegi.toBits()
 					modRM := composeModRM(mod, reg, rm)
 					sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
@@ -731,7 +687,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 			rm := src.regi.toBits()
 			reg := trgtOp.(*register).toBits()
 			modRM := composeModRM(mod, reg, rm)
-			if rm == regBits("sp") {
+			if src.regi.isStackPointer() {
 				// use SIB
 				sib := composeSIB(0b00, SibIndexNone, SibBaseRSP)
 				code = Bytes(REX_W, 0x0f, 0xb6, modRM, sib)
