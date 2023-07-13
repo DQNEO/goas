@@ -87,37 +87,37 @@ func regBits(reg string) uint8 {
 	var x_reg uint8
 	switch reg {
 	case "ax", "al":
-		x_reg = 0b0000
+		x_reg = 0b_000
 	case "cx", "cl":
-		x_reg = 0b0001
+		x_reg = 0b_001
 	case "dx", "dl":
-		x_reg = 0b0010
+		x_reg = 0b_010
 	case "bx", "bl":
-		x_reg = 0b0011
+		x_reg = 0b_011
 	case "sp", "ah":
-		x_reg = 0b0100
+		x_reg = 0b_100
 	case "bp", "ch":
-		x_reg = 0b0101
+		x_reg = 0b_101
 	case "si", "dh":
-		x_reg = 0b0110
+		x_reg = 0b_110
 	case "di", "bh":
-		x_reg = 0b0111
+		x_reg = 0b_111
 	case "8":
-		x_reg = 0b000
+		x_reg = 0b_000
 	case "9":
-		x_reg = 0b001
+		x_reg = 0b_001
 	case "10":
-		x_reg = 0b010
+		x_reg = 0b_010
 	case "11":
-		x_reg = 0b011
+		x_reg = 0b_011
 	case "12":
-		x_reg = 0b100
+		x_reg = 0b_100
 	case "13":
-		x_reg = 0b101
+		x_reg = 0b_101
 	case "14":
-		x_reg = 0b110
+		x_reg = 0b_110
 	case "15":
-		x_reg = 0b111
+		x_reg = 0b_111
 	default:
 		panic(fmt.Sprintf("TBI: unexpected register \"%s\"", reg))
 	}
