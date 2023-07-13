@@ -456,7 +456,8 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 			}
 			num := int32(intNum)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
-			regFieldN := trgtOp.(*register).toBits()
+			trgtRegi := trgtOp.(*register)
+			regFieldN := trgtRegi.toBits()
 			opcode := 0xb8 + regFieldN
 			code = append(Bytes(opcode), bytesNum[:]...)
 			return
@@ -483,7 +484,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				rex = REX_W
 			}
 			opcode := uint8(0xc7)
-			modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
+			modRM := composeModRM(ModRegi, 0, trgtRegi.toBits())
 			code = Bytes(rex, opcode, modRM)
 			code = append(code, bytesNum[:]...)
 			return
