@@ -30,6 +30,7 @@ func TestEncodeStringAsText(t *testing.T) {
 		{"movl IMM32, REG", "movl $2147483647, %ebx", []byte{0xb8 + 0b011, 0xff, 0xff, 0xff, 0x7f}},
 
 		{"movq IMM32, REG", "movq $2147483647, %rdi", []byte{0x48, 0xc7, 0b11_000_111, 0xff, 0xff, 0xff, 0x7f}},
+		{"movq IMM32, EXREG", "movq $2147483647, %r8", []byte{0x49, 0xc7, 0b11_000_000, 0xff, 0xff, 0xff, 0x7f}},
 
 		{"movzwq IND, REG", "movzwq 0(%rbp), %rdi", []byte{0x48, 0x0f, 0xb7, 0b00_101_111}},
 		{"addq REG, REG", "addq %rbp, %rdi", []byte{0x48, 0x01, 0b11_101_111}},
