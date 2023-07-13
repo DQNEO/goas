@@ -900,7 +900,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		default:
 			panic("[encoder] TBI:" + stmt.source)
 		}
-	case "xor", "xorq":
+	case "xor", "xorq": //TESTED
 		switch src := srcOp.(type) {
 		case *immediate:
 			// XOR r/m64, imm8
@@ -921,7 +921,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 			panic("TBI")
 
 		}
-	case "andq":
+	case "andq": // TESTED
 		// AND r/m64, r64
 		// REX.W 21
 		regi := srcOp.(*register).toBits()
@@ -929,7 +929,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		modRM := composeModRM(ModRegi, regi, rm)
 		code = Bytes(REX_W, 0x21, modRM)
 		return
-	case "orq":
+	case "orq": // TESTED
 		regi := srcOp.(*register).toBits()
 		rm := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, regi, rm)
