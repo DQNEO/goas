@@ -24,7 +24,7 @@ func TestEncodeStringAsText(t *testing.T) {
 
 		{"leaq IND8, REG", "leaq 127(%rbp), %rdi", []byte{0x48, 0x8d, 0b01_111_101, 0x7f}},
 		{"leaq IND0, REG", "leaq 0(%rbp), %rdi", []byte{0x48, 0x8d, 0b01_111_101, 0}},
-		{"leaq IND0, REG", " leaq 0(%rsp), %rdi", []byte{0x48, 0x8d, 0b00_111_100, 0b00_100_100}},
+		{"leaq IND0, REG", "leaq 0(%rsp), %rdi", []byte{0x48, 0x8d, 0b00_111_100, 0b00_100_100}},
 		{"movb REG, IND", "movb %bl, 0(%rdi)", []byte{0x88, 0b00_011_111}},
 		{"movw REG, IND", "movw %bx, 0(%rdi)", []byte{0x66, 0x89, 0b00_011_111}},
 		{"movl IMM32, REG", "movl $2147483647, %ebx", []byte{0xb8 + 0b011, 0xff, 0xff, 0xff, 0x7f}},
