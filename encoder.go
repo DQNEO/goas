@@ -506,23 +506,6 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		default:
 			panic("TBI")
 		}
-
-	//	op1, op2 := s.operands[0], s.operands[1]
-	//	assert(op1.typ == "$number", "op1 type should be $number")
-	//	//op1Regi, IsOp1Regi := op1.(*register)
-	//	op2Regi := op2.(*register)
-	//
-	//	intNum, err := strconv.ParseInt(op1.string, 0, 32)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//	var num int32 = int32(intNum)
-	//	bytesNum := (*[4]byte)(unsafe.Pointer(&num))
-	//	var opcode byte
-	//	regFieldN := op2Regi.toBits()
-	//	opcode = 0xb8 + regFieldN
-	//	tmp := Bytes(opcode)
-	//	r = append(tmp, (bytesNum[:])...)
 	case "movq":
 		switch src := srcOp.(type) {
 		case *immediate: // movq $123, %REG
@@ -531,24 +514,22 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				panic(err)
 			}
 			num := int32(intNum)
-			trgtRegi := trgtOp.(*register)
-			debugf("num=%d, trgtRegi=%s\n", num, trgtRegi.name)
 			bytesNum := (*[4]byte)(unsafe.Pointer(&num))
-			switch trgtRegi.name {
-			case "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15":
-				// Actually I don't understand the logic here.
-				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
-				opcode := uint8(0xc7)
-				code = Bytes(REX_WB, opcode, modRM)
-				code = append(code, bytesNum[:]...)
-				return
-			default:
-				opcode := uint8(0xc7)
-				modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
-				code = Bytes(REX_W, opcode, modRM)
-				code = append(code, bytesNum[:]...)
-				return
+
+			trgtRegi := trgtOp.(*register)
+			//debugf("num=%d, trgtRegi=%s\n", num, trgtRegi.name)
+
+			var rex byte
+			if trgtRegi.isExt() {
+				rex = REX_WB
+			} else {
+				rex = REX_W
 			}
+			opcode := uint8(0xc7)
+			modRM := composeModRM(ModRegi, 0, trgtOp.(*register).toBits())
+			code = Bytes(rex, opcode, modRM)
+			code = append(code, bytesNum[:]...)
+			return
 		case *register: // movq %rax, EXPR
 			opcode := uint8(0x89)
 			switch trgt := trgtOp.(type) {
