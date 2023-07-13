@@ -720,7 +720,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		return
 	case "addq":
 		switch src := srcOp.(type) {
-		case *register:
+		case *register: // TESTED
 			opcode := uint8(0x01)
 			regi := srcOp.(*register).toBits()
 			rm := trgtOp.(*register).toBits()
@@ -857,14 +857,14 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x9d, modRM)
 		return
-	case "sete":
+	case "sete": // TESTED
 		reg := trgtOp.(*register).toBits()
 		modRM := composeModRM(ModRegi, reg, 0)
 		code = Bytes(0x0f, 0x94, modRM)
 		return
 	case "pushq":
 		switch trgt := trgtOp.(type) {
-		case *register:
+		case *register: // TESTED
 			code = Bytes(0x50 + trgt.toBits())
 			return
 		case *immediate:
@@ -873,14 +873,14 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 				panic(err)
 			}
 			switch {
-			case imValue < 1<<7: //PUSH imm8 : 6a ib
+			case imValue < 1<<7: //PUSH imm8 : 6a ib // TESTED
 				code = Bytes(0x6a, uint8(imValue))
 				return
 			//case imValue < 1<<14 : //PUSH imm16: 	68 iw
 			//	ui16 := int16(imValue)
 			//	hex := (*[2]uint8)(unsafe.Pointer(&ui16))
 			//	r = Bytes(0x68, hex[0], hex[1])
-			case imValue < 1<<31: // PUSH imm32 68 id
+			case imValue < 1<<31: // PUSH imm32 68 id // TESTED
 				ui32 := int32(imValue)
 				hex := (*[4]uint8)(unsafe.Pointer(&ui32))
 				code = Bytes(0x68, hex[0], hex[1], hex[2], hex[3])
@@ -891,7 +891,7 @@ func encode(stmt *Stmt, keySymbol string, srcOp Operand, trgtOp Operand) (code [
 		default:
 			panic("[encoder] TBI:" + stmt.source)
 		}
-	case "popq":
+	case "popq": // TESTED
 		switch trgt := trgtOp.(type) {
 		case *register:
 			// 58 +rd. POP r64.
